@@ -1,0 +1,11 @@
+beautifulsoup4==4.11.1
+csscompressor==0.9.5
+cssutils==2.5.1
+httpx==0.23.0
+lxml==4.9.1
+js2py==0.71
+rich==12.5.1
+m3u8==3.2.0
+alive-progress==2.4.1
+filetype==1.1.0
+pyperclip==1.8.2

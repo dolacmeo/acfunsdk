@@ -3,8 +3,8 @@ import json
 import os
 import time
 from bs4 import BeautifulSoup as Bs
-from source import scheme, routes, apis, pagelets_from_page, pagelets_from_api
-from page.utils import downloader, get_page_pagelets, AcPagelet
+from acfun.source import scheme, routes, apis, pagelets_from_page, pagelets_from_api
+from acfun.page.utils import downloader, get_page_pagelets, AcPagelet
 
 __author__ = 'dolacmeo'
 

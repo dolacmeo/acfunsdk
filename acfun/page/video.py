@@ -2,10 +2,11 @@
 import json
 import os
 import js2py
+import emoji
 from bs4 import BeautifulSoup as Bs
-from source import routes
-from page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
-from libs.you_get.extractors.acfun import download as you_get_download
+from acfun.source import routes
+from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
+from acfun.libs.you_get.extractors.acfun import download as you_get_download
 
 __author__ = 'dolacmeo'
 
@@ -36,7 +37,7 @@ class AcVideo:
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
         duration = self.video_data.get('durationMillis', 0)
         duration_txt = "" if duration == 0 else f"[{ms2time(duration)}]"
-        return f"AcVideo([ac{self.ac_num}]{duration_txt}{title}{user_txt})"
+        return f"AcVideo([ac{self.ac_num}]{duration_txt}{title}{user_txt})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(routes['video'] + self.ac_num)

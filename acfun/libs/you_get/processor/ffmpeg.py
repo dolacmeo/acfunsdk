@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from libs.ffmpeg_progress_yield import FfmpegProgress
+from acfun.libs.ffmpeg_progress_yield import FfmpegProgress
 from alive_progress import alive_bar
 import logging
 import os

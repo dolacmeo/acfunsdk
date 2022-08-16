@@ -4,9 +4,9 @@ import re
 import json
 import httpx
 import datetime
-import source
-from page import *
-from exceptions import *
+from acfun import source
+from acfun.page import *
+from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
 
@@ -91,6 +91,7 @@ class Acer:
     def __init__(self, debug: bool = False):
         self.debug = debug
         self.client = AcClient() if debug else httpx.Client(headers=source.header)
+        self.moment = AcMoment(self)
         self._get_nav()
         self._setup_folder()
         if self.check_online() is False:
@@ -166,7 +167,9 @@ class Acer:
         for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
-                if link_name == 'moment':
+                if link_name == 'up':
+                    return self.AcUp({'userId': ends})
+                elif link_name == 'moment':
                     return self.moment.get(ends)
                 elif link_name == 'share':
                     return self.AcVideo(ends)
@@ -207,7 +210,6 @@ class Acer:
         if api_data.get('result') == 0:
             self.token = api_data
             self.message = AcMessage(self)
-            self.moment = AcMoment(self)
             self.favourite = MyFavourite(self)
 
     def keys(self):

@@ -1,5 +1,4 @@
 beautifulsoup4==4.11.1
-csscompressor==0.9.5
 cssutils==2.5.1
 httpx==0.23.0
 lxml==4.9.1

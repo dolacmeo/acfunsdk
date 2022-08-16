@@ -2,7 +2,7 @@
 import json
 import time
 from bs4 import BeautifulSoup as Bs
-from source import routes, apis
+from acfun.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -34,7 +34,7 @@ class AcUp:
         return self.up_data.get('userName', self.up_data.get('name'))
 
     def __repr__(self):
-        return f"Acer([{self.uid}] @{self.name})"
+        return f"Acer([{self.uid}] @{self.name})".encode(errors='replace').decode()
 
     def loading(self):
         page_req = self.acer.client.get(routes['up'] + self.uid)

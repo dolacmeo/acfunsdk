@@ -2,8 +2,9 @@
 import json
 import re
 from bs4 import BeautifulSoup as Bs
-from source import routes, apis
-from page.utils import thin_string
+from acfun.source import routes, apis
+from acfun.page.utils import thin_string
+from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
 
@@ -47,7 +48,7 @@ class Moment:
     def __repr__(self):
         if self.tag_rtype in [1, 2, 10]:
             name = self.raw_data.get('user', {}).get('userName', '')
-            return f"AcMoment(@{name} | {str(self.linked)})"
+            return f"AcMoment(@{name} | {str(self.linked)})".encode(errors='replace').decode()
         elif self.tag_rtype == 3:
             name = self.raw_data.get('user', {}).get('userName', '')
             text = self.raw_data.get('moment', {}).get('replaceUbbText', '')
@@ -56,7 +57,7 @@ class Moment:
             img_count = self.raw_data.get('discoveryResourceFeedShowImageCount', 0)
             img_count = f"【图x{img_count}】" if img_count > 0 else ""
             link = "" if self.linked is None else f" | {str(self.linked)}"
-            return f"AcMoment(@{name}: {img_count}{text}{link})"
+            return f"AcMoment(@{name}: {img_count}{text}{link})".encode(errors='replace').decode()
         return f"AcMoment()"
 
     def up(self):
@@ -65,6 +66,7 @@ class Moment:
     def comment(self):
         return self.acer.AcComment(self.rid, self.rtype, self)
 
+    @need_login
     def banana(self, count: int):
         return self.acer.throw_banana(self.rid, self.rtype, count)
 
@@ -84,6 +86,7 @@ class AcMoment:
     def __init__(self, acer):
         self.acer = acer
 
+    @need_login
     def set_tab(self, tab: str = 'all'):
         new = self.rts.get(tab, 0)
         if new != self.resourceTypes:
@@ -93,6 +96,7 @@ class AcMoment:
             return True
         return False
 
+    @need_login
     def feed(self, limit: int = 10, refresh: bool = False):
         if refresh is True:
             self.cursor = "0"

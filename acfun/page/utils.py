@@ -5,18 +5,15 @@ import time
 import math
 import json
 import cssutils
-import httpx
-import rich.progress
 import shutil
 import filetype
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from datetime import timedelta
-from source import scheme, domains, routes, apis, pagelets, \
-    pagelets_big, pagelets_normal
 from alive_progress import alive_bar
-from exceptions import *
+from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, pagelets_normal
+from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
 
@@ -499,8 +496,8 @@ class AcPagelet:
                 data['items'].append(self.acer.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
             else:
                 data['items'].append(v_data)
-        data.update(self._index_pagelet_left_info())
-        data.update(self._index_pagelet_right_rank())
+        data.update(self._index_pagelet_left_info(obj))
+        data.update(self._index_pagelet_right_rank(obj))
         return data
 
     def _footer(self, obj=False):
@@ -569,7 +566,6 @@ class AcComment:
         self.sourceId = str(sid)
         self.sourceType = stype
         self.referer = referer or f"{routes['index']}"
-        self._get_all_comment()
 
     def __repr__(self):
         return f"AcComment([ac{self.sourceId}] Σ{len(self.root_comments)})"
@@ -587,7 +583,7 @@ class AcComment:
         req = self.acer.client.get(apis['comment'], params=param)
         return req.json()
 
-    def _get_all_comment(self):
+    def get_all_comment(self):
         self.hot_comments = list()
         self.root_comments = list()
         self.sub_comments = dict()

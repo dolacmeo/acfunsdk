@@ -2,11 +2,10 @@
 import re
 import html
 import js2py
-import source
 import textwrap
 from bs4 import BeautifulSoup as Bs
-from source import routes, apis
-from page.utils import warp_mix_chars, get_page_pagelets
+from acfun.source import routes, apis
+from acfun.page.utils import warp_mix_chars, get_page_pagelets
 
 __author__ = 'dolacmeo'
 
@@ -35,7 +34,7 @@ class AcArticle:
         title = self.article_data.get('contentTitle', self.article_data.get('title', ""))
         user_name = self.article_data.get('user', {}).get('name', "") or self.article_data.get('user', {}).get('id', "")
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
-        return f"AcArticle([ac{self.ac_num}]{title}{user_txt})"
+        return f"AcArticle([ac{self.ac_num}]{title}{user_txt})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(routes['article'] + self.ac_num)
@@ -54,7 +53,7 @@ class AcArticle:
             ac_num = this_url[5:]
             data = {
                 'title': item.select_one('.contb-title').a.text,
-                'shareUrl': source.routes['share'] + ac_num,
+                'shareUrl': routes['share'] + ac_num,
                 'viewCount': item.select_one('.contb-count .view-count span.count').text,
                 'commentCount': item.select_one('.contb-count .comm-count span.count').text,
                 'user': self.article_data.get('user', {})

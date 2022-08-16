@@ -1,8 +1,8 @@
 # coding=utf-8
 import js2py
 from bs4 import BeautifulSoup as Bs
-from source import routes, apis
-from page.utils import get_channel_info, get_page_pagelets, AcDanmaku
+from acfun.source import routes, apis
+from acfun.page.utils import get_channel_info, get_page_pagelets, AcDanmaku
 
 __author__ = 'dolacmeo'
 
@@ -28,7 +28,7 @@ class AcBangumi:
 
     def __repr__(self):
         title = self.bangumi_data.get('showTitle', self.bangumi_data.get('bangumiTitle', ""))
-        return f"AcBangumi([ac{self.aa_num}_{self.item_id}]{title})"
+        return f"AcBangumi([ac{self.aa_num}_{self.item_id}]{title})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(routes['bangumi'] + self.aa_num)

@@ -2,11 +2,9 @@
 import os
 import time
 import json
-import js2py
 import pyperclip
 import subprocess
-from bs4 import BeautifulSoup as Bs
-from source import scheme, domains, routes, apis
+from acfun.source import scheme, domains, routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -56,7 +54,7 @@ class LiveUp:
         return self.raw.get('user', {}).get('name', '')
 
     def __repr__(self):
-        return f"AcLive(#{self.uid} {self.title} @{self.username})"
+        return f"AcLive(#{self.uid} {self.title} @{self.username})".encode(errors='replace').decode()
 
     def infos(self, key: [str, None] = None):
         param = {"authorId": self.uid}

@@ -1,7 +1,7 @@
 # coding=utf-8
 import js2py
 from bs4 import BeautifulSoup as Bs
-from source import routes, apis
+from acfun.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -20,7 +20,7 @@ class AcAlbum:
         self.loading()
 
     def __repr__(self):
-        return f"AcAlbum([aa{self.aa_num}]{self.info['title']} @{self.info['authorName']})"
+        return f"AcAlbum([aa{self.aa_num}]{self.info['title']} @{self.info['authorName']})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(f"{routes['album']}{self.aa_num}")

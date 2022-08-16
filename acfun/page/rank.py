@@ -1,5 +1,5 @@
 # coding=utf-8
-from source import apis
+from acfun.source import apis
 
 __author__ = 'dolacmeo'
 

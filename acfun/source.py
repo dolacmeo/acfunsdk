@@ -40,6 +40,7 @@ routes = {
 }
 
 apis = {
+    'cdn_domain': f"{scheme}://{domains['main']}/rest/pc-direct/image/cdnDomain",
     'message': f"{scheme}://{domains['msg']}/",
     'token': f"{scheme}://{domains['id_api']}/rest/web/token/get",
     'nav': f"{scheme}://{domains['main']}/rest/pc-direct/page/queryNavigators",
@@ -117,7 +118,14 @@ apis = {
     'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
 
     'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
-    'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf"
+    'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf",
+
+    'image_upload_gettoken': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getToken",
+    'image_upload_resume': "https://upload.kuaishouzt.com/api/upload/resume",
+    'image_upload_fragment': "https://upload.kuaishouzt.com/api/upload/fragment",
+    'image_upload_complete': "https://upload.kuaishouzt.com/api/upload/complete",
+    'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
+
 }
 
 pagelets_from_page = [

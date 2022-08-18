@@ -8,6 +8,7 @@ import base64
 import shutil
 import cssutils
 import filetype
+from uuid import uuid4
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
@@ -39,11 +40,35 @@ class B64s:
         return base64.b64decode(self.raw.translate(self.DE_TRANS))
 
 
+def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
+    token_req = client.post(apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper()+f'.{ext}'))
+    token_data = token_req.json()
+    assert token_data.get('result') == 0
+    resume_req = client.get(apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
+    resume_data = resume_req.json()
+    assert resume_data.get('result') == 1
+    fragment_req = client.post(apis['image_upload_fragment'], data=image_data,
+                               params=dict(upload_token=token_data['info']['token'], fragment_id=0),
+                               headers={"Content-Type": "application/octet-stream"})
+    fragment_data = fragment_req.json()
+    assert fragment_data.get('result') == 1
+    complete_req = client.post(apis['image_upload_complete'],
+                               params=dict(upload_token=token_data['info']['token'], fragment_count=1))
+    complete_data = complete_req.json()
+    assert complete_data.get('result') == 1
+    result_req = client.post(apis['image_upload_geturl'], data=dict(token=token_data['info']['token']))
+    result_data = result_req.json()
+    assert result_data.get('result') == 0
+    return result_data.get('url')
+
+
 def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None):
     if dest_dir is None:
         dest_dir = os.getcwd()
     elif os.path.isabs(dest_dir) is False:
         dest_dir = os.path.abspath(dest_dir)
+    if not os.path.isdir(dest_dir):
+        os.makedirs(dest_dir)
     if fname is None:
         fname = urlparse(src_url).path.split('/')[-1]
     fpath = os.path.join(dest_dir, fname)

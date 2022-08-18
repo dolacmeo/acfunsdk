@@ -21,12 +21,16 @@ __author__ = 'dolacmeo'
 
 class B64s:
     STANDARD = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    EN_TRANS = STANDARD
+    DE_TRANS = STANDARD
 
     def __init__(self, s: [bytes, bytearray], n: [int, None] = None):
         self.raw = s
-        new = self.STANDARD[n:] + self.STANDARD[:n]
-        self.EN_TRANS = bytes.maketrans(self.STANDARD, new)
-        self.DE_TRANS = bytes.maketrans(new, self.STANDARD)
+        if isinstance(n, int):
+            n = n % 64
+            new = self.STANDARD[n:] + self.STANDARD[:n]
+            self.EN_TRANS = bytes.maketrans(self.STANDARD, new)
+            self.DE_TRANS = bytes.maketrans(new, self.STANDARD)
 
     def b64encode(self):
         return base64.standard_b64encode(self.raw).translate(self.EN_TRANS)

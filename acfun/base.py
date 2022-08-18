@@ -235,7 +235,7 @@ class Acer:
         self.is_logined = result.get('result', 1) == 0
         if self.is_logined is True:
             self._get_personal()
-            cookie = json.dumps(dict(self.client.cookies.items()))
+            cookie = json.dumps(dict(self.client.cookies.items()), separators=(',', ':'))
             cookie = B64s(cookie.encode(), len(username)).b64encode()
             with open(f'{username}.cookies', 'wb') as f:
                 f.write(cookie)

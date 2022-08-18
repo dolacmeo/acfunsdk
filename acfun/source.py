@@ -60,6 +60,7 @@ apis = {
     'search_keywords': f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
     'history': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
 
+    'get_users': f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
     'follow': f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",
     'follow_fans': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getFollows",
     'follow_groups': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getGroups",

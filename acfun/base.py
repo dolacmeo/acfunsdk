@@ -216,7 +216,9 @@ class Acer:
         return self.personal.keys()
 
     def loading(self, username):
-        self.cookie = json.load(open(f'{username}.json', 'r'))
+        cookie_data = open(f'{username}.cookies', 'rb').read()
+        cookie = B64s(cookie_data, len(username)).b64decode()
+        self.cookie = json.loads(cookie.decode())
         self.client.cookies.update(self.cookie)
         self.is_logined = True
         self._get_personal()
@@ -234,7 +236,8 @@ class Acer:
         if self.is_logined is True:
             self._get_personal()
             cookie = json.dumps(dict(self.client.cookies.items()))
-            with open(f'{username}.json', 'w') as f:
+            cookie = B64s(cookie.encode(), len(username)).b64encode()
+            with open(f'{username}.cookies', 'wb') as f:
                 f.write(cookie)
         else:
             print(result)

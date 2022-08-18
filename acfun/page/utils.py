@@ -4,8 +4,9 @@ import os
 import time
 import math
 import json
-import cssutils
+import base64
 import shutil
+import cssutils
 import filetype
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup as Bs
@@ -16,6 +17,22 @@ from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, 
 from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
+
+
+class B64s:
+    STANDARD = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+    def __init__(self, s: [bytes, bytearray], n: [int, None] = None):
+        self.raw = s
+        new = self.STANDARD[n:] + self.STANDARD[:n]
+        self.EN_TRANS = bytes.maketrans(self.STANDARD, new)
+        self.DE_TRANS = bytes.maketrans(new, self.STANDARD)
+
+    def b64encode(self):
+        return base64.standard_b64encode(self.raw).translate(self.EN_TRANS)
+
+    def b64decode(self):
+        return base64.b64decode(self.raw.translate(self.DE_TRANS))
 
 
 def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None):

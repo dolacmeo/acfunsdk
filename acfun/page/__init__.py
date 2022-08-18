@@ -8,6 +8,6 @@ from .article import AcArticle
 from .video import AcVideo
 from .bangumi import AcBangumi
 from .album import AcAlbum
-from .utils import AcComment, AcLink, AcImage, AcMessage
 from .moment import AcMoment
 from .live import AcLive
+from .utils import AcComment, AcLink, AcImage, AcMessage, B64s

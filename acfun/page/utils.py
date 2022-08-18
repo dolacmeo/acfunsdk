@@ -68,25 +68,29 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
     elif os.path.isabs(dest_dir) is False:
         dest_dir = os.path.abspath(dest_dir)
     if not os.path.isdir(dest_dir):
-        os.makedirs(dest_dir)
+        os.makedirs(dest_dir, exist_ok=True)
     if fname is None:
         fname = urlparse(src_url).path.split('/')[-1]
     fpath = os.path.join(dest_dir, fname)
 
     with open(fpath, 'wb') as download_file:
         with client.stream("GET", src_url) as response:
-            total = int(response.headers["Content-Length"])
-            if total == 0:
-                return False
-            with alive_bar(total // 1024, manual=True, length=30,
+            total = int(response.headers.get("Content-Length", 0))
+            total = None if total == 0 else total // 1024
+            downloaded = 0
+            with alive_bar(total, manual=True, length=30,
                            title=fname, title_length=20, force_tty=True,
                            monitor="{count}/{total} [{percent:.1%}]",
                            stats=False, elapsed_end=False) as progress:
                 for chunk in response.iter_bytes():
                     download_file.write(chunk)
+                    if total is None:
+                        progress((response.num_bytes_downloaded - downloaded) // 1024)
+                    else:
+                        progress(downloaded / total)
                     downloaded = response.num_bytes_downloaded
-                    progress(downloaded / total)
-                progress(1)
+                if total is not None:
+                    progress(1)
 
     if os.path.isfile(fpath) and os.path.exists(fpath):
         if '.' not in fname:
@@ -96,7 +100,7 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
                 shutil.move(fpath, new_fpath)
                 return new_fpath
         return fpath
-    return False
+    return None
 
 
 def thin_string(_string: str, no_break: bool = False):

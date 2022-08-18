@@ -106,3 +106,27 @@ class AcDownload:
         downloader(self.acer.client, psd_link.attrs['href'], dest_dir=dest_path)
         return dest_path
 
+    def FaceCatcher_win(self, dest_path: [str, None] = None):
+        dest_path = self.default_dest if dest_path is None else dest_path
+        api_res = self.acer.client.post(apis['face_catcher'], headers={
+            "referer": "https://www.acfun.cn/face-catcher",
+            "origin": "https://www.acfun.cn"
+        })
+        api_data = api_res.json()
+        downloader(self.acer.client, api_data['downloadUrl'], dest_dir=dest_path)
+        downloader(self.acer.client, api_data['psdUrl'], "face_catcher_psd.zip", dest_dir=dest_path)
+        return dest_path
+
+    def emot_zips(self):
+        dest_path = os.path.join(self.default_dest, 'emotionPackage')
+        if not os.path.exists(dest_path):
+            os.mkdir(dest_path)
+        api_res = self.acer.client.post(apis['emot'], headers={
+            "referer": "https://www.acfun.cn/info/",
+            "origin": "https://www.acfun.cn"
+        })
+        api_data = api_res.json()
+        for em in api_data['emotionPackageList']:
+            if em['downloadUrl']:
+                downloader(self.acer.client, em['downloadUrl'], f"{em['name']}.zip", dest_dir=dest_path)
+        return dest_path

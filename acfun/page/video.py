@@ -1,8 +1,7 @@
 # coding=utf-8
-import json
 import os
+import json
 import js2py
-import emoji
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes
 from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku

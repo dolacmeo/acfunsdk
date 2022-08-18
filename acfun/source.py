@@ -116,7 +116,8 @@ apis = {
     'live_info': f"{scheme}://{domains['live']}/api/live/info",
     'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
 
-    'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default"
+    'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
+    'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf"
 }
 
 pagelets_from_page = [

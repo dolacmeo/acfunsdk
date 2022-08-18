@@ -32,13 +32,15 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
             total = int(response.headers["Content-Length"])
             if total == 0:
                 return False
-            with alive_bar(total, force_tty=True) as progress:
-                downloaded = response.num_bytes_downloaded
+            with alive_bar(total // 1024, manual=True, length=30,
+                           title=fname, title_length=20, force_tty=True,
+                           monitor="{count}/{total} [{percent:.1%}]",
+                           stats=False, elapsed_end=False) as progress:
                 for chunk in response.iter_bytes():
                     download_file.write(chunk)
-                    per_add = response.num_bytes_downloaded - downloaded
-                    progress(per_add)
                     downloaded = response.num_bytes_downloaded
+                    progress(downloaded / total)
+                progress(1)
 
     if os.path.isfile(fpath) and os.path.exists(fpath):
         if '.' not in fname:

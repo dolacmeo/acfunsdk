@@ -622,7 +622,7 @@ class AcComment:
     def __repr__(self):
         return f"AcComment([ac{self.sourceId}] Σ{len(self.root_comments)})"
 
-    def _get_data(self, page=1):
+    def _get_data(self, page: int = 1):
         param = {
             "sourceId": self.sourceId,
             "sourceType": self.sourceType,
@@ -633,6 +633,18 @@ class AcComment:
             "supportZtEmot": True,
         }
         req = self.acer.client.get(apis['comment'], params=param)
+        return req.json()
+
+    def _get_sub(self, root_id, page: int = 1):
+        param = {
+            "sourceId": self.sourceId,
+            "sourceType": self.sourceType,
+            "rootCommentId": root_id,
+            "page": page,
+            "t": str(time.time_ns())[:13],
+            "supportZtEmot": True
+        }
+        req = self.acer.client.get(apis['comment_subs'], params=param)
         return req.json()
 
     def get_all_comment(self):
@@ -647,10 +659,26 @@ class AcComment:
                 break
             self.hot_comments.extend(api_data.get('hotComments', []))
             self.root_comments.extend(api_data.get('rootComments', []))
-            self.sub_comments.update(api_data.get('subCommentsMap', {}))
+            # self.sub_comments.update(api_data.get('subCommentsMap', {}))
             page_max = api_data.get('totalPage', page)
             page = api_data.get('curPage', 1)
             page += 1
+            print(len(self.hot_comments), len(self.root_comments))
+        for lou in self.root_comments:
+            if lou['subCommentCount'] == 0:
+                continue
+            rid = lou['commentId']
+            sub_data = {"pcursor": 1, "subComments": []}
+            while sub_data['pcursor'] != "no_more":
+                sub_page = self._get_sub(rid, sub_data['pcursor'])
+                print(rid, sub_page['totalPage'], sub_page['curPage'], len(sub_page['subComments']))
+                sub_data['subComments'].extend(sub_page['subComments'])
+                if sub_page['curPage'] < sub_page['totalPage']:
+                    sub_data['pcursor'] += 1
+                else:
+                    sub_data['pcursor'] = "no_more"
+            self.sub_comments.update({rid: sub_data})
+            time.sleep(0.5)
 
     @need_login
     def add(self, content: str, reply_id: [str, int, None] = None):

@@ -85,6 +85,7 @@ apis = {
     'article_feed': f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",
 
     'comment': f"{scheme}://{domains['main']}/rest/pc-direct/comment/list",
+    'comment_subs': f"{scheme}://{domains['main']}/rest/pc-direct/comment/sublist",
     'comment_add': f"{scheme}://{domains['main']}/rest/pc-direct/comment/add",
     'comment_delete': f"{scheme}://{domains['main']}/rest/pc-direct/comment/delete",
     'comment_like': f"{scheme}://{domains['main']}/rest/pc-direct/comment/like",

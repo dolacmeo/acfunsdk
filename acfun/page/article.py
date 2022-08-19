@@ -6,6 +6,7 @@ import textwrap
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
 from acfun.page.utils import warp_mix_chars, get_page_pagelets
+from acfun.saver import ArticleSaver
 
 __author__ = 'dolacmeo'
 
@@ -45,6 +46,9 @@ class AcArticle:
         js_code = self.page_obj.select_one("#main > script").text.strip().split('\n')[0]
         self.article_data = js2py.eval_js(js_code).to_dict()
         self.page_pagelets = get_page_pagelets(self.page_obj)
+
+    def saver(self):
+        return ArticleSaver(self.acer, self)
 
     def recommends(self):
         articles = list()

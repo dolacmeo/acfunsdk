@@ -62,7 +62,7 @@ def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
     return result_data.get('url')
 
 
-def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None):
+def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None, display: bool = True):
     if dest_dir is None:
         dest_dir = os.getcwd()
     elif os.path.isabs(dest_dir) is False:
@@ -78,13 +78,13 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
             total = int(response.headers.get("Content-Length", 0))
             total = None if total == 0 else total // 1024
             downloaded = 0
-            with alive_bar(total, manual=True, length=30,
+            with alive_bar(total, manual=True, length=30, disable=not display,
                            title=fname, title_length=20, force_tty=True,
                            monitor="{count}/{total} [{percent:.1%}]",
                            stats=False, elapsed_end=False) as progress:
                 for chunk in response.iter_bytes():
                     download_file.write(chunk)
-                    if total is None:
+                    if total is None or total == 0:
                         progress((response.num_bytes_downloaded - downloaded) // 1024)
                     else:
                         progress(downloaded / total)
@@ -812,14 +812,6 @@ class AcDanmaku:
         }
         req = self.acer.client.post(apis['danmaku_add'], data=danmaku, headers={"referer": f"{routes['index']}"})
         return req.json().get('result') == 0
-
-    def to_json(self, save_path=None):
-        if save_path is None:
-            return self.danmaku_data
-        danmaku_text = json.dumps(self.danmaku_data, ensure_ascii=False)
-        with open(save_path, 'w') as dm_json:
-            dm_json.write(danmaku_text)
-        return True
 
 
 class Danmaku:

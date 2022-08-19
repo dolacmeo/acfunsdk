@@ -1,34 +1,59 @@
 # coding=utf-8
 import os
 import json
+import time
+import arrow
+import shutil
 from uuid import uuid4
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup as Bs
 from .page.utils import downloader
 from .source import apis
 from jinja2 import PackageLoader, Environment
 
 __author__ = 'dolacmeo'
 
-# env = Environment(loader=PackageLoader('acfun', 'templates'))  # 创建一个包加载器对象
-# template = env.get_template('demo.html')  # 获取一个模板文件
-# ttt = template.render(hello='world')
-# print(ttt)
+
+def unix2datestr(t):
+    return arrow.get(t, tzinfo="Asia/Shanghai").format('YYYY-MM-DD HH:mm:ss')
 
 
 class AcSaver:
+    templates = Environment(loader=PackageLoader('acfun', 'templates'))
+    templates.filters['unix2datestr'] = unix2datestr
+    obj2folder = {
+        "AcArticle": "article",
+        "AcMoment": "moment",
+        "AcVideo": "video",
+        "AcBangumi": "bangumi",
+        "AcLive": "live",
+        "AcUp": "member"
+    }
 
     def __init__(self, acer, ac_obj, dest_path=None):
         self.acer = acer
         self.ac_obj = ac_obj
-        self.dest_path = dest_path or os.getcwd()
+        self.dest_path = dest_path or os.path.join(os.getcwd(), 'download')
+        self.folder_name = self.obj2folder.get(self.ac_obj.__class__.__name__, "else")
         if not os.path.isdir(self.dest_path):
             os.makedirs(self.dest_path, exist_ok=True)
         self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
             "referer": "https://www.acfun.cn"}).json().get('domain')
 
+    def _setup_folder(self):
+        folder_path = os.path.join(self.dest_path, self.folder_name, f"ac{self.ac_obj.ac_num}")
+        os.makedirs(os.path.join(folder_path, 'imgs'), exist_ok=True)
+        return folder_path
+
+    def _renew_folder(self, abs_path: str):
+        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        if os.path.isdir(abs_path):
+            shutil.rmtree(abs_path, True)
+        os.makedirs(abs_path)
+
     def _download(self, src_url: str, fname: [str, None] = None, ex_dir: [list, None] = None):
         save_path = self.dest_path if ex_dir is None else os.path.join(self.dest_path, *ex_dir)
-        return downloader(self.acer.client, src_url, fname, save_path)
+        return downloader(self.acer.client, src_url, fname, save_path, display=False)
 
     def _save_data(self, data: [dict, list, str], fname: str, ex_dir: [list, None] = None):
         if isinstance(data, (dict, list)):
@@ -67,23 +92,60 @@ class AcSaver:
                 json.dump(profile, uid_file, separators=(',', ':'))
             avatar = urlparse(profile['headUrl'])
             avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", uid, ['member'])
+            new_avatar_path = "_".join([os.path.splitext(avatar_path)[0], 'avatar'])
+            shutil.move(avatar_path, new_avatar_path)
             if avatar_path is None:
                 continue
-            if os.path.isfile(user_json) and os.path.isfile(avatar_path):
+            if os.path.isfile(user_json) and os.path.isfile(new_avatar_path):
                 done.append(uid)
         return done
 
-    def _save_comment(self):
-        pass
+    def _json_saver(self, data: dict, filename: str, dest_path=None):
+        folder_path = self._setup_folder()
+        json_path = os.path.join(self.dest_path, dest_path or folder_path, filename)
+        with open(json_path, 'w') as json_file:
+            json.dump(data, json_file, separators=(',', ':'))
+        return os.path.isfile(json_path)
 
-    def _save_damaku(self):
-        pass
+    def _save_comment(self):
+        comment_obj = self.ac_obj.comment()
+        comment_obj.get_all_comment()
+        comment_data = {
+            "hotComments": comment_obj.hot_comments,
+            "rootComments": comment_obj.root_comments,
+            "subCommentsMap": comment_obj.sub_comments,
+            "save_unix": time.time()
+        }
+        return self._json_saver(comment_data, f"comment.json")
+
+    def _save_danmaku(self):
+        danmaku_obj = self.ac_obj.danmaku()
+        return self._json_saver(danmaku_obj.danmaku_data, f"danmaku.json")
 
 
 class ArticleSaver(AcSaver):
 
+    def __init__(self, acer, ac_obj):
+        super().__init__(acer, ac_obj)
+
     def _save_content(self):
-        pass
+        self._save_member([self.ac_obj.article_data['user']['id']])
+        folder_path = self._setup_folder()
+        content_raw_saved = self._json_saver(self.ac_obj.article_data, f"content.json")
+        article_template = self.templates.get_template('article.html')
+        article_html = article_template.render(**self.ac_obj.article_data)
+        html_obj = Bs(article_html, 'lxml')
+        html_imgs_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'imgs']
+        self._renew_folder(os.path.join(folder_path, 'imgs'))
+        for img in html_obj.select('img'):
+            saved_path = self._save_images(img.attrs['src'], ex_dir=html_imgs_path)
+            img.attrs['alt'] = img.attrs['src']
+            img.attrs['src'] = f"./imgs/{os.path.basename(saved_path)}"
+        html_path = os.path.join(self.dest_path, folder_path, f"main.html")
+        with open(html_path, 'wb') as html_file:
+            html_file.write(html_obj.prettify().encode())
+        content_html_saved = os.path.isfile(html_path)
+        return all([content_raw_saved, content_html_saved])
 
     pass
 

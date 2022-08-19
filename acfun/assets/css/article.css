@@ -1,6 +1,6 @@
 .contentBox {
     width: 800px;
-    padding-top: 100px;
+    padding-top: 50px;
     margin: 0 auto
 }
 
@@ -90,15 +90,15 @@
 }
 
 .art-title-head .art-title-census .census-right .collectcount .icon {
-    background-image: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/collect.422f0d614f6dcafe8a14.png)
+    background-image: url(../imgs/collect.png)
 }
 
 .art-title-head .art-title-census .census-right .collectcount.active .icon {
-    background-image: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/collected.1b47114c4afbbf6c292f.png)
+    background-image: url(../imgs/collected.png)
 }
 
 .art-title-head .art-title-census .census-right .bananacount.active .icon {
-    background-image: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/bananad.6cd91818896eabd20e00.png)
+    background-image: url(../imgs/bananad.png)
 }
 
 .art-title-head .art-title-census .census-right .bananacount {
@@ -109,7 +109,7 @@
 }
 
 .art-title-head .art-title-census .census-right .bananacount .icon {
-    background-image: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/banana.5f9bf467e81edf3ab700.png)
+    background-image: url(../imgs/banana.png)
 }
 
 .art-title-head .art-title-census .census-right .sharecount {
@@ -118,7 +118,7 @@
 }
 
 .art-title-head .art-title-census .census-right .sharecount .icon {
-    background-image: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/share.318ee50f845bce489677.png)
+    background-image: url(../imgs/share.png)
 }
 
 .art-title-head .art-title-census .census-right .sharecount .sharehead {
@@ -148,7 +148,7 @@
     display: inline-block;
     left: 40px;
     top: -10px;
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/trg.cbedadf31534384e7f63.png) no-repeat
+    background: url(../imgs/trg.png) no-repeat
 }
 
 #article-content .article-content {
@@ -199,7 +199,7 @@
     vertical-align: text-bottom
 }
 
-#article-content .article-content img.ubb-emotion[data-pkgname=AC娘迷你版] {
+#article-content .article-content img.ubb-emotion[data-pkgname=AC濞樿糠浣犵増] {
     width: 26px;
     height: 26px
 }
@@ -302,7 +302,7 @@
     width: 10px;
     height: 6px;
     margin-left: 6px;
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/down.dab3cc720265897b766d.png) no-repeat;
+    background: url(../imgs/down.png) no-repeat;
     background-size: 100% 100%
 }
 
@@ -441,7 +441,7 @@
 }
 
 #article-content #article-operation #art-operate .art-collect .icon .img {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/collect1.ac384fbef4e73f158c46.png) no-repeat
+    background: url(../imgs/collect1.png) no-repeat
 }
 
 #article-content #article-operation #art-operate .art-collect.active .icon {
@@ -454,7 +454,7 @@
 }
 
 #article-content #article-operation #art-operate .art-banana .icon .img {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/articlePreview/widget/content/img/banana1.af7e39f521bae34a81ed.png) no-repeat
+    background: url(../imgs/banana1.png) no-repeat
 }
 
 #article-content #article-operation #art-operate .icon {

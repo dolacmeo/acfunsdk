@@ -35,20 +35,29 @@ table {
 
 @font-face {
     font-family: iconfont;
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont.304576633413888e86c6.eot);
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont.304576633413888e86c6.eot#iefix) format("embedded-opentype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont.1a2831495b80b6ad2d60.woff) format("woff"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont.94e4130701cc602acc5e.ttf) format("truetype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont.59e118e02943cd7b9e81.svg) format("svg")
+    src: url(../font/iconfont.eot);
+    src: url(../font/iconfont.eot#iefix) format("embedded-opentype"),
+         url(../font/iconfont.woff) format("woff"),
+         url(../font/iconfont.ttf) format("truetype"),
+         url(../font/iconfont.svg) format("svg")
 }
 
 @font-face {
     font-family: iconfont2;
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_new.8f284f873f54a4d0b6a7.eot);
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_new.8f284f873f54a4d0b6a7.eot#iefix) format("embedded-opentype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_new.ad1832277e321884b923.woff) format("woff"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_new.f20fcbb8d7b3ee003060.ttf) format("truetype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_new.e076376da05b25ce0346.svg) format("svg")
+    src: url(../font/iconfont_new.eot);
+    src: url(../font/iconfont_new.eot#iefix) format("embedded-opentype"),
+         url(../font/iconfont_new.woff) format("woff"),
+         url(../font/iconfont_new.ttf) format("truetype"),
+         url(../font/iconfont_new.svg) format("svg")
 }
 
 @font-face {
     font-family: iconfont_ks;
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_ks.af6c86ec8c485d4504f4.eot);
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_ks.af6c86ec8c485d4504f4.eot?#iefix) format("embedded-opentype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_ks.69e9a434bbef8f7c40e2.woff) format("woff"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_ks.7b691f9b9f415d374317.ttf) format("truetype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/iconfont_ks.a29c0b2643dda97d458b.svg#iconfont) format("svg")
+    src: url(../font/iconfont_ks.eot);
+    src: url(../font/iconfont_ks.eot#iefix) format("embedded-opentype"),
+         url(../font/iconfont_ks.woff) format("woff"),
+         url(../font/iconfont_ks.ttf) format("truetype"),
+         url(../font/iconfont_ks.svg) format("svg")
 }
 
 .icon {
@@ -140,7 +149,7 @@ table {
 
 .icon-banana:before {
     content: "";
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_banana.55f04d8b3dc06bce4899.png) no-repeat 0;
+    background: url(../imgs/icon_banana.png) no-repeat 0;
     background-size: 14px 14px
 }
 
@@ -506,7 +515,7 @@ table {
     top: 0;
     width: 18px;
     height: 18px;
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_message.b2399d448681c212a4bf.svg);
+    background: url(../imgs/icon_message.svg);
     background-size: contain
 }
 
@@ -994,8 +1003,10 @@ table {
 
 @font-face {
     font-family: AcFun Symbol;
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/AcFunSymbol-Regular.4b27e08a42619f204707.eot);
-    src: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/AcFunSymbol-Regular.4b27e08a42619f204707.eot?#iefix) format("embedded-opentype"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/AcFunSymbol-Regular.91e4060188780dc89b10.woff) format("woff"), url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/font/AcFunSymbol-Regular.df99a0c8141d54d7a20d.ttf) format("truetype");
+    src: url(../font/AcFunSymbol-Regular.eot);
+    src: url(../font/AcFunSymbol-Regular.eot#iefix) format("embedded-opentype"),
+         url(../font/AcFunSymbol-Regular.woff) format("woff"),
+         url(../font/AcFunSymbol-Regular.ttf) format("truetype");
     font-weight: 400;
     font-style: normal
 }
@@ -1175,17 +1186,17 @@ a {
 }
 
 #main .verified-1 {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_monkey_new.4e5cb6cbc29b6fc56a22.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_monkey_new.svg) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
 #main .verified-2 {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_v.9830a4cddee7ed5c25bc.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_v.svg) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
 #main .verified-3 {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/verified-yellow.7f4a0945ce094fdc976a.png) no-repeat 50% 50%;
+    background: url(../imgs/verified-yellow.png) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
@@ -1196,7 +1207,7 @@ a {
 }
 
 #main .upVerifiedIcon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_up.260498c08f0b823da4d5.svg) no-repeat;
+    background: url(../imgs/icon_up.svg) no-repeat;
     cursor: pointer;
     background-size: 18px 18px
 }
@@ -1229,7 +1240,7 @@ a {
 }
 
 .monkey-verified-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_monkey_new.4e5cb6cbc29b6fc56a22.svg) no-repeat 100% 100%;
+    background: url(../imgs/icon_monkey_new.svg) no-repeat 100% 100%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1237,7 +1248,7 @@ a {
 }
 
 .monkey-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_monkey_new_big.ffebec427c7cf3e352aa.svg) no-repeat 100% 100%;
+    background: url(../imgs/icon_monkey_new_big.svg) no-repeat 100% 100%;
     cursor: pointer;
     background-size: 22px 22px;
     height: 22px;
@@ -1245,7 +1256,7 @@ a {
 }
 
 .official-verified-icon, .official-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_v.9830a4cddee7ed5c25bc.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_v.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1253,7 +1264,7 @@ a {
 }
 
 .official-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_v_big.6b14f321c918a291cc8d.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_v_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1268,7 +1279,7 @@ a {
 }
 
 .up-college-verified-icon, .up-college-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_up.260498c08f0b823da4d5.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_up.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1320,7 +1331,7 @@ a {
 }
 
 .up-college-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_up_big.1fe69d323e2b5015c389.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_up_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1339,7 +1350,7 @@ a {
 }
 
 .advanced-danmaku-verified-icon, .advanced-danmaku-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_gjdm.3d07c5e926358c0d61ac.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_gjdm.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1386,7 +1397,7 @@ a {
 }
 
 .advanced-danmaku-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_gjdm_big.a99bfd530398e721dc89.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_gjdm_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1406,7 +1417,7 @@ a {
 
 .avi-verified-icon, .avi-verified-large-icon {
     display: inline-block;
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_avi.38445e8a9e69abb681be.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_avi.svg) no-repeat 50% 50%;
     cursor: pointer;
     width: 18px;
     height: 18px;
@@ -1453,7 +1464,7 @@ a {
 }
 
 .avi-verified-large-icon {
-    background: url(//ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/icon_avi_big.109431007897fe500a3b.svg) no-repeat 50% 50%;
+    background: url(../imgs/icon_avi_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px

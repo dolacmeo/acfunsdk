@@ -2,9 +2,9 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" crossorigin="anonymous" href="./css/base.min.css"/>
-    <link rel="stylesheet" crossorigin="anonymous" href="./css/article.min.css"/>
+    <title>{{ title }}</title>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/article.css"/>
 </head>
 <body>
     <div id="main" class="main">
@@ -13,25 +13,25 @@
                 <div class="fl" style="width:800px">
                     <section class="art-title">
                         <div class="art-title-head">
-                            <div class="caption">Steam 2015夏季促销开始啦~</div>
+                            <div class="caption"><a href="https://www.acfun.cn/a/ac{{ articleId }}">{{ title }}</a></div>
                             <div class="art-title-census">
                                 <div class="article-parent">
-                                    <a class="art-channel">文章</a><span>&nbsp;&gt;&nbsp;</span>
-                                    <a class="sort-channel">综合</a><span>&nbsp;&gt;&nbsp;</span>
-                                    <a class="sort-channel">杂谈</a>
+                                    <a class="art-channel">{{ channel.parentName }}</a><span>&nbsp;&gt;&nbsp;</span>
+                                    <a class="sort-channel">{{ channel.name }}</a>
                                 </div>
                                 <div class="census-left">
-                                    <div class="viewcount"><span>阅读量: </span><span class="quanity">0</span></div>
-                                    <div class="comcount"><span>评论: </span><span class="quanity">0</span></div>
+                                    <div class="viewcount"><span>阅读量: </span>
+                                        <span class="quanity" title="{{ viewCount }}">{{ formatViewCount }}</span></div>
+                                    <div class="comcount"><span>评论: </span>
+                                        <span class="quanity" title="{{ commentCount }}">{{ formatCommentCount }}</span></div>
                                 </div>
                                 <div class="census-right">
                                     <div class="collectcount"><i class="icon"></i>
-                                        <span>0</span></div>
-                                    <div data-status="0" class="bananacount J_banana"><i class="icon"></i>
-                                        <span class="Jba_num">0</span></div>
+                                        <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
+                                    <div class="bananacount J_banana"><i class="icon"></i>
+                                        <span title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
                                     <div class="sharecount"><i class="icon"></i>
-                                        <div class="sharehead"><p>分享文章</p></div>
-                                    </div>
+                                        <span title="{{ shareCount }}">{{ formatShareCount }}</span></div>
                                 </div>
                             </div>
                         </div>
@@ -41,22 +41,33 @@
                     </section>
                     <section id="article-content">
                         <div id="article-up">
-                            <a class="up-cover" href="/u/39088" target="_blank"
-                               style="background-image:url(https://imgs.aixifan.com/newUpload/39088_b3f30c27e4744ff8aa124b3201bd84fa.png)"></a>
+                            <a class="up-cover" href="https://www.acfun.cn/u/{{ user.href }}" target="_blank"
+                               style="background-image:url(../../member/{{ user.href }}_avatar)"></a>
                             <div class="up-abstract">
                                 <div class="up-name">
-                                    <a href="/u/39088" target="_blank" class="upname">dolacfun</a>
+                                    <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" class="upname">{{ user.name }}</a>
                                     <div class="up-type">UP主</div>
                                 </div>
-                                <div class="up-time">刚刚</div>
+                                <div class="up-time">{{ createTimeMillis|unix2datestr }}</div>
                             </div>
-                            <div class="action-up"><a class="message-back">回复</a><a class="reportAction">举报</a></div>
+{#                            <div class="action-up"><a class="message-back">回复</a><a class="reportAction">举报</a></div>#}
                             <div id="article-answer"></div>
-                            <div id="article-tags" class="clearfix"></div>
+                            <div id="article-tags" class="clearfix">
+                                {% if parts|length > 1 %}
+                                <ul class="parts-container">
+                                {% for part in parts %}
+                                    <li data-index="{{ loop.index0 }}" class="art-part{% if loop.first %} active{% endif %}">{{ part.title }}</li>
+                                {% endfor %}
+                                </ul>
+                                <div class="showall">展开总共{{ parts|length }}Part</div>
+                                {% endif %}
+                            </div>
                             <div class="article-content">
-                                <p>Steam 2015年夏季打折将于北京时间6月12号凌晨1点开始，持续到6月23号凌晨1点。
-                                    此外热销的游戏将会与6月21号凌晨1点开始重复精选打折（Encore
-                                    Sale），持续48小时直至夏季打折结束。 也就是说马上就要开始~\(≧▽≦)/~啦啦啦</p>
+                            {% for part in parts %}
+                            <div id="content-part{{ loop.index0 }}">
+                            {{ part.content|string|safe }}
+                            </div>
+                            {% endfor %}
                             </div>
                             <div id="bd_tag" class="tag clearfix"></div>
                         </div>

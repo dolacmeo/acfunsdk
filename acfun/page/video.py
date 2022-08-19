@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup as Bs
 from acfun.source import routes
 from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
 from acfun.libs.you_get.extractors.acfun import download as you_get_download
+from acfun.saver import VideoSaver
 
 __author__ = 'dolacmeo'
 
@@ -22,13 +23,19 @@ class AcVideo:
         if isinstance(ac_num, str) and ac_num.startswith('ac'):
             ac_num = ac_num[2:]
         self.ac_num = str(ac_num)
-        self.referer = f"{routes['video']}{ac_num}"
+        self.part_num = 1
         self.acer = acer
         if isinstance(video_data, dict):
             self.video_data = video_data
-        self.loading()
         if "_" in self.ac_num:
-            self.set_video(int(self.ac_num.split('_')[-1]))
+            self.ac_num, self.part_num = self.ac_num.split('_')
+        self.loading()
+
+    @property
+    def referer(self):
+        if int(self.part_num) == 1:
+            return f"{routes['video']}{self.ac_num}"
+        return f"{routes['video']}{self.ac_num}_{self.part_num}"
 
     def __repr__(self):
         title = self.video_data.get('title', "")
@@ -39,7 +46,7 @@ class AcVideo:
         return f"AcVideo([ac{self.ac_num}]{duration_txt}{title}{user_txt})".encode(errors='replace').decode()
 
     def loading(self):
-        req = self.acer.client.get(routes['video'] + self.ac_num)
+        req = self.acer.client.get(self.referer)
         self.page_obj = Bs(req.text, 'lxml')
         js_code = self.page_obj.select_one("#pagelet_newheader").find_next_sibling("script").text.strip().split('\n')[0]
         self.video_data = js2py.eval_js(js_code).to_dict()
@@ -47,15 +54,17 @@ class AcVideo:
         self.vid = self.video_data.get("currentVideoId")
         self.page_pagelets = get_page_pagelets(self.page_obj)
 
+    def saver(self):
+        return VideoSaver(self.acer, self)
+
     @property
     def video_list(self):
         return self.video_data.get('videoList', [])
 
     def set_video(self, num=1):
-        if num > len(self.video_list):
-            return False
-        self.vid = self.video_list[num - 1]['id']
-        self.video_data.update({'currentVideoId': self.vid})
+        assert num <= len(self.video_list)
+        self.part_num = num
+        self.loading()
         return True
 
     def download(self, num=1):

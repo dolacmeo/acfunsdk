@@ -2,9 +2,88 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ title }}</title>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
 </head>
 <body>
+<div id="main" class="single-part">
+    <div id="main-content" class="clearfix" style="margin: 0 auto;">
+        <div class="left-column">
+            <div class="player-box">
+                <div id="player">
+                    <div id="ACPlayer">
+                        <div class="container-player" style="">
+                            <div class="container-video">
+                                <video preload="auto" controls>
+                                    <source src="ac{{ v_num }}.mp4" type="video/mp4">
+                                </video>
+                                <div class="container-plugins-inner">
+                                    <div class="video-status" data-bind-key="playStatus" data-bind-attr="pause"></div>
+                                </div>
+                            </div>
+                            <div class="container-plugins-outer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="video-description clearfix dark-style">
+                <h1 class="title"><a href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a></h1>
+                <div class="action-area">
+                    <div class="left-area">
+                        <div class="views"><span class="viewsCount" title="{{ viewCount }}">{{ viewCountShow }}</span>播放</div>
+                        <div class="danmu"><span class="danmuCount sp2" title="{{ danmakuCount }}">{{ danmakuCountShow }}</span>弹幕</div>
+                        <div class="comment"><span class="commentCount" title="{{ commentCount }}">{{ commentCountShow }}</span>评论</div>
+                    </div>
+                    <div class="right-area">
+                        <div class="like"><span class="icon"></span><span class="likeCount" title="{{ likeCount }}">{{ likeCountShow }}</span></div>
+                        <div class="collection"><span class="icon"></span><span class="collectionCount" title="{{ stowCount }}">{{ stowCountShow }}</span></div>
+                        <div class="banana"><span class="icon"></span><span class="bananaCount" title="{{ bananaCount }}">{{ bananaCountShow }}</span></div>
+                        <div class="share"><span class="icon"></span><span title="{{ shareCount }}">{{ shareCountShow }}</span></div>
+                        <div class="mobile" style="display: inline-block;"><span class="icon"></span></div>
+                        <div class="more-action">
+                            <div class="report"><a class="report-btn">举报视频</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="introduction">
+                <div class="up-area">
+                    <div class="up-details">
+                        <a href="https://www.acfun.cn/u/{{ user.href }}" class="up-avatar up-avatar-wrapper" target="_blank">
+                            <img src="../../member/{{ user.href }}_avatar" class="avatar live-avatar">
+                        </a>
+                        <div class="up-data">
+                            <div class="up-info">
+                                <a class="up-name"{% if user.nameColor == 1 %} style="color: #FD4C5C"{% endif %}
+                                   href="https://www.acfun.cn/u/{{ user.href }}" target="_blank">{{ user.name }}</a>
+                            </div>
+                            <div class="publish-time">发布于&nbsp;{{ createTimeMillis|unix2datestr }}</div>
+                        </div>
+                    </div>
+                    <div class="up-interactive">
+                        <div class="follow-up not-follow" title="{{ fanCountValue }}">关注&nbsp;{{ user.fanCount }}</div>
+{#                        <div class="btn-reward">鼓励</div>#}
+                    </div>
+                </div>
+                <div class="content-description">
+                    <div class="description-container">{{ description }}</div>
+                    <div class="originalLink">{{ originalLinkUrl }}</div>
+                    <div class="tag" id="bd_tag">
+                        {% for tag in tagList %}
+                        <span class="tag-single fl">
+                            <a href="https://www.acfun.cn/search?keyword={{ tag.name }}" data-tid="{{ tag.id }}" target="_blank" class="fl">{{ tag.name }}</a>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-column">
 
+        </div>
+    </div>
+</div>
 </body>
 </html>

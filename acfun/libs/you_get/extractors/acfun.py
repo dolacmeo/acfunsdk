@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from urllib.parse import urlparse
 from ..common import *
 from ..extractor import VideoExtractor
 
@@ -22,9 +22,12 @@ class AcFun(VideoExtractor):
 
         if re.match(r'https?://[^\.]*\.*acfun\.[^\.]+/\D/\D\D(\d+)', self.url):
             html = get_content(self.url, headers=fake_headers)
+            url_path = urlparse(self.url).path.split('/')
             json_text = match1(html, r"(?s)videoInfo\s*=\s*(\{.*?\});")
             json_data = json.loads(json_text)
             ac_num = json_data.get('dougaId')
+            if ac_num != url_path[-1]:
+                ac_num = url_path[-1]
             vid = json_data.get('currentVideoInfo').get('id')
             up = json_data.get('user').get('name')
             self.title = json_data.get('title')
@@ -70,7 +73,7 @@ class AcFun(VideoExtractor):
         if p_title:
             self.title = '%s - %s' % (self.title, p_title)
         else:
-            self.title = "ac%s" % ac_num
+            self.title = ac_num
             # self.title = '%s (%s)' % (self.title, up)
 
 

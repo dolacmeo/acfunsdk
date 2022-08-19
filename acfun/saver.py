@@ -8,8 +8,9 @@ from uuid import uuid4
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup as Bs
 from .page.utils import downloader
-from .source import apis
+from .source import routes, apis
 from jinja2 import PackageLoader, Environment
+from acfun.libs.you_get.extractors.acfun import download as you_get_download
 
 __author__ = 'dolacmeo'
 
@@ -42,7 +43,10 @@ class AcSaver:
 
     def _setup_folder(self):
         folder_path = os.path.join(self.dest_path, self.folder_name, f"ac{self.ac_obj.ac_num}")
-        os.makedirs(os.path.join(folder_path, 'imgs'), exist_ok=True)
+        if self.folder_name in ["article", "moment", "video", "bangumi"]:
+            os.makedirs(os.path.join(folder_path, 'imgs'), exist_ok=True)
+        else:
+            os.makedirs(folder_path, exist_ok=True)
         return folder_path
 
     def _renew_folder(self, abs_path: str):
@@ -102,7 +106,9 @@ class AcSaver:
 
     def _json_saver(self, data: dict, filename: str, dest_path=None):
         folder_path = self._setup_folder()
-        json_path = os.path.join(self.dest_path, dest_path or folder_path, filename)
+        json_path = os.path.join(self.dest_path, folder_path, filename)
+        if dest_path is not None:
+            json_path = os.path.join(dest_path, filename)
         with open(json_path, 'w') as json_file:
             json.dump(data, json_file, separators=(',', ':'))
         return os.path.isfile(json_path)
@@ -118,9 +124,15 @@ class AcSaver:
         }
         return self._json_saver(comment_data, f"comment.json")
 
-    def _save_danmaku(self):
+    def _save_danmaku(self, num: int = 1):
+        assert num <= len(self.ac_obj.video_list)
+        v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
+        self.ac_obj.set_video(num)
         danmaku_obj = self.ac_obj.danmaku()
-        return self._json_saver(danmaku_obj.danmaku_data, f"danmaku.json")
+        folder_path = self._setup_folder()
+        danmaku_path = os.path.join(folder_path, 'danmaku')
+        os.makedirs(danmaku_path, exist_ok=True)
+        return self._json_saver(danmaku_obj.danmaku_data, f"{v_num}.json", danmaku_path)
 
 
 class ArticleSaver(AcSaver):
@@ -160,8 +172,26 @@ class MomentSaver(AcSaver):
 
 class VideoSaver(AcSaver):
 
-    def _save_video(self):
-        pass
+    def __init__(self, acer, ac_obj):
+        super().__init__(acer, ac_obj)
+
+    def _save_video(self, num: int = 1):
+        assert num <= len(self.ac_obj.video_list)
+        v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
+        self._save_member([self.ac_obj.video_data['user']['id']])
+        folder_path = self._setup_folder()
+        video_raw_saved = self._json_saver(self.ac_obj.video_data, f"video.json")
+        acfun_url = f"{routes['video']}{v_num}"
+        you_get_download(acfun_url, output_dir=folder_path, merge=True)
+        video_saved = os.path.isfile(os.path.join(folder_path, f"{v_num}.mp4"))
+        video_template = self.templates.get_template('video.html')
+        video_html = video_template.render(v_num=v_num, **self.ac_obj.video_data)
+        html_path = os.path.join(self.dest_path, folder_path, f"ac{v_num}.html")
+        with open(html_path, 'wb') as html_file:
+            html_file.write(video_html.encode())
+        video_html_saved = os.path.isfile(html_path)
+        video_danmaku_saved = self._save_danmaku(num)
+        return all([video_raw_saved, video_html_saved, video_saved, video_danmaku_saved])
 
     pass
 

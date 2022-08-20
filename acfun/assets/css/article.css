@@ -1,9 +1,3 @@
-.contentBox {
-    width: 800px;
-    padding-top: 50px;
-    margin: 0 auto
-}
-
 .art-title-head {
     width: 100%;
     border-bottom: 1px solid #eee;
@@ -23,7 +17,7 @@
 
 .art-title-head .art-title-census {
     width: 100%;
-    margin-bottom: 20px
+    margin-bottom: 14px
 }
 
 .art-title-head .art-title-census div {
@@ -67,38 +61,94 @@
     width: auto;
     height: 20px;
     line-height: 20px;
-    margin: 0 20px;
+    /*margin: 0 20px;*/
     cursor: pointer
 }
 
-.art-title-head .art-title-census .census-right .bananacount, .art-title-head .art-title-census .census-right .collectcount, .art-title-head .art-title-census .census-right .sharecount {
-    min-width: 48px;
-    height: 20px
+.art-title-head .art-title-census .census-right {
+    float: right;
+    margin-right: 0;
+    margin-top: -5px;
+    margin-bottom: 3px
 }
 
-.art-title-head .art-title-census .census-right .bananacount i, .art-title-head .art-title-census .census-right .collectcount i, .art-title-head .art-title-census .census-right .sharecount i {
-    width: 20px;
-    height: 20px;
+.art-title-head .art-title-census .census-right > div {
+    min-width: 48px;
+    height: 30px;
+    cursor: pointer
+}
+
+.art-title-head .art-title-census .census-right > div i {
+    width: 30px;
+    height: 30px;
     background-repeat: no-repeat;
     background-size: 100% 100%;
-    margin-right: 8px;
+    margin-right: 4px;
     display: inline-block
 }
 
+.art-title-head .art-title-census .census-right > div span {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 30px;
+    height: 30px
+}
+
+.art-title-head .art-title-census .census-right .likecount .icon {
+    background-image: url(../img/frame1.svg);
+    background-position: 0;
+    background-size: cover;
+    background-origin: content-box;
+    background-repeat: no-repeat
+}
+
+@-webkit-keyframes like_action_1 {
+    0% {
+        background-image: url(../img/likeFrames.png);
+        background-position: 0
+    }
+    to {
+        background-image: url(../img/likeFrames.png);
+        background-position: 100%
+    }
+}
+
+.art-title-head .art-title-census .census-right .likecount .icon.action {
+    -webkit-animation: like_action_1 495ms steps(11) 0s 1 normal forwards;
+    animation: like_action_1 495ms steps(11) 0s 1 normal forwards
+}
+
+.art-title-head .art-title-census .census-right .likecount.active, .art-title-head .art-title-census .census-right .likecount:hover {
+    color: #fd4c5c
+}
+
+.art-title-head .art-title-census .census-right .likecount.active .icon, .art-title-head .art-title-census .census-right .likecount:hover .icon {
+    background-image: url(../img/frame12.svg)
+}
+
 .art-title-head .art-title-census .census-right .collectcount {
-    margin-left: 30px
+    margin-left: 20px
 }
 
 .art-title-head .art-title-census .census-right .collectcount .icon {
-    background-image: url(../img/collect.png)
+    background-image: url(../img/icon_follow.svg)
 }
 
-.art-title-head .art-title-census .census-right .collectcount.active .icon {
-    background-image: url(../img/collected.png)
+.art-title-head .art-title-census .census-right .collectcount.active, .art-title-head .art-title-census .census-right .collectcount:hover {
+    color: #fd4c5c
 }
 
-.art-title-head .art-title-census .census-right .bananacount.active .icon {
-    background-image: url(../img/bananad.png)
+.art-title-head .art-title-census .census-right .collectcount.active .icon, .art-title-head .art-title-census .census-right .collectcount:hover .icon {
+    background-image: url(../img/icon_follow_hover.svg)
+}
+
+.art-title-head .art-title-census .census-right .bananacount.active, .art-title-head .art-title-census .census-right .bananacount:hover {
+    color: #ffba0d
+}
+
+.art-title-head .art-title-census .census-right .bananacount.active .icon, .art-title-head .art-title-census .census-right .bananacount:hover .icon {
+    background-image: url(../img/icon_banana_hover.svg)
 }
 
 .art-title-head .art-title-census .census-right .bananacount {
@@ -109,7 +159,25 @@
 }
 
 .art-title-head .art-title-census .census-right .bananacount .icon {
-    background-image: url(../img/banana.png)
+    background-image: url(../img/icon_banana.svg)
+}
+
+.art-title-head .art-title-census .census-right .bananacount .div-banana {
+    margin-left: -135px !important;
+    top: 37px !important
+}
+
+.art-title-head .art-title-census .census-right .bananacount .div-banana .text span {
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 30px;
+    height: 30px;
+    margin-top: -3px
+}
+
+.art-title-head .art-title-census .census-right .bananacount .div-banana:after {
+    top: -13px;
+    left: 101px
 }
 
 .art-title-head .art-title-census .census-right .sharecount {
@@ -118,21 +186,28 @@
 }
 
 .art-title-head .art-title-census .census-right .sharecount .icon {
-    background-image: url(../img/share.png)
+    background-image: url(../img/icon_share.svg)
+}
+
+.art-title-head .art-title-census .census-right .sharecount:hover {
+    color: #7ed321
+}
+
+.art-title-head .art-title-census .census-right .sharecount:hover .icon {
+    background-image: url(../img/icon_share_hover.svg)
 }
 
 .art-title-head .art-title-census .census-right .sharecount .sharehead {
     display: none;
     position: absolute;
-    width: 186px;
-    height: 70px;
-    padding: 25px 30px 30px;
-    top: 32px;
-    border-radius: 4px;
-    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, .3);
+    width: 380px;
+    height: 237px;
+    top: 37px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
     background-color: #fff;
     margin-left: 0;
-    left: -40px;
+    left: -93px;
     z-index: 2
 }
 
@@ -142,13 +217,18 @@
 
 .art-title-head .art-title-census .census-right .sharecount .sharehead:before {
     content: "";
-    width: 23px;
-    height: 10px;
+    width: 0;
+    height: 0;
     position: absolute;
-    display: inline-block;
-    left: 40px;
-    top: -10px;
-    background: url(../img/trg.png) no-repeat
+    top: -13px;
+    left: 101px;
+    border: 7px solid transparent;
+    border-bottom-color: #fe5c5e
+}
+
+.art-title-head .art-title-census .census-right .sharecount .sharehead .share-action-area .share-right-area {
+    width: 160px;
+    padding-left: 16px
 }
 
 #article-content .article-content {
@@ -199,7 +279,7 @@
     vertical-align: text-bottom
 }
 
-#article-content .article-content img.ubb-emotion[data-pkgname=AC濞樿糠浣犵増] {
+#article-content .article-content img.ubb-emotion[data-pkgname=AC娘迷你版] {
     width: 26px;
     height: 26px
 }
@@ -224,7 +304,8 @@
     display: inline;
     white-space: normal !important;
     word-break: break-all;
-    word-wrap: break-word
+    word-wrap: break-word;
+    vertical-align: baseline
 }
 
 #article-content .article-content h1 {
@@ -390,106 +471,168 @@
 }
 
 #article-content #article-operation {
-    margin: 40px 0 20px;
-    width: 100%
+    margin-top: 40px;
+    margin-bottom: 21px
 }
 
-#article-content #article-operation .share-more {
-    width: 55px;
-    height: 30px;
-    margin: 0;
-    text-align: center;
-    color: #666;
-    font-size: 12px;
-    line-height: 30px
-}
-
-#article-content #article-operation .bdshare {
-    float: right;
-    width: auto;
-    margin: 0;
-    padding: 0
-}
-
-#article-content #article-operation #art-operate {
-    width: 400px;
-    float: left;
-    height: 36px
-}
-
-#article-content #article-operation #art-operate div {
+#article-content #article-operation > div {
     display: inline-block;
-    vertical-align: middle
+    cursor: pointer;
+    min-width: 48px;
+    height: 30px
 }
 
-#article-content #article-operation #art-operate div .div-banana span {
-    line-height: 27px
+#article-content #article-operation > div i {
+    width: 30px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    margin-right: 4px;
+    display: inline-block
 }
 
-#article-content #article-operation #art-operate div .banana, #article-content #article-operation #art-operate div .collect {
-    height: 36px;
-    font-size: 12px;
-    line-height: 36px;
-    color: #333
+#article-content #article-operation > div span {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 30px;
+    height: 30px
 }
 
-#article-content #article-operation #art-operate .img {
-    width: 20px;
-    height: 20px;
-    margin-left: 8px;
-    margin-top: 8px
+#article-content #article-operation .likecount .icon {
+    background-image: url(../img/frame1.svg);
+    background-position: 0;
+    background-size: cover;
+    background-origin: content-box;
+    background-repeat: no-repeat
 }
 
-#article-content #article-operation #art-operate .art-collect .icon .img {
-    background: url(../img/collect1.png) no-repeat
+@keyframes like_action_1 {
+    0% {
+        background-image: url(../img/likeFrames.png);
+        background-position: 0
+    }
+    to {
+        background-image: url(../img/likeFrames.png);
+        background-position: 100%
+    }
 }
 
-#article-content #article-operation #art-operate .art-collect.active .icon {
-    background-color: silver
+#article-content #article-operation .likecount .icon.action {
+    -webkit-animation: like_action_1 495ms steps(11) 0s 1 normal forwards;
+    animation: like_action_1 495ms steps(11) 0s 1 normal forwards
 }
 
-#article-content #article-operation #art-operate .art-banana .icon .img:hover, #article-content #article-operation #art-operate .art-collect .icon .img:hover {
-    animation: pulse 1s ease .2s 2 both;
-    -webkit-animation: pulse 1s ease .2s 2 both
+#article-content #article-operation .likecount.active, #article-content #article-operation .likecount:hover {
+    color: #fd4c5c
 }
 
-#article-content #article-operation #art-operate .art-banana .icon .img {
-    background: url(../img/banana1.png) no-repeat
+#article-content #article-operation .likecount.active .icon, #article-content #article-operation .likecount:hover .icon {
+    background-image: url(../img/frame12.svg)
 }
 
-#article-content #article-operation #art-operate .icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    margin-right: 8px;
-    cursor: pointer
+#article-content #article-operation .collectcount {
+    margin-left: 20px
 }
 
-#article-content #article-operation #art-operate .art-collect .icon {
-    background-color: #ff7600
+#article-content #article-operation .collectcount .icon {
+    background-image: url(../img/icon_follow.svg)
 }
 
-#article-content #article-operation #art-operate .art-collect .collect {
-    vertical-align: middle
+#article-content #article-operation .collectcount.active, #article-content #article-operation .collectcount:hover {
+    color: #fd4c5c
 }
 
-#article-content #article-operation #art-operate .art-banana {
-    margin-left: 38px;
-    position: relative
+#article-content #article-operation .collectcount.active .icon, #article-content #article-operation .collectcount:hover .icon {
+    background-image: url(../img/icon_follow_hover.svg)
 }
 
-#article-content #article-operation #art-operate .art-banana .icon {
-    background-color: #ffb740
+#article-content #article-operation .bananacount.active, #article-content #article-operation .bananacount:hover {
+    color: #ffba0d
 }
 
-#article-content #article-operation #art-operate .art-banana.active .icon {
-    background: silver
+#article-content #article-operation .bananacount.active .icon, #article-content #article-operation .bananacount:hover .icon {
+    background-image: url(../img/icon_banana_hover.svg)
+}
+
+#article-content #article-operation .bananacount {
+    height: auto;
+    position: relative;
+    margin-left: 0;
+    padding-left: 20px
+}
+
+#article-content #article-operation .bananacount .icon {
+    background-image: url(../img/icon_banana.svg)
+}
+
+#article-content #article-operation .bananacount .div-banana {
+    margin-left: -95px !important;
+    top: 37px !important
+}
+
+#article-content #article-operation .bananacount .div-banana .text span {
+    vertical-align: middle;
+    font-size: 14px;
+    line-height: 30px;
+    height: 30px;
+    margin-top: -3px
+}
+
+#article-content #article-operation .bananacount .div-banana:after {
+    top: -13px;
+    left: 101px
+}
+
+#article-content #article-operation .sharecount {
+    position: relative;
+    margin-left: 20px
+}
+
+#article-content #article-operation .sharecount .icon {
+    background-image: url(../img/icon_share.svg)
+}
+
+#article-content #article-operation .sharecount:hover {
+    color: #7ed321
+}
+
+#article-content #article-operation .sharecount:hover .icon {
+    background-image: url(../img/icon_share_hover.svg)
+}
+
+#article-content #article-operation .sharecount .sharehead {
+    display: none;
+    position: absolute;
+    width: 380px;
+    height: 237px;
+    top: 37px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
+    background-color: #fff;
+    margin-left: 0;
+    left: -93px;
+    z-index: 2
+}
+
+#article-content #article-operation .sharecount .sharehead.active {
+    display: block
+}
+
+#article-content #article-operation .sharecount .sharehead:before {
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: -13px;
+    left: 101px;
+    border: 7px solid transparent;
+    border-bottom-color: #fe5c5e
 }
 
 #article-content #bd_tag {
     width: 100%;
-    margin-bottom: 30px;
-    margin-top: 40px
+    margin-bottom: 30px
 }
 
 #article-content #bd_tag .tag-single {
@@ -707,4 +850,553 @@
 section div i, section div span {
     display: inline-block;
     vertical-align: middle
+}
+
+.article-up {
+    position: relative
+}
+
+.article-up .live-decoration {
+    width: 52px;
+    height: 52px;
+    padding: 2px;
+    position: absolute;
+    left: -3px;
+    top: -3px
+}
+
+.article-up .live-decoration:before {
+    border: 2px solid #fd4c5d
+}
+
+.article-up .live-decoration-circle {
+    border-width: 1px
+}
+
+.article-up .live-decoration .live-icon .live-status-animate img {
+    width: 12px;
+    height: 12px;
+    position: relative;
+    left: 0;
+    bottom: 0
+}
+
+@-webkit-keyframes circle {
+    0% {
+        opacity: 1
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: .25
+    }
+    75% {
+        opacity: 0
+    }
+    to {
+        opacity: 0
+    }
+}
+
+@keyframes circle {
+    0% {
+        opacity: 1
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: .25
+    }
+    75% {
+        opacity: 0
+    }
+    to {
+        opacity: 0
+    }
+}
+
+.article-up .live-decoration .live-circle-animate {
+    -webkit-animation-name: circle;
+    animation-name: circle;
+    -webkit-animation-duration: 1.2s;
+    animation-duration: 1.2s;
+    -webkit-animation-direction: normal;
+    animation-direction: normal;
+    -webkit-animation-timing-function: ease-in;
+    animation-timing-function: ease-in;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    transform-origin: center
+}
+
+#up-info {
+    width: 240px;
+    border: 1px solid #eee;
+    padding: 19px;
+    background-color: #fafafa
+}
+
+#up-info .up-detail {
+    position: relative;
+    width: 100%;
+    height: 60px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex
+}
+
+#up-info .up-detail a {
+    display: inline-block;
+    text-decoration: none;
+    vertical-align: middle
+}
+
+#up-info .up-detail .upcover {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    margin-right: 10px
+}
+
+#up-info .up-detail .upname {
+    width: 170px;
+    margin-top: 7px;
+    display: inline-block
+}
+
+#up-info .up-detail .upname .name {
+    max-width: 142px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    float: left
+}
+
+#up-info .up-detail .upname .desc {
+    padding-top: 8px;
+    width: 100%;
+    height: 12px;
+    font-size: 12px;
+    line-height: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #999
+}
+
+#up-info .up-detail .live-decoration {
+    width: 52px;
+    height: 52px;
+    padding: 2px;
+    position: absolute;
+    left: -3px;
+    top: -3px
+}
+
+#up-info .up-detail .live-decoration:before {
+    border: 2px solid #fd4c5d
+}
+
+#up-info .up-detail .live-decoration-circle {
+    border-width: 1px
+}
+
+#up-info .up-detail .live-decoration .live-icon .live-status-animate img {
+    width: 12px;
+    height: 12px;
+    position: relative;
+    left: 0;
+    bottom: 0
+}
+
+@-webkit-keyframes circle {
+    0% {
+        opacity: 1
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: .25
+    }
+    75% {
+        opacity: 0
+    }
+    to {
+        opacity: 0
+    }
+}
+
+@keyframes circle {
+    0% {
+        opacity: 1
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: .25
+    }
+    75% {
+        opacity: 0
+    }
+    to {
+        opacity: 0
+    }
+}
+
+#up-info .up-detail .live-decoration .live-circle-animate {
+    -webkit-animation-name: circle;
+    animation-name: circle;
+    -webkit-animation-duration: 1.2s;
+    animation-duration: 1.2s;
+    -webkit-animation-direction: normal;
+    animation-direction: normal;
+    -webkit-animation-timing-function: ease-in;
+    animation-timing-function: ease-in;
+    -webkit-animation-iteration-count: infinite;
+    animation-iteration-count: infinite;
+    transform-origin: center
+}
+
+#up-info .up-census {
+    padding: 20px 0;
+    text-align: center
+}
+
+#up-info .up-census li {
+    display: inline-block;
+    vertical-align: middle;
+    width: 54px
+}
+
+#up-info .up-census li .count {
+    height: 18px;
+    font-size: 18px;
+    line-height: 18px;
+    color: #333;
+    text-align: center;
+    white-space: nowrap
+}
+
+#up-info .up-census li .type {
+    height: 12px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 12px;
+    margin-top: 6px;
+    color: #999
+}
+
+#up-info .up-census .focus {
+    margin: 0 20px
+}
+
+#up-info .up-operate {
+    width: 100%;
+    height: 30px;
+    text-align: center
+}
+
+#up-info .up-operate div.focus {
+    background-color: #fd4c5d;
+    color: #fff;
+    margin-right: 10px
+}
+
+#up-info .up-operate div.alfocus {
+    background-color: #999
+}
+
+#up-info .up-operate a.mail {
+    color: #555;
+    border: 1px solid #e2e2e2
+}
+
+#up-info .up-operate a, #up-info .up-operate div {
+    display: inline-block;
+    vertical-align: middle;
+    width: 110px;
+    height: 30px;
+    text-align: center;
+    border-radius: 100px;
+    font-size: 14px;
+    line-height: 30px;
+    background-color: #fff;
+    cursor: pointer
+}
+.up-contributions {
+    padding-top: 40px
+}
+
+.up-contributions .ctb-title {
+    font-size: 20px;
+    line-height: 20px;
+    text-align: left;
+    color: #333
+}
+
+.up-contributions .ctb-head {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e6e6e6;
+    position: relative
+}
+
+.up-contributions .ctb-head .showall {
+    position: absolute;
+    width: 50px;
+    height: 14px;
+    right: 0;
+    top: 2px;
+    font-size: 14px;
+    line-height: 14px;
+    bottom: 0
+}
+
+.up-contributions .ctb-head .showall:after {
+    content: "";
+    width: 6px;
+    height: 10px;
+    display: inline-block;
+    background: url(../img/right.png) no-repeat;
+    background-size: 100% 100%;
+    margin-left: 5px
+}
+.contribution {
+    margin-top: 20px;
+    overflow: hidden
+}
+
+.contribution .relate-title a {
+    display: inline-block;
+    text-align: left;
+    text-decoration: none
+}
+
+.contribution .tit {
+    font-size: 14px;
+    line-height: 22px;
+    color: #555;
+    word-wrap: break-word
+}
+
+.contribution .relate-total div {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative
+}
+
+.contribution .view {
+    width: 14px;
+    height: 12px;
+    margin-right: 5px;
+    background: url(../img/view.png) no-repeat;
+    background-size: 100% 100%
+}
+
+.contribution .num {
+    font-size: 12px;
+    line-height: 12px;
+    color: #999;
+    text-align: left
+}
+
+.contribution .comm {
+    width: 14px;
+    height: 12px;
+    margin-right: 6px;
+    background: url(../img/comm.png) no-repeat;
+    background-size: 100% 100%
+}
+
+.contribution .comm-total {
+    margin-left: 20px
+}
+
+.contribution .contb-count {
+    margin-top: 6px;
+    margin-right: 20px
+}
+
+.contribution .contb-count div {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    height: 12px
+}
+
+.contribution .comm-count {
+    margin-left: 20px
+}
+
+.contribution .comm-count .count {
+    width: auto;
+    min-width: 24px;
+    height: 12px
+}
+
+.contribution div,.contribution i,.contribution span {
+    vertical-align: top
+}
+
+.contribution i {
+    display: inline-block
+}
+
+.div-banana {
+    top: 38px;
+    position: absolute;
+    z-index: 1;
+    display: none;
+    margin-left: -145px;
+    width: 240px;
+    height: 56px;
+    padding: 20px 40px 10px;
+    background: url(../img/BananaCard.svg) no-repeat 100% 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
+    border-radius: 5px
+}
+
+.div-banana:after {
+    content: "";
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: -14px;
+    left: 155px;
+    border: 7px solid transparent;
+    border-bottom-color: #fe5c5e
+}
+
+.div-banana .text span {
+    max-width: 104px;
+    position: relative;
+    top: 0;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    vertical-align: top;
+    text-align: left;
+    height: 14px;
+    line-height: 14px
+}
+
+.bananaer {
+    background: url(../img/icon_bananaer_fl.svg) 50% no-repeat;
+    width: 32px;
+    height: 32px;
+    margin-right: 20px;
+    cursor: pointer
+}
+
+.bananaer.active {
+    -webkit-animation: pulse .5s ease .2s both;
+    animation: pulse .5s ease .2s both;
+    background: url(../img/icon_banana_active.svg) 50% no-repeat
+}
+
+.bananaer:nth-child(5) {
+    margin-right: 0
+}
+
+span.text {
+    margin-top: 2px;
+    width: 100%;
+    height: 14px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 14px;
+    color: #fff
+}
+
+.sharehead div.share-title {
+    width: 100%;
+    height: 60px;
+    font-size: 16px;
+    line-height: 60px;
+    color: #fff;
+    text-indent: 30px;
+    background: url(../img/ShareCard.svg) no-repeat;
+    background-size: 100% 100%
+}
+
+.sharehead div.share-action-area {
+    width: 324px;
+    height: 137px;
+    padding: 20px 28px;
+    color: #000000;
+}
+
+.sharehead div.share-action-area > div {
+    display: inline-block;
+    vertical-align: middle
+}
+
+.sharehead div.share-action-area .share-left-area {
+    width: 102px;
+    margin-right: 28px
+}
+
+.sharehead div.share-action-area .share-left-area .qrcode {
+    width: 98px;
+    height: 98px;
+    margin: 0 auto
+}
+
+.sharehead div.share-action-area .share-left-area .qrcode img {
+    width: 98px;
+    height: 98px
+}
+
+.sharehead div.share-action-area .share-left-area p {
+    font-size: 12px;
+    color: #333;
+    line-height: 12px;
+    margin-top: 6px;
+    text-align: center
+}
+
+.sharehead div.share-action-area .share-left-area p.scan {
+    margin-top: 9px
+}
+
+.sharehead div.share-action-area .share-right-area {
+    width: 185px;
+    height: 40px;
+    margin-bottom: 20px
+}
+
+.sharehead div.share-action-area .share-right-area .share-type {
+    text-align: center
+}
+
+.sharehead div.share-action-area .share-right-area .share-type a {
+    width: 40px;
+    height: 40px;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    margin-left: 20px;
+    display: inline-block
+}
+
+.sharehead div.share-action-area .share-right-area .share-type a:first-child {
+    margin-left: 0
+}
+
+.sharehead div.share-action-area .share-right-area .share-type a.bds_tieba {
+    background-image: url(../img/icon_share_bdtb.svg)
+}
+
+.sharehead div.share-action-area .share-right-area .share-type a.weibo {
+    background-image: url(../img/icon_share_wb.svg)
+}
+
+.sharehead div.share-action-area .share-right-area .share-type a.qzone {
+    background-image: url(../img/icon_share_qqkl.svg)
+}
+
+.sharecount:hover .sharehead{
+    display: block !important;
 }

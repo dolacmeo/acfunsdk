@@ -199,15 +199,20 @@ class ArticleSaver(AcSaver):
     def _save_content(self):
         self._save_member([self.ac_obj.article_data['user']['id']])
         folder_path = self._setup_folder()
+        v_num = f"{self.ac_obj.ac_num}"
+        up_data = self.get_user(self.ac_obj.article_data['user']['id'])
         content_raw_saved = self._json_saver(self.ac_obj.article_data, f"content.json")
         article_template = self.templates.get_template('article.html')
-        article_html = article_template.render(**self.ac_obj.article_data)
+        article_html = article_template.render(
+            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
+            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
+            v_num=v_num, up_data=up_data, **self.ac_obj.article_data)
         html_obj = Bs(article_html, 'lxml')
-        html_imgs_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
+        html_img_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
         self._renew_folder(os.path.join(folder_path, 'img'))
         for img in html_obj.select('img'):
             if img.attrs['src'].startswith('http') or img.attrs['src'].startswith('//'):
-                saved_path = self._save_images(img.attrs['src'], ex_dir=html_imgs_path)
+                saved_path = self._save_images(img.attrs['src'], ex_dir=html_img_path)
                 img.attrs['alt'] = img.attrs['src']
                 img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
         comment_saved = self._save_comment()
@@ -215,7 +220,12 @@ class ArticleSaver(AcSaver):
         with open(html_path, 'wb') as html_file:
             html_file.write(html_obj.prettify().encode())
         content_html_saved = os.path.isfile(html_path)
-        return all([content_raw_saved, comment_saved, content_html_saved])
+        cover_path = self._save_images(self.ac_obj.article_data['coverUrl'], 'cover',
+                                       [self.folder_name, f"ac{self.ac_obj.ac_num}"])
+        cover_saved = os.path.isfile(cover_path)
+        share_qrcode_path = self._save_qrcode()
+        share_qrcode_saved = os.path.isfile(share_qrcode_path)
+        return all([content_raw_saved, comment_saved, cover_saved, share_qrcode_saved, content_html_saved])
 
     pass
 
@@ -240,7 +250,7 @@ class VideoSaver(AcSaver):
         folder_path = self._setup_folder()
         video_raw_saved = self._json_saver(self.ac_obj.video_data, f"video.json")
         acfun_url = f"{routes['video']}{v_num}"
-        # you_get_download(acfun_url, output_dir=folder_path, merge=True)
+        you_get_download(acfun_url, output_dir=folder_path, merge=True)
         video_saved = os.path.isfile(os.path.join(folder_path, f"{v_num}.mp4"))
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(

@@ -8,76 +8,221 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
 </head>
 <body>
-    <div id="main" class="main">
-        <section class="clearfix contentBox">
-            <div class="content clearfix">
-                <div class="fl" style="width:800px">
-                    <section class="art-title">
-                        <div class="art-title-head">
-                            <div class="caption"><a href="https://www.acfun.cn/a/ac{{ articleId }}">{{ title }}</a></div>
-                            <div class="art-title-census">
-                                <div class="article-parent">
-                                    <a class="art-channel">{{ channel.parentName }}</a><span>&nbsp;&gt;&nbsp;</span>
-                                    <a class="sort-channel">{{ channel.name }}</a>
-                                </div>
-                                <div class="census-left">
-                                    <div class="viewcount"><span>阅读量: </span>
-                                        <span class="quanity" title="{{ viewCount }}">{{ formatViewCount }}</span></div>
-                                    <div class="comcount"><span>评论: </span>
-                                        <span class="quanity" title="{{ commentCount }}">{{ formatCommentCount }}</span></div>
-                                </div>
-                                <div class="census-right">
-                                    <div class="collectcount"><i class="icon"></i>
-                                        <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
-                                    <div class="bananacount J_banana"><i class="icon"></i>
-                                        <span title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
-                                    <div class="sharecount"><i class="icon"></i>
-                                        <span title="{{ shareCount }}">{{ formatShareCount }}</span></div>
+<div id="main" class="main">
+    <section class="clearfix area contentBottom wp">
+        <div class="clearfix wp area head"></div>
+        <div class="content wp clearfix area">
+            <div class="fl" style="width:800px;">
+                <section class="art-title">
+                    <div class="art-title-head">
+                        <div class="caption"><a href="https://www.acfun.cn/a/ac{{ v_num }}">{{ title }}</a></div>
+                        <div class="art-title-census">
+                            <div class="article-parent">
+                                <a href="https://www.acfun.cn/v/list{{ channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ channel.parentName }}</a>
+                                <span>&nbsp;&gt;&nbsp;</span>
+                                <a href="https://www.acfun.cn/v/list{{ channel.id }}/index.htm" target="_blank" class="sort-channel">{{ channel.name }}</a>
+                                <span>&nbsp;&gt;&nbsp;</span>
+                                <a href="https://www.acfun.cn/v/as{{ realm.realmId }}" target="_blank" class="sort-channel">{{ realm.realmName }}</a>
+                            </div>
+                            <div class="census-left">
+                                <div class="viewcount"><span>阅读量: </span><span class="quanity">{{ formatViewCount }}</span></div>
+                                <div class="comcount"><span>评论: </span><span class="quanity">{{ formatCommentCount }}</span></div>
+                                <div class="cache"><span>缓存: </span><span class="quanity">{{ cache_date }}</span></div>
+                            </div>
+                            <div class="census-right">
+                                <div class="likecount "><i class="icon"></i>
+                                    <span title="{{ likeCount }}">{{ likeCountShow }}</span></div>
+                                <div class="collectcount"><i class="icon"></i>
+                                    <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
+                                <div data-status="0" class="bananacount J_banana"><i class="icon"></i>
+                                    <span class="Jba_num" title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
+                                <div class="sharecount"><i class="icon"></i>
+                                    <span class="Jba_num" title="{{ shareCount }}">{{ formatShareCount }}</span>
+                                    <div class="sharehead">
+                                        <div class="share-title">分享本文章给朋友吧</div>
+                                        <div class="share-action-area bdsharebottom bdshare-button-style0-16">
+                                            <div class="share-left-area">
+                                                <div class="qrcode"><img src="share_qrcode.png"></div>
+                                                <p class="scan">扫一扫</p><p>分享到微信/朋友圈</p>
+                                            </div>
+                                            <div class="share-right-area">
+                                                <div class="share-type"></div>
+                                                <div class="share-container">
+                                                    <div id="share-component">
+                                                        <div class="share-desc">获取原文章地址</div>
+                                                        <div class="area-share clearfix">
+                                                            <input id="videoUrl" class="ipt-url fl" type="text" readonly="readonly" value="https://www.acfun.cn/a/ac{{ v_num }}">
+                                                            <span data-clipboard-target="#videoUrl" class="copy fl cp-url" onclick="copyText('https://www.acfun.cn/a/ac{{ v_num }}')">复制</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </section>
-                    <section class="art-subject">
-                        <div id="filter" class="clearfix"></div>
-                    </section>
-                    <section id="article-content">
-                        <div id="article-up">
-                            <a class="up-cover" href="https://www.acfun.cn/u/{{ user.href }}" target="_blank"
-                               style="background-image:url(../../member/{{ user.href }}_avatar)"></a>
-                            <div class="up-abstract">
-                                <div class="up-name">
-                                    <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" class="upname">{{ user.name }}</a>
-                                    <div class="up-type">UP主</div>
-                                </div>
-                                <div class="up-time">{{ createTimeMillis|unix2datestr }}</div>
+                    </div>
+                </section>
+                <section class="art-subject"><div id="filter" class="clearfix"></div></section>
+                <section id="article-content">
+                    <div id="article-up" class="article-up">
+                        <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank">
+                            <div style="background-image:url(../../member/{{ user.href }}_avatar)" class="up-cover live-avatar"></div>
+                        </a>
+                        <div class="up-abstract">
+                            <div class="up-name">
+                                <a href="https://www.acfun.cn/u/{{ user.href }}"{% if user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}
+                                   target="_blank" class="upname" title="注册于 {{ up_reg_date }}">{{ user.name }}</a>
+                                <div class="up-type">UP主</div>
                             </div>
+                            <div class="up-time">{{ createTimeMillis|unix2datestr }}</div>
+                        </div>
 {#                            <div class="action-up"><a class="message-back">回复</a><a class="reportAction">举报</a></div>#}
-                            <div id="article-answer"></div>
-                            <div id="article-tags" class="clearfix">
-                                {% if parts|length > 1 %}
-                                <ul class="parts-container">
-                                {% for part in parts %}
-                                    <li data-index="{{ loop.index0 }}" class="art-part{% if loop.first %} active{% endif %}">{{ part.title }}</li>
-                                {% endfor %}
-                                </ul>
-                                <div class="showall">展开总共{{ parts|length }}Part</div>
-                                {% endif %}
-                            </div>
-                            <div class="article-content">
+                        <div id="article-answer"></div>
+                        <div id="article-tags" class="clearfix">
+                            {% if parts|length > 1 %}
+                            <ul class="parts-container">
                             {% for part in parts %}
-                            <div id="content-part{{ loop.index0 }}">
+                                <li data-index="{{ loop.index }}" class="art-part{% if loop.first %} active{% endif %}">{{ part.title }}</li>
+                            {% endfor %}
+                            </ul>
+                            <div class="showall">展开总共{{ parts|length }}Part</div>
+                            {% endif %}
+                        </div>
+                        <div class="article-content">
+                        {% for part in parts %}
+                            <div id="content-part{{ loop.index }}" style="{% if not loop.first %}display: none{% endif %}">
                             {{ part.content|string|safe }}
                             </div>
-                            {% endfor %}
-                            </div>
-                            <div id="bd_tag" class="tag clearfix"></div>
+                        {% endfor %}
                         </div>
-                    </section>
-                </div>
+                        <div id="article-operation" class="clearfix">
+                            <div class="likecount "><i class="icon"></i>
+                                <span title="{{ likeCount }}">{{ likeCountShow }}</span></div>
+                            <div class="collectcount"><i class="icon"></i>
+                                <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
+                            <div data-status="0" class="bananacount J_banana"><i class="icon"></i>
+                                <span class="Jba_num" title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
+                            <div class="sharecount"><i class="icon"></i>
+                                <span class="Jba_num" title="{{ shareCount }}">{{ formatShareCount }}</span>
+                                <div class="sharehead">
+                                    <div class="share-title">分享本文章给朋友吧</div>
+                                    <div class="share-action-area bdsharebottom bdshare-button-style0-16">
+                                        <div class="share-left-area">
+                                            <div class="qrcode"><img src="share_qrcode.png"></div>
+                                            <p class="scan">扫一扫</p><p>分享到微信/朋友圈</p>
+                                        </div>
+                                        <div class="share-right-area">
+                                            <div class="share-type"></div>
+                                            <div class="share-container">
+                                                <div id="share-component">
+                                                    <div class="share-desc">获取原文章地址</div>
+                                                    <div class="area-share clearfix">
+                                                        <input id="videoUrl" class="ipt-url fl" type="text" readonly="readonly" value="https://www.acfun.cn/a/ac{{ v_num }}">
+                                                        <span data-clipboard-target="#videoUrl" class="copy fl cp-url" onclick="copyText('https://www.acfun.cn/a/ac{{ v_num }}')">复制</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bd_tag" class="tag clearfix">
+                            {% for tag in tagList %}
+                            <span class="tag-single fl">
+                                <a href="https://www.acfun.cn/search?keyword={{ tag.name }}" data-tid="{{ tag.id }}" target="_blank" class="fl">{{ tag.name }}</a>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+                {% include "comment.html" %}
             </div>
-        </section>
-        {% include "comment.html" %}
-    </div>
+            <div class="fr" style="width:280px">
+                <section id="up-info">
+                    <div class="up-detail">
+                        <a target="_blank" href="https://www.acfun.cn/u/{{ user.href }}">
+                            <div class="upcover live-avatar" style="background-image:url(../../member/{{ user.href }}_avatar)"></div>
+                        </a>
+                        <div class="upname">
+                            <a class="name float" href="https://www.acfun.cn/u/{{ user.href }}"
+                               target="_blank"{% if up_data.nameColor == 1 %} style="{{ up_data.nameStyle }}"{% endif %}>{{ user.name }}</a>
+                            {% if up_data.isContractUp %}
+                            <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
+                            {% endif %}
+                            {% if 2 in up_data.verifiedTypes %}
+                            <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + up_data.verifiedText or '' }}"></span>
+                            {% endif %}
+                            {% if 5 in up_data.verifiedTypes %}
+                            <span class="up-college-verified verified-icon">
+                                <span class="verified-icon up-college-verified-icon"></span>
+                                <span class="up-college-verified-content">
+                                    <span class="up-college-verified-content-text">尊贵的阿普学院标志
+                                        <a rel="noopener" class="link" href="//member.acfun.cn/academy" target="_blank">如何获得标志？</a>
+                                    </span>
+                                </span>
+                            </span>
+                            {% endif %}
+                            <span class="verified-icon avi-verified-icon" title="AVI虚拟偶像标识" style="display: none;"></span>
+                            <span class="verified-icon advanced-danmaku-verified-icon" title="高弹达人标识" style="display:none"></span>
+                            <div class="desc">{{ up_data.signature }}</div>
+                        </div>
+                    </div>
+                    <ul class="up-census">
+                        <li class="vote"><div class="count" title="{{ user.contributeCountValue }}">{{ user.contributeCount }}</div><div class="type">投稿</div></li>
+                        <li data-status="0" class="focus"><div class="count" title="{{ user.followingCountValue }}">{{ user.followingCount }}</div><div class="type">关注</div></li>
+                        <li class="follow"><div class="count" title="{{ user.fanCountValue }}">{{ user.fanCount }}</div><div class="type">粉丝</div></li>
+                    </ul>
+                    <div class="up-operate">
+                        <div data-uid="{{ user.href }}" class="focus">关注</div>
+                        <a href="https://message.acfun.cn/im?targetid={{ user.href }}" target="_blank" class="mail">私信</a>
+                    </div>
+                </section>
+                <section class="up-contributions">
+                    <div class="ctb-head">
+                        <h1 class="ctb-title">最新投稿</h1>
+                        <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" class="showall">全部</a>
+                    </div>
+                </section>
+{#                <div class="contribution weblog-item">#}
+{#                    <p class="contb-title tit">#}
+{#                        <a href="/a/ac36723879" target="_blank">【漫画】物理魔法使马修 第116-118话</a>#}
+{#                    </p>#}
+{#                    <div class="contb-count">#}
+{#                        <div class="view-count">#}
+{#                            <i class="view"></i>#}
+{#                            <span class="count num">1382</span>#}
+{#                        </div>#}
+{#                        <div class="comm-count">#}
+{#                            <i class="comm"></i>#}
+{#                            <span class="count num">1</span>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+            </div>
+        </div>
+    </section>
+</div>
+<script type="text/javascript">
+    const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
+    document.querySelectorAll(".parts-container li.art-part").forEach(function (item) {
+        item.addEventListener('click', function (ev) {
+            if(!item.classList.contains('active')){
+                let i = item.getAttribute('data-index');
+                document.querySelectorAll(".parts-container li.art-part").forEach(function (it) {
+                    it.setAttribute('class', 'art-part');
+                })
+                item.setAttribute('class', 'art-part active');
+                document.querySelectorAll(".article-content > div").forEach(function (it) {
+                    it.style = "display: none;"
+                })
+                document.querySelector("#content-part"+i).style = "";
+            }
+        });
+    });
+</script>
 <script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
 <script type="text/javascript" src="comment.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

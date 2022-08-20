@@ -3,6 +3,11 @@ let hotList = document.getElementById('comment-hot-list'),
     rootList = document.getElementById('comment-root-list');
 
 function commentBlock(commentItem, subCommentsMap) {
+    function pos2time(p) {
+        let t = new Date(p);
+        return t.toLocaleString("zh-CN");
+    }
+
     let userLink = 'http://www.acfun.cn/u/',
         userPath = '../../member/',
         cid = commentItem.commentId.toString();
@@ -59,7 +64,7 @@ function commentBlock(commentItem, subCommentsMap) {
                         commentTitleText.setAttribute('class', 'time_day');
                         commentTitleText.innerHTML = "发表于";
                         commentTitleTime.setAttribute('class', 'time_times');
-                        commentTitleTime.innerHTML = commentItem.postDate;
+                        commentTitleTime.innerHTML = pos2time(commentItem.timestamp);
                     commentTitle.appendChild(commentTitleAcerLink);
                     commentTitle.appendChild(commentTitleText);
                     commentTitle.appendChild(commentTitleTime);

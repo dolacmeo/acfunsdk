@@ -31,7 +31,7 @@
 .container-player .container-video {
     position: relative;
     width: 100%;
-    height: 100%
+    height: 100%;
 }
 
 .container-player .container-video video {
@@ -55,8 +55,8 @@
 }
 
 .container-player .container-video video {
-    height: -webkit-calc(100%);
-    height: calc(100%)
+    height: -webkit-calc(100% - 40px);
+    height: calc(100% - 40px);
 }
 
 @-webkit-keyframes loading {
@@ -367,12 +367,12 @@
 
 .container-controls {
     position: absolute;
-    height: 40px;
+    /*height: 40px;*/
     bottom: 40px;
     width: 100%;
     opacity: 1;
     overflow: visible;
-    z-index: 1
+    z-index: 1;
 }
 
 .container-controls .control-btn {
@@ -3640,7 +3640,7 @@
 }
 
 .container-controls {
-    padding-top: 40px
+    /*padding-top: 40px;*/
 }
 
 .container-controls .heatmap-container {

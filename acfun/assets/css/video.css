@@ -69,7 +69,7 @@
 .player-box .inner-container .error-img {
     width: 225px;
     height: 130px;
-    background: url(../imgs/error.png) no-repeat;
+    background: url(../img/error.png) no-repeat;
     background-size: 225px 130px;
     padding-bottom: 20px
 }
@@ -125,7 +125,7 @@
 .player-box #player.error .error-toast .error-icon {
     width: 90px;
     height: 76px;
-    background: url(../imgs/42.gif) no-repeat;
+    background: url(../img/42.gif) no-repeat;
     background-size: 100% 100%
 }
 
@@ -145,7 +145,7 @@
     display: none;
     padding-left: 25px;
     border-radius: 3px 3px 0 0;
-    background: #fff url(../imgs/arrow.png) no-repeat 2.5% 50%;
+    background: #fff url(../img/arrow.png) no-repeat 2.5% 50%;
     height: 26px;
     line-height: 26px;
     cursor: move;
@@ -204,7 +204,7 @@
 }
 
 #share-component .area-share input {
-    width: 90px;
+    width: 190px;
     height: 20px;
     font-size: 12px;
     outline: none;
@@ -288,7 +288,7 @@
     width: 28px;
     height: 28px;
     cursor: pointer;
-    background: url(../imgs/close.svg) 50% no-repeat
+    background: url(../img/close.svg) 50% no-repeat
 }
 
 .select-collection .modal-bg .collection-body.select {
@@ -431,7 +431,7 @@
 }
 
 .select-collection .modal-bg .collection-list .collection-item.selected .checkbox {
-    background: url(../imgs/selected.svg) no-repeat;
+    background: url(../img/selected.svg) no-repeat;
     background-position: -1px;
     border: 1px solid #fd4c5c
 }
@@ -587,7 +587,7 @@
 }
 
 .video-description .action-area .right-area > div.like .icon {
-    background-image: url(../imgs/frame1.svg);
+    background-image: url(../img/frame1.svg);
     background-position: 0;
     background-size: cover;
     background-origin: content-box;
@@ -596,22 +596,22 @@
 
 @-webkit-keyframes like_action {
     0% {
-        background-image: url(../imgs/likeFrames.png);
+        background-image: url(../img/likeFrames.png);
         background-position: 0
     }
     to {
-        background-image: url(../imgs/likeFrames.png);
+        background-image: url(../img/likeFrames.png);
         background-position: 100%
     }
 }
 
 @keyframes like_action {
     0% {
-        background-image: url(../imgs/likeFrames.png);
+        background-image: url(../img/likeFrames.png);
         background-position: 0
     }
     to {
-        background-image: url(../imgs/likeFrames.png);
+        background-image: url(../img/likeFrames.png);
         background-position: 100%
     }
 }
@@ -626,7 +626,7 @@
 }
 
 .video-description .action-area .right-area > div.like.active .icon, .video-description .action-area .right-area > div.like:hover .icon {
-    background-image: url(../imgs/frame12.svg)
+    background-image: url(../img/frame12.svg)
 }
 
 .video-description .action-area .right-area > div.collection {
@@ -634,7 +634,7 @@
 }
 
 .video-description .action-area .right-area > div.collection .icon {
-    background-image: url(../imgs/icon_follow.svg)
+    background-image: url(../img/icon_follow.svg)
 }
 
 .video-description .action-area .right-area > div.collection.active, .video-description .action-area .right-area > div.collection:hover {
@@ -642,7 +642,7 @@
 }
 
 .video-description .action-area .right-area > div.collection.active .icon, .video-description .action-area .right-area > div.collection:hover .icon {
-    background-image: url(../imgs/icon_follow_hover.svg)
+    background-image: url(../img/icon_follow_hover.svg)
 }
 
 .video-description .action-area .right-area > div.banana {
@@ -651,7 +651,7 @@
 }
 
 .video-description .action-area .right-area > div.banana .icon {
-    background-image: url(../imgs/icon_banana.svg)
+    background-image: url(../img/icon_banana.svg)
 }
 
 .video-description .action-area .right-area > div.banana.active, .video-description .action-area .right-area > div.banana:hover {
@@ -659,7 +659,7 @@
 }
 
 .video-description .action-area .right-area > div.banana.active .icon, .video-description .action-area .right-area > div.banana:hover .icon {
-    background-image: url(../imgs/icon_banana_hover.svg)
+    background-image: url(../img/icon_banana_hover.svg)
 }
 
 .video-description .action-area .right-area > div.banana .div-banana {
@@ -671,7 +671,7 @@
     width: 240px;
     height: 56px;
     padding: 20px 40px 10px;
-    background: url(../imgs/BananaCard.svg) no-repeat 100% 50%;
+    background: url(../img/BananaCard.svg) no-repeat 100% 50%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
     border-radius: 5px
 }
@@ -703,7 +703,7 @@
 }
 
 .video-description .action-area .right-area > div.banana .div-banana .banana {
-    background: url(../imgs/icon_bananaer_fl.svg) 50% no-repeat;
+    background: url(../img/icon_bananaer_fl.svg) 50% no-repeat;
     width: 32px;
     height: 32px;
     cursor: pointer;
@@ -713,7 +713,7 @@
 .video-description .action-area .right-area > div.banana .div-banana .banana.active {
     -webkit-animation: pulse .5s ease .2s both;
     animation: pulse .5s ease .2s both;
-    background: url(../imgs/icon_banana_active.svg) 50% no-repeat
+    background: url(../img/icon_banana_active.svg) 50% no-repeat
 }
 
 .video-description .action-area .right-area > div.banana .div-banana .banana:nth-child(5) {
@@ -735,7 +735,7 @@
 }
 
 .video-description .action-area .right-area > div.share .icon {
-    background-image: url(../imgs/icon_share.svg)
+    background-image: url(../img/icon_share.svg)
 }
 
 .video-description .action-area .right-area > div.share:hover {
@@ -743,7 +743,7 @@
 }
 
 .video-description .action-area .right-area > div.share:hover .icon {
-    background-image: url(../imgs/icon_share_hover.svg)
+    background-image: url(../img/icon_share_hover.svg)
 }
 
 .video-description .action-area .right-area > div.share:hover .share-module {
@@ -770,7 +770,7 @@
     line-height: 60px;
     color: #fff;
     text-indent: 30px;
-    background: url(../imgs/ShareCard.svg) no-repeat;
+    background: url(../img/ShareCard.svg) no-repeat;
     background-size: 100% 100%
 }
 
@@ -814,7 +814,7 @@
 }
 
 .video-description .action-area .right-area > div.share .share-module .share-action-area .share-right-area {
-    width: 192px;
+    width: 185px;
     height: 40px;
     margin-top: 26px
 }
@@ -837,15 +837,15 @@
 }
 
 .video-description .action-area .right-area > div.share .share-module .share-action-area .share-right-area .share-type a.bds_tieba {
-    background-image: url(../imgs/icon_share_bdtb.svg)
+    background-image: url(../img/icon_share_bdtb.svg)
 }
 
 .video-description .action-area .right-area > div.share .share-module .share-action-area .share-right-area .share-type a.weibo {
-    background-image: url(../imgs/icon_share_wb.svg)
+    background-image: url(../img/icon_share_wb.svg)
 }
 
 .video-description .action-area .right-area > div.share .share-module .share-action-area .share-right-area .share-type a.qzone {
-    background-image: url(../imgs/icon_share_qqkl.svg)
+    background-image: url(../img/icon_share_qqkl.svg)
 }
 
 .video-description .action-area .right-area > div.share .share-module .share-action-area .share-right-area .share-container {
@@ -878,7 +878,7 @@
 }
 
 .video-description .action-area .right-area > div.mobile .icon {
-    background-image: url(../imgs/icon_phone.svg)
+    background-image: url(../img/icon_phone.svg)
 }
 
 .video-description .action-area .right-area > div.mobile:hover {
@@ -890,7 +890,7 @@
 }
 
 .video-description .action-area .right-area > div.mobile:hover .icon {
-    background-image: url(../imgs/icon_phone_hover.svg)
+    background-image: url(../img/icon_phone_hover.svg)
 }
 
 .video-description .action-area .right-area > div.mobile .mobile-module {
@@ -913,7 +913,7 @@
     line-height: 60px;
     color: #fff;
     text-indent: 30px;
-    background: url(../imgs/PhoneCard.svg) no-repeat;
+    background: url(../img/PhoneCard.svg) no-repeat;
     background-size: 100% 100%
 }
 
@@ -951,7 +951,7 @@
 }
 
 .video-description .action-area .right-area > div.mobile .mobile-module .mobile-action-area .mobile-right-area {
-    width: 162px;
+    width: 158px;
     vertical-align: top;
     max-height: 123px;
     overflow: hidden
@@ -977,7 +977,7 @@
 .video-description .action-area .right-area > div.more-action {
     width: 13px;
     height: 18px;
-    background: url(../imgs/icon_comment_gd.svg) no-repeat;
+    background: url(../img/icon_comment_gd.svg) no-repeat;
     background-size: 13px 13px;
     background-position: 0 7px;
     color: #999;
@@ -987,7 +987,7 @@
 
 .video-description .action-area .right-area > div.more-action:hover {
     color: #333;
-    background-image: url(../imgs/icon_comment_gd_hover.svg)
+    background-image: url(../img/icon_comment_gd_hover.svg)
 }
 
 .video-description .action-area .right-area > div.more-action:hover .report {
@@ -1437,11 +1437,11 @@
 }
 
 #main .introduction .desc-operate.open:after {
-    background-image: url(../imgs/icon_arrow.svg)
+    background-image: url(../img/icon_arrow.svg)
 }
 
 #main .introduction .desc-operate.close:after {
-    background-image: url(../imgs/icon_arrow.svg);
+    background-image: url(../img/icon_arrow.svg);
     transform: rotate(-180deg)
 }
 
@@ -1690,7 +1690,7 @@
     left: 8px;
     width: 12px;
     height: 12px;
-    background-image: url(../imgs/icon_arrow_slim_up.svg);
+    background-image: url(../img/icon_arrow_slim_up.svg);
     background-repeat: no-repeat;
     background-size: 100% 100%;
     transform: rotate(180deg)
@@ -1884,7 +1884,7 @@
 }
 
 .div-banana .banana.active, .fly-banana .banana {
-    background: url(../imgs/icon_banana_active.png) 50% no-repeat
+    background: url(../img/icon_banana_active.png) 50% no-repeat
 }
 
 #main .introduction .up-area .up-interactive .fly-peach {
@@ -1904,7 +1904,7 @@
     top: 0;
     width: 32px;
     height: 32px;
-    background: url(../imgs/icon_peach_active.png) 50% no-repeat
+    background: url(../img/icon_peach_active.png) 50% no-repeat
 }
 
 #ac-space .fly-peach {
@@ -1928,7 +1928,7 @@
     top: 0;
     width: 32px;
     height: 32px;
-    background: url(../imgs/icon_peach_active.png) 50% no-repeat
+    background: url(../img/icon_peach_active.png) 50% no-repeat
 }
 
 .feed-num {
@@ -1944,47 +1944,47 @@
 }
 
 .feed-num.peach .add {
-    background-image: url(../imgs/peach_+.png)
+    background-image: url(../img/peach_+.png)
 }
 
 .feed-num.peach .num-0 {
-    background-image: url(../imgs/peach_0.png)
+    background-image: url(../img/peach_0.png)
 }
 
 .feed-num.peach .num-1 {
-    background-image: url(../imgs/peach_1.png)
+    background-image: url(../img/peach_1.png)
 }
 
 .feed-num.peach .num-2 {
-    background-image: url(../imgs/peach_2.png)
+    background-image: url(../img/peach_2.png)
 }
 
 .feed-num.peach .num-3 {
-    background-image: url(../imgs/peach_3.png)
+    background-image: url(../img/peach_3.png)
 }
 
 .feed-num.peach .num-4 {
-    background-image: url(../imgs/peach_4.png)
+    background-image: url(../img/peach_4.png)
 }
 
 .feed-num.peach .num-5 {
-    background-image: url(../imgs/peach_5.png)
+    background-image: url(../img/peach_5.png)
 }
 
 .feed-num.peach .num-6 {
-    background-image: url(../imgs/peach_6.png)
+    background-image: url(../img/peach_6.png)
 }
 
 .feed-num.peach .num-7 {
-    background-image: url(../imgs/peach_7.png)
+    background-image: url(../img/peach_7.png)
 }
 
 .feed-num.peach .num-8 {
-    background-image: url(../imgs/peach_8.png)
+    background-image: url(../img/peach_8.png)
 }
 
 .feed-num.peach .num-9 {
-    background-image: url(../imgs/peach_9.png)
+    background-image: url(../img/peach_9.png)
 }
 
 .feed-num span {
@@ -1996,27 +1996,27 @@
 }
 
 .feed-num .add {
-    background-image: url(../imgs/banana_+.png)
+    background-image: url(../img/banana_+.png)
 }
 
 .feed-num .num-1 {
-    background-image: url(../imgs/banana_1.png)
+    background-image: url(../img/banana_1.png)
 }
 
 .feed-num .num-2 {
-    background-image: url(../imgs/banana_2.png)
+    background-image: url(../img/banana_2.png)
 }
 
 .feed-num .num-3 {
-    background-image: url(../imgs/banana_3.png)
+    background-image: url(../img/banana_3.png)
 }
 
 .feed-num .num-4 {
-    background-image: url(../imgs/banana_4.png)
+    background-image: url(../img/banana_4.png)
 }
 
 .feed-num .num-5 {
-    background-image: url(../imgs/banana_5.png)
+    background-image: url(../img/banana_5.png)
 }
 
 .bubble {
@@ -2054,7 +2054,7 @@
 .eating {
     position: absolute;
     top: 23px;
-    background: url(../imgs/eating.png);
+    background: url(../img/eating.png);
     z-index: 10;
     width: 62px;
     height: 20px;
@@ -2067,7 +2067,7 @@
 }
 
 .eating.peach {
-    background-image: url(../imgs/peaching.png)
+    background-image: url(../img/peaching.png)
 }
 
 .custom-toast {
@@ -2116,7 +2116,7 @@ body #main #main-content .left-column {
 }
 
 body #main #main-content .right-column {
-    width: 340px;
+    width: 330px;
     margin-left: 30px;
     z-index: 1
 }

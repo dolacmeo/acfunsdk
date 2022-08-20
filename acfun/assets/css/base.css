@@ -149,7 +149,7 @@ table {
 
 .icon-banana:before {
     content: "";
-    background: url(../imgs/icon_banana.png) no-repeat 0;
+    background: url(../img/icon_banana.png) no-repeat 0;
     background-size: 14px 14px
 }
 
@@ -515,7 +515,7 @@ table {
     top: 0;
     width: 18px;
     height: 18px;
-    background: url(../imgs/icon_message.svg);
+    background: url(../img/icon_message.svg);
     background-size: contain
 }
 
@@ -1186,17 +1186,17 @@ a {
 }
 
 #main .verified-1 {
-    background: url(../imgs/icon_monkey_new.svg) no-repeat 50% 50%;
+    background: url(../img/icon_monkey_new.svg) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
 #main .verified-2 {
-    background: url(../imgs/icon_v.svg) no-repeat 50% 50%;
+    background: url(../img/icon_v.svg) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
 #main .verified-3 {
-    background: url(../imgs/verified-yellow.png) no-repeat 50% 50%;
+    background: url(../img/verified-yellow.png) no-repeat 50% 50%;
     background-size: 18px 18px
 }
 
@@ -1207,7 +1207,7 @@ a {
 }
 
 #main .upVerifiedIcon {
-    background: url(../imgs/icon_up.svg) no-repeat;
+    background: url(../img/icon_up.svg) no-repeat;
     cursor: pointer;
     background-size: 18px 18px
 }
@@ -1240,7 +1240,7 @@ a {
 }
 
 .monkey-verified-icon {
-    background: url(../imgs/icon_monkey_new.svg) no-repeat 100% 100%;
+    background: url(../img/icon_monkey_new.svg) no-repeat 100% 100%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1248,7 +1248,7 @@ a {
 }
 
 .monkey-verified-large-icon {
-    background: url(../imgs/icon_monkey_new_big.svg) no-repeat 100% 100%;
+    background: url(../img/icon_monkey_new_big.svg) no-repeat 100% 100%;
     cursor: pointer;
     background-size: 22px 22px;
     height: 22px;
@@ -1256,7 +1256,7 @@ a {
 }
 
 .official-verified-icon, .official-verified-large-icon {
-    background: url(../imgs/icon_v.svg) no-repeat 50% 50%;
+    background: url(../img/icon_v.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1264,7 +1264,7 @@ a {
 }
 
 .official-verified-large-icon {
-    background: url(../imgs/icon_v_big.svg) no-repeat 50% 50%;
+    background: url(../img/icon_v_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1279,7 +1279,7 @@ a {
 }
 
 .up-college-verified-icon, .up-college-verified-large-icon {
-    background: url(../imgs/icon_up.svg) no-repeat 50% 50%;
+    background: url(../img/icon_up.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1331,7 +1331,7 @@ a {
 }
 
 .up-college-verified-large-icon {
-    background: url(../imgs/icon_up_big.svg) no-repeat 50% 50%;
+    background: url(../img/icon_up_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1350,7 +1350,7 @@ a {
 }
 
 .advanced-danmaku-verified-icon, .advanced-danmaku-verified-large-icon {
-    background: url(../imgs/icon_gjdm.svg) no-repeat 50% 50%;
+    background: url(../img/icon_gjdm.svg) no-repeat 50% 50%;
     cursor: pointer;
     background-size: 18px 18px;
     height: 18px;
@@ -1397,7 +1397,7 @@ a {
 }
 
 .advanced-danmaku-verified-large-icon {
-    background: url(../imgs/icon_gjdm_big.svg) no-repeat 50% 50%;
+    background: url(../img/icon_gjdm_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px
@@ -1417,7 +1417,7 @@ a {
 
 .avi-verified-icon, .avi-verified-large-icon {
     display: inline-block;
-    background: url(../imgs/icon_avi.svg) no-repeat 50% 50%;
+    background: url(../img/icon_avi.svg) no-repeat 50% 50%;
     cursor: pointer;
     width: 18px;
     height: 18px;
@@ -1464,7 +1464,7 @@ a {
 }
 
 .avi-verified-large-icon {
-    background: url(../imgs/icon_avi_big.svg) no-repeat 50% 50%;
+    background: url(../img/icon_avi_big.svg) no-repeat 50% 50%;
     background-size: 22px 22px;
     height: 22px;
     width: 22px

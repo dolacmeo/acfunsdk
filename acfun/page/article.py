@@ -37,6 +37,10 @@ class AcArticle:
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
         return f"AcArticle([ac{self.ac_num}]{title}{user_txt})".encode(errors='replace').decode()
 
+    @property
+    def share_url(self):
+        return self.referer
+
     def loading(self):
         req = self.acer.client.get(routes['article'] + self.ac_num)
         self.page_obj = Bs(req.text, 'lxml')

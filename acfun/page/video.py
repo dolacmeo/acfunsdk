@@ -37,6 +37,14 @@ class AcVideo:
             return f"{routes['video']}{self.ac_num}"
         return f"{routes['video']}{self.ac_num}_{self.part_num}"
 
+    @property
+    def share_url(self):
+        return self.referer
+
+    @property
+    def mobile_url(self):
+        return f"https://scan.acfun.cn/vd/{self.ac_num}"
+
     def __repr__(self):
         title = self.video_data.get('title', "")
         user_name = self.video_data.get('user', {}).get('name', "") or self.video_data.get('user', {}).get('id', "")

@@ -90,15 +90,15 @@
 }
 
 .art-title-head .art-title-census .census-right .collectcount .icon {
-    background-image: url(../imgs/collect.png)
+    background-image: url(../img/collect.png)
 }
 
 .art-title-head .art-title-census .census-right .collectcount.active .icon {
-    background-image: url(../imgs/collected.png)
+    background-image: url(../img/collected.png)
 }
 
 .art-title-head .art-title-census .census-right .bananacount.active .icon {
-    background-image: url(../imgs/bananad.png)
+    background-image: url(../img/bananad.png)
 }
 
 .art-title-head .art-title-census .census-right .bananacount {
@@ -109,7 +109,7 @@
 }
 
 .art-title-head .art-title-census .census-right .bananacount .icon {
-    background-image: url(../imgs/banana.png)
+    background-image: url(../img/banana.png)
 }
 
 .art-title-head .art-title-census .census-right .sharecount {
@@ -118,7 +118,7 @@
 }
 
 .art-title-head .art-title-census .census-right .sharecount .icon {
-    background-image: url(../imgs/share.png)
+    background-image: url(../img/share.png)
 }
 
 .art-title-head .art-title-census .census-right .sharecount .sharehead {
@@ -148,7 +148,7 @@
     display: inline-block;
     left: 40px;
     top: -10px;
-    background: url(../imgs/trg.png) no-repeat
+    background: url(../img/trg.png) no-repeat
 }
 
 #article-content .article-content {
@@ -302,7 +302,7 @@
     width: 10px;
     height: 6px;
     margin-left: 6px;
-    background: url(../imgs/down.png) no-repeat;
+    background: url(../img/down.png) no-repeat;
     background-size: 100% 100%
 }
 
@@ -441,7 +441,7 @@
 }
 
 #article-content #article-operation #art-operate .art-collect .icon .img {
-    background: url(../imgs/collect1.png) no-repeat
+    background: url(../img/collect1.png) no-repeat
 }
 
 #article-content #article-operation #art-operate .art-collect.active .icon {
@@ -454,7 +454,7 @@
 }
 
 #article-content #article-operation #art-operate .art-banana .icon .img {
-    background: url(../imgs/banana1.png) no-repeat
+    background: url(../img/banana1.png) no-repeat
 }
 
 #article-content #article-operation #art-operate .icon {

@@ -2,7 +2,7 @@
 let hotList = document.getElementById('comment-hot-list'),
     rootList = document.getElementById('comment-root-list');
 
-function commentBlock(commentItem, subCommentsMap) {
+function commentBlock(commentItem, subCommentsMap, isTop=false) {
     function pos2time(p) {
         let t = new Date(p);
         return t.toLocaleString("zh-CN");
@@ -10,7 +10,17 @@ function commentBlock(commentItem, subCommentsMap) {
 
     let userLink = 'http://www.acfun.cn/u/',
         userPath = '../../member/',
-        cid = commentItem.commentId.toString();
+        cid = commentItem.commentId.toString(),
+        ncolor = {
+            '1': "color: #fd4c5c",
+            '2': "color: #964cfd",
+            '3': "color: #ff862a"
+        },
+        itemContent = commentItem.content;
+
+    if(commentItem.replyTo!==0){
+        itemContent = "回复<a data-uid='"+commentItem.replyTo+"'>@"+commentItem.replyToUserName+"</a>: "+commentItem.content;
+    }
 
     let mainDiv = document.createElement("div"),
         commentMain = document.createElement("div"),
@@ -61,6 +71,10 @@ function commentBlock(commentItem, subCommentsMap) {
                         commentTitleAcerLink.setAttribute('href', userLink+commentItem.userId.toString());
                         commentTitleAcerLink.setAttribute('data-userid', commentItem.userId.toString());
                         commentTitleAcerLink.innerHTML = commentItem.userName;
+                        if(commentItem.nameColor!==0){
+                            commentTitleAcerLink.setAttribute('style', ncolor[commentItem.nameColor.toString()]);
+                        }
+
                         commentTitleText.setAttribute('class', 'time_day');
                         commentTitleText.innerHTML = "发表于";
                         commentTitleTime.setAttribute('class', 'time_times');
@@ -71,7 +85,7 @@ function commentBlock(commentItem, subCommentsMap) {
 
                     commentDesc.setAttribute('class', 'area-comment-des');
                         commentDescContent.setAttribute('class', 'area-comment-des-content');
-                        commentDescContent.innerHTML = commentItem.content;
+                        commentDescContent.innerHTML = itemContent;
                     commentDesc.appendChild(commentDescContent);
 
                     commentTool.setAttribute('class', 'area-comment-tool');
@@ -99,7 +113,9 @@ function commentBlock(commentItem, subCommentsMap) {
 
             commentFirst.appendChild(commentFirstLeft);
             commentFirst.appendChild(commentFirstRight);
-            commentFirst.appendChild(commentFirstIndex);
+            if(isTop){
+                commentFirst.appendChild(commentFirstIndex);
+            }
 
             commentSec.setAttribute('id', 'comment-sec-'+cid);
                 commentArea.setAttribute('class', 'area-comment-sec area-sec-close clearfix');
@@ -128,10 +144,10 @@ function commentBlock(commentItem, subCommentsMap) {
 
 function loadComments(commentData) {
     commentData.hotComments.forEach(function (item, index) {
-        hotList.appendChild(commentBlock(item, commentData.subCommentsMap));
+        hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
     commentData.rootComments.forEach(function (item, index) {
-        rootList.appendChild(commentBlock(item, commentData.subCommentsMap));
+        rootList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
 }
 

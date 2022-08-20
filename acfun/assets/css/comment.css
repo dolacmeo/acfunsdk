@@ -930,6 +930,10 @@
   margin-bottom: 20px;
   height: auto;
 }
+.area-sec-list{
+  max-height: 400px;
+  overflow-x: hidden;
+}
 .ac-comment-list .deviceModel {
   color: #999;
   margin-left: 3px;
@@ -1624,4 +1628,11 @@
   content: "";
   display: table;
   clear: both;
+}
+
+
+div#comment-hot-list {
+    background-color: #fe5c5c0a;
+    border-radius: 10px;
+    border: solid 1px #aa000033;
 }

@@ -612,6 +612,8 @@ class AcComment:
     hot_comments = list()
     root_comments = list()
     sub_comments = dict()
+    commentIds = list()
+    commentsMap = dict()
 
     def __init__(self, acer, sid: [str, int], stype: int = 3, referer: [str, None] = None):
         self.acer = acer
@@ -622,7 +624,8 @@ class AcComment:
     def __repr__(self):
         return f"AcComment([ac{self.sourceId}] Σ{len(self.root_comments)})"
 
-    def _get_data(self, page: int = 1):
+    def _get_data(self, page: int = 1, api_name: str = 'comment'):
+        assert api_name in ['comment', 'comment_floor']
         param = {
             "sourceId": self.sourceId,
             "sourceType": self.sourceType,
@@ -632,7 +635,7 @@ class AcComment:
             "t": str(time.time_ns())[:13],
             "supportZtEmot": True,
         }
-        req = self.acer.client.get(apis['comment'], params=param)
+        req = self.acer.client.get(apis[api_name], params=param)
         return req.json()
 
     def _get_sub(self, root_id, page: int = 1):
@@ -663,7 +666,6 @@ class AcComment:
             page_max = api_data.get('totalPage', page)
             page = api_data.get('curPage', 1)
             page += 1
-            print(len(self.hot_comments), len(self.root_comments))
         for lou in self.root_comments:
             if lou['subCommentCount'] == 0:
                 continue
@@ -671,13 +673,26 @@ class AcComment:
             sub_data = {"pcursor": 1, "subComments": []}
             while sub_data['pcursor'] != "no_more":
                 sub_page = self._get_sub(rid, sub_data['pcursor'])
-                print(rid, sub_page['totalPage'], sub_page['curPage'], len(sub_page['subComments']))
                 sub_data['subComments'].extend(sub_page['subComments'])
                 if sub_page['curPage'] < sub_page['totalPage']:
                     sub_data['pcursor'] += 1
                 else:
                     sub_data['pcursor'] = "no_more"
             self.sub_comments.update({rid: sub_data})
+            time.sleep(0.5)
+
+    def get_all_floors(self):
+        first_page = self._get_data(1, 'comment_floor')
+        self.commentIds = first_page['commentIds']
+        self.commentsMap = first_page['commentsMap']
+        page = first_page['curPage']
+        page_max = first_page['totalPage']
+        while page <= page_max:
+            page += 1
+            api_data = self._get_data(page, 'comment_floor')
+            assert api_data['result'] == 0
+            self.commentIds.extend(api_data['commentIds'])
+            self.commentsMap.update(api_data['commentsMap'])
             time.sleep(0.5)
 
     @need_login

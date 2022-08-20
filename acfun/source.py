@@ -85,6 +85,7 @@ apis = {
     'article_feed': f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",
 
     'comment': f"{scheme}://{domains['main']}/rest/pc-direct/comment/list",
+    'comment_floor': f"{scheme}://{domains['main']}/rest/pc-direct/comment/listByFloor",
     'comment_subs': f"{scheme}://{domains['main']}/rest/pc-direct/comment/sublist",
     'comment_add': f"{scheme}://{domains['main']}/rest/pc-direct/comment/add",
     'comment_delete': f"{scheme}://{domains['main']}/rest/pc-direct/comment/delete",
@@ -128,6 +129,7 @@ apis = {
     'image_upload_complete': "https://upload.kuaishouzt.com/api/upload/complete",
     'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
 
+    'qrcode': "https://ksurl.cn/createqrcode",
 }
 
 pagelets_from_page = [

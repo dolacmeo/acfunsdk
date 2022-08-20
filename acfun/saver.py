@@ -88,29 +88,42 @@ class AcSaver:
     def _save_member(self, ids: list, force: bool = False):
         done = list()
         member_dir = os.path.join(self.dest_path, 'member')
-        with alive_bar(len(ids), length=30, disable=len(ids) < 5,
-                       title="save members", force_tty=True, stats=False) as progress:
+        with alive_bar(len(ids), length=30, disable=len(ids) < 5, title="save members",
+                       force_tty=True, stats=False) as progress:
             for uid in ids:
                 user_req = self.acer.client.get(apis['userInfo'], params=dict(userId=uid))
                 user_data = user_req.json()
                 profile = user_data.get('profile')
                 user_json = os.path.join(member_dir, f"{uid}.json")
+                user_js = os.path.join(member_dir, f"{uid}.js")
                 user_avatar = os.path.join(member_dir, f"{uid}_avatar")
-                if all([os.path.isfile(user_json), os.path.isfile(user_avatar)]) is True and force is False:
+                if all([os.path.isfile(user_json), os.path.isfile(user_js), os.path.isfile(user_avatar)]) is True \
+                        and force is False:
                     progress()
                     continue
                 with open(user_json, 'w') as uid_file:
                     json.dump(profile, uid_file, separators=(',', ':'))
+                user_json_saved = os.path.isfile(user_json)
+                user_json_string = open(os.path.join(user_json), 'rb').read().decode()
+                with open(user_js, 'wb') as js_file:
+                    user_js_string = f"let user_{uid}={user_json_string};"
+                    js_file.write(user_js_string.encode())
+                user_js_saved = os.path.isfile(user_js)
                 avatar = urlparse(profile['headUrl'])
                 avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", str(uid), ['member'])
                 shutil.move(avatar_path, user_avatar)
-                if avatar_path is None:
-                    continue
-                if os.path.isfile(user_json) and os.path.isfile(user_avatar):
+                avatar_saved = os.path.isfile(user_avatar)
+                if all([user_json_saved, user_js_saved, avatar_saved]):
                     done.append(uid)
                 progress()
                 time.sleep(0.1)
         return done
+
+    def get_user(self, uid: str):
+        self._save_member([uid], True)
+        user_json_path = os.path.join(self.dest_path, 'member', f"{uid}.json")
+        user_data = json.load(open(user_json_path, 'rb'))
+        return user_data
 
     def _json_saver(self, data: dict, filename: str, dest_path=None):
         folder_path = self._setup_folder()
@@ -140,7 +153,15 @@ class AcSaver:
                 if j['userId'] not in uids:
                     uids.append(j['userId'])
         self._save_member(uids)
-        return self._json_saver(comment_data, f"comment.json")
+        folder_path = self._setup_folder()
+        comment_saved = self._json_saver(comment_data, f"comment.json")
+        comment_json_string = open(os.path.join(folder_path, f"comment.json"), 'rb').read().decode()
+        comment_js_path = os.path.join(folder_path, f"comment.js")
+        with open(comment_js_path, 'wb') as js_file:
+            comment_js = f"let commentData={comment_json_string};"
+            js_file.write(comment_js.encode())
+        comment_js_saved = os.path.isfile(comment_js_path)
+        return all([comment_saved, comment_js_saved])
 
     def _save_danmaku(self, num: int = 1):
         assert num <= len(self.ac_obj.video_list)
@@ -185,14 +206,16 @@ class ArticleSaver(AcSaver):
         html_imgs_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
         self._renew_folder(os.path.join(folder_path, 'img'))
         for img in html_obj.select('img'):
-            saved_path = self._save_images(img.attrs['src'], ex_dir=html_imgs_path)
-            img.attrs['alt'] = img.attrs['src']
-            img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
+            if img.attrs['src'].startswith('http') or img.attrs['src'].startswith('//'):
+                saved_path = self._save_images(img.attrs['src'], ex_dir=html_imgs_path)
+                img.attrs['alt'] = img.attrs['src']
+                img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
+        comment_saved = self._save_comment()
         html_path = os.path.join(self.dest_path, folder_path, f"main.html")
         with open(html_path, 'wb') as html_file:
             html_file.write(html_obj.prettify().encode())
         content_html_saved = os.path.isfile(html_path)
-        return all([content_raw_saved, content_html_saved])
+        return all([content_raw_saved, comment_saved, content_html_saved])
 
     pass
 
@@ -213,15 +236,17 @@ class VideoSaver(AcSaver):
     def _save_video(self, num: int = 1):
         assert num <= len(self.ac_obj.video_list)
         v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
-        self._save_member([self.ac_obj.video_data['user']['id']])
+        up_data = self.get_user(self.ac_obj.video_data['user']['id'])
         folder_path = self._setup_folder()
         video_raw_saved = self._json_saver(self.ac_obj.video_data, f"video.json")
         acfun_url = f"{routes['video']}{v_num}"
-        you_get_download(acfun_url, output_dir=folder_path, merge=True)
+        # you_get_download(acfun_url, output_dir=folder_path, merge=True)
         video_saved = os.path.isfile(os.path.join(folder_path, f"{v_num}.mp4"))
         video_template = self.templates.get_template('video.html')
-        video_html = video_template.render(cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
-                                           v_num=v_num, **self.ac_obj.video_data)
+        video_html = video_template.render(
+            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
+            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
+            v_num=v_num, up_data=up_data, **self.ac_obj.video_data)
         cover_path = self._save_images(self.ac_obj.video_data['coverUrl'], 'cover',
                                        [self.folder_name, f"ac{self.ac_obj.ac_num}"])
         cover_saved = os.path.isfile(cover_path)
@@ -229,6 +254,7 @@ class VideoSaver(AcSaver):
         share_qrcode_saved = os.path.isfile(share_qrcode_path)
         mobile_qrcode_path = self._save_qrcode(self.ac_obj.mobile_url, "mobile_qrcode.png")
         mobile_qrcode_saved = os.path.isfile(mobile_qrcode_path)
+        comment_saved = self._save_comment()
         html_path = os.path.join(self.dest_path, folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:
             html_file.write(video_html.encode())
@@ -236,12 +262,13 @@ class VideoSaver(AcSaver):
         video_danmaku_saved = self._save_danmaku(num)
         return all([
             video_raw_saved,
-            video_html_saved,
             video_saved,
             cover_saved,
             share_qrcode_saved,
             mobile_qrcode_saved,
-            video_danmaku_saved
+            video_danmaku_saved,
+            comment_saved,
+            video_html_saved
         ])
 
     pass

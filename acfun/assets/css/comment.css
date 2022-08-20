@@ -239,10 +239,10 @@
   background-size: 100% 100%;
 }
 .ac-comment-usercard .area-follow-icon.follow {
-  background-image: url("//imgs.aixifan.com/2020/02/13/icon_comment_gz@4x_9d5d3cfdb6174377e65e61a7c1992cfd.png");
+  background-image: url("../img/icon_comment_gz@4x.png");
 }
 .ac-comment-usercard .area-follow-icon.message {
-  background-image: url("//imgs.aixifan.com/2020/02/13/icon_comment_sx@4x.png");
+  background-image: url("../img/icon_comment_sx@4x.png");
 }
 .ac-comment-usercard .area-comm-message {
   background: #FFFFFF;
@@ -324,7 +324,7 @@
   height: 14px;
   right: 9px;
   top: 9px;
-  background-image: url("//imgs.aixifan.com/2020/02/13/exit.png");
+  background-image: url("../img/exit.png");
   background-size: 100% 100%;
 }
 .area-editor {
@@ -827,13 +827,13 @@
   display: block;
   width: 13px;
   height: 13px;
-  background: url('//imgs.aixifan.com/2020/02/13/icon_comment_gd@4x.png');
+  background: url('../img/icon_comment_gd@4x.png');
   background-size: 13px 13px;
   cursor: pointer;
   float: right;
 }
 .ac-comment-list .area-comment-more:hover {
-  background: url('//imgs.aixifan.com/2020/02/13/icon_comment_gd_hover@4x_90b7e03b7f1841f32d74d49c44a74ac2.png');
+  background: url('../img/icon_comment_gd_hover@4x.png');
   background-size: 13px 13px;
 }
 .ac-comment-list .area-comment-tool img {

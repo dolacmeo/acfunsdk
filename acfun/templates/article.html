@@ -5,6 +5,7 @@
     <title>{{ title }}</title>
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/article.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
 </head>
 <body>
     <div id="main" class="main">
@@ -75,6 +76,10 @@
                 </div>
             </div>
         </section>
+        {% include "comment.html" %}
     </div>
+<script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
+<script type="text/javascript" src="comment.js"></script>
+<script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

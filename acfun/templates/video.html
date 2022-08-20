@@ -6,6 +6,7 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
 </head>
 <body>
 <div id="main" class="single-part">
@@ -34,9 +35,15 @@
                 </div>
             </div>
             <div class="video-description clearfix dark-style">
-                <h1 class="title"><a href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a></h1>
+                <h1 class="title">
+<!--                    <a class="reco-tag" href="https://www.acfun.cn/rank/list/#cid=-1;range=1;pcid=-3" title="综合榜Top2" target="_blank">综合榜Top2</a>-->
+                    <a href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a>
+                </h1>
                 <div class="action-area">
                     <div class="left-area">
+                        {% if originalDeclare %}
+                        <div class="originalDeclare" style="display: inline-block;"><span class="originalDeclareText icon-ks icon-icon_-jin-zhi-zhuan-zai">未经作者授权，禁止转载</span></div>
+                        {% endif %}
                         <div class="views"><span class="viewsCount" title="{{ viewCount }}">{{ viewCountShow }}</span>播放</div>
                         <div class="danmu"><span class="danmuCount sp2" title="{{ danmakuCount }}">{{ danmakuCountShow }}</span>弹幕</div>
                         <div class="comment"><span class="commentCount" title="{{ commentCount }}">{{ commentCountShow }}</span>评论</div>
@@ -84,9 +91,6 @@
                                 </div>
                             </div>
                         </div>
-<!--                        <div class="more-action">-->
-<!--                            <div class="report"><a class="report-btn">举报视频</a></div>-->
-<!--                        </div>-->
                     </div>
                 </div>
             </div>
@@ -98,15 +102,33 @@
                         </a>
                         <div class="up-data">
                             <div class="up-info">
-                                <a class="up-name"{% if user.nameColor == 1 %} style="color: #FD4C5C"{% endif %}
-                                   href="https://www.acfun.cn/u/{{ user.href }}" target="_blank">{{ user.name }}</a>
+                                <a class="up-name" href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" title="注册于 {{ up_reg_date }}"
+                                        {% if user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}>{{ user.name }}</a>
+                                {% if up_data.isContractUp %}
+                                <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
+                                {% endif %}
+                                {% if 2 in user.verifiedTypes %}
+                                <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + user.verifiedText or '' }}"></span>
+                                {% endif %}
+                                {% if 5 in user.verifiedTypes %}
+                                <span class="up-college-verified verified-icon">
+                                    <span class="verified-icon up-college-verified-icon"></span>
+                                    <span class="up-college-verified-content">
+                                        <span class="up-college-verified-content-text">尊贵的阿普学院标志
+                                            <a rel="noopener" class="link" href="//member.acfun.cn/academy" target="_blank">如何获得标志？</a>
+                                        </span>
+                                    </span>
+                                </span>
+                                {% endif %}
+                                <span class="verified-icon avi-verified-icon" title="AVI虚拟偶像标识" style="display: none;"></span>
+                                <span class="verified-icon advanced-danmaku-verified-icon" title="高弹达人标识" style="display:none"></span>
                             </div>
                             <div class="publish-time">发布于&nbsp;{{ createTimeMillis|unix2datestr }}</div>
                         </div>
                     </div>
                     <div class="up-interactive">
                         <div class="follow-up not-follow" title="{{ fanCountValue }}">关注&nbsp;{{ user.fanCount }}</div>
-{#                        <div class="btn-reward">鼓励</div>#}
+<!--                            <div class="btn-reward">鼓励</div>-->
                     </div>
                 </div>
                 <div class="content-description">
@@ -121,6 +143,7 @@
                     </div>
                 </div>
             </div>
+            {% include "comment.html" %}
         </div>
         <div class="right-column">
             <div id="danmaku" style="display: block;">
@@ -177,8 +200,11 @@
 <script type="text/javascript">
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
 </script>
+<script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.danmaku.js"></script>
+<script type="text/javascript" src="comment.js"></script>
 <script type="text/javascript" src="../../assets/js/localplayer.js"></script>
 <script type="text/javascript" src="../../assets/js/danmakuList.js"></script>
+<script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

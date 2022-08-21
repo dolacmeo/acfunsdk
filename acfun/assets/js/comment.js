@@ -16,7 +16,8 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
             '2': "color: #964cfd",
             '3': "color: #ff862a"
         },
-        itemContent = commentItem.content;
+        itemContent = commentItem.content,
+        srcUrl = document.getElementById("srcUrl").getAttribute("href");
 
     if(commentItem.replyTo!==0){
         itemContent = "回复<a data-uid='"+commentItem.replyTo+"'>@"+commentItem.replyToUserName+"</a>: "+commentItem.content;
@@ -66,6 +67,7 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
 
                 commentFirstRight.setAttribute('class', 'area-comment-right');
                     commentTitle.setAttribute('class', 'area-comment-title');
+                    commentTitle.setAttribute('title', commentItem.commentId.toString());
                         commentTitleAcerLink.setAttribute('class', 'name');
                         commentTitleAcerLink.setAttribute('target', '_blank');
                         commentTitleAcerLink.setAttribute('href', userLink+commentItem.userId.toString());
@@ -79,6 +81,7 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
                         commentTitleText.innerHTML = "发表于";
                         commentTitleTime.setAttribute('class', 'time_times');
                         commentTitleTime.innerHTML = pos2time(commentItem.timestamp);
+
                     commentTitle.appendChild(commentTitleAcerLink);
                     commentTitle.appendChild(commentTitleText);
                     commentTitle.appendChild(commentTitleTime);
@@ -90,9 +93,15 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
 
                     commentTool.setAttribute('class', 'area-comment-tool');
                         commentToolLike.setAttribute('class', 'area-comment-like area-comment-up');
-                        commentToolLike.innerHTML = "赞"+commentItem.likeCountFormat;
+                        commentToolLike.innerHTML = "赞"+commentItem.likeCount?"":commentItem.likeCountFormat;
+                        commentToolLike.setAttribute('target', '_blank');
+                        commentToolLike.href = srcUrl+"#ncid="+commentItem.commentId;
+
                         commentToolReply.setAttribute('class', 'area-comment-reply');
                         commentToolReply.innerHTML = "回复";
+                        commentToolReply.setAttribute('target', '_blank');
+                        commentToolReply.href = srcUrl+"#ncid="+commentItem.commentId;
+
                         commentToolFrom.setAttribute('class', 'area-comment-from');
                             commentToolFromText.innerHTML = "来自";
                             commentToolFromHere.setAttribute('style', 'margin-left:3px;');
@@ -143,6 +152,20 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
 }
 
 function loadComments(commentData) {
+    let total = 999, totalText = "???";
+    if(typeof contentData === 'object'){
+        let mainData = contentData,
+            totalText = mainData.formatCommentCount,
+            total = mainData.commentCount;
+    }else if(typeof videoData === 'object'){
+        let mainData = videoData,
+            totalText = mainData.commentCountShow,
+            total = mainData.commentCount;
+    }else {console.log('unknown main data');return false;}
+    document.querySelector(".area-comm-number").innerHTML +=
+        "(总) / "+
+        commentData.rootComments.length.toString()+"(存) / "+
+        (total - commentData.rootComments.length).toString()+"(删)";
     commentData.hotComments.forEach(function (item, index) {
         hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
@@ -151,4 +174,6 @@ function loadComments(commentData) {
     });
 }
 
-loadComments(commentData);
+window.onload = function () {
+    loadComments(commentData);
+}

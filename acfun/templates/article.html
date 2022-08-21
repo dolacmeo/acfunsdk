@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link href="../../assets/favicon.ico" rel="shortcut icon">
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/article.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
 </head>
 <body>
+{% include 'parts/header.html' %}
 <div id="main" class="main">
     <section class="clearfix area contentBottom wp">
         <div class="clearfix wp area head"></div>
@@ -15,7 +17,7 @@
             <div class="fl" style="width:800px;">
                 <section class="art-title">
                     <div class="art-title-head">
-                        <div class="caption"><a href="https://www.acfun.cn/a/ac{{ v_num }}">{{ title }}</a></div>
+                        <div class="caption"><a id="srcUrl" href="https://www.acfun.cn/a/ac{{ v_num }}">{{ title }}</a></div>
                         <div class="art-title-census">
                             <div class="article-parent">
                                 <a href="https://www.acfun.cn/v/list{{ channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ channel.parentName }}</a>
@@ -138,7 +140,7 @@
                         </div>
                     </div>
                 </section>
-                {% include "comment.html" %}
+                {% include "parts/comment.html" %}
             </div>
             <div class="fr" style="width:280px">
                 <section id="up-info">
@@ -205,7 +207,8 @@
         </div>
     </section>
 </div>
-{% include 'footer.html' %}
+{% include 'parts/toolbar.html' %}
+{% include 'parts/footer.html' %}
 <script type="text/javascript">
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
     document.querySelectorAll(".parts-container li.art-part").forEach(function (item) {
@@ -224,8 +227,10 @@
         });
     });
 </script>
+<script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
-<script type="text/javascript" src="comment.js"></script>
+<script type="text/javascript" src="ac{{ v_num }}.js"></script>
+<script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

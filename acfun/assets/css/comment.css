@@ -1630,6 +1630,86 @@
   clear: both;
 }
 
+.ubb-h5-aa, .ubb-h5-ac, .ubb-h5-email, .ubb-h5-img, .ubb-h5-name, .ubb-h5-sm, .ubb-h5-wiki {
+  color: #409bef
+}
+
+.ubb-h5-emotion {
+  max-height: .9rem;
+  width: auto;
+  object-fit: cover;
+  vertical-align: baseline
+}
+
+.ubb-preview {
+  display: block;
+  position: relative;
+  margin: .08rem 0;
+  border-radius: .1rem;
+  font-size: 0
+}
+
+.ubb-h5-abbr {
+  font-size: .28rem;
+  color: #3698ec;
+  position: relative;
+  vertical-align: middle
+}
+
+.ubb-h5-abbr:before {
+  display: inline-block;
+  content: "";
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAA3hJREFUWAntVl9IU1EYP+feuWnWNrGX9RwRRER/CHxIdqchpUU9GAQ1sOlTT4G1KJJYYZoPPQS+uCmaQiQRhKBm/qGehJ7qtUIkiiJx13+bu9s9fd/tnut1bLdNZy964PJ9+853ft/vfOfbOR8hO2O7Z4CmJ6CqZ+FUKpW6SRg5AXOe9PkN/v5BKPkgimLHeIPzvRljHQEpEr3DGHlIGFtnNy/YjE4JVYlA7k0G3K0cxwjkCy9WqiQ1BQaFEdLicBT1jV4t/cEdNyNrni17VlcVP2CHILM2wSZ4eSZsHFglyWaYpIzSlqlGdzu3F0LqG2n3hqMAx9q0IyZEOwqDgH7mBHfOg9a/YPa5BTmkMuZHm0BpX7nT1TJ4iSa4Tz4SsVfjiTYeS8M0AWgFZ067HjwIPjjnASJBtJnW5KWasI3iFqwQ+M4pEWopFerQl9us1uUzZ0nAAILyNfQCK5YE8MwxHmPqEH6ocxvqhRhrRZgBDQsOztxIOy/CDK4bNlkS0Kv9NqDjtyXDkkA+Eat6F8pTijpICROL7O6zb/x0OZf1ljWQCwD61A5EyyD4GBSLBFd5pZKQn+S6NicCDN6G6p6lwyjTgS/0zLtXVggGPwp/li+E0jj4Nfki8xfTfTP9zomALywPJJPKRykcfX2mnzk5EOpyio4ywo5D4M82oagSCvUWzgPXrtOR5X3cN5v8JwG4v4MQ4LIOUBeLydNw3gfOR9ieWFwegd2epJR+LSm2S2OB0u8TAddTIDMM9nJFVXozZc1MxpKA1C3XUEZaARDeKOE6LPwEezsI5z29qMpTsM0KmJsR7Q5p+MqubxxYZLYGOI5f4Fvt647e4PZMMiuBmrC8n6nsOexeALD7k42uTrvDXQG7fQmB3WA/BgUxWywy6a2/ZNYMPt60+6cgCgHNxugjKbJ0xDxv1rMSSBDWj4EIoa8mAs4HuAj/WpDieiARxDSLIpVGGspmzIBcH7/mHAK/TjgCO1OTXdyeLs33ADYfHmwe9FdrjlLybq/T5Qcg6FH+Dl1/DL/wsxywtvm3HD0EL4l2J2iNSVx7yY1GZ40A9GzwTp/DzgVQ2ycb3bWW6DlMwk0aAzcvd9WxIakQSx8GAWwY1aSKQUPYuWxZSwZ9IdRHByew7mLxdkXvgiGEhccdCimhmLM3pTzQ/27LedwduX0z8AfXS3BlkeLlTgAAAABJRU5ErkJggg==");
+  background-size: 100% auto;
+  position: relative;
+  width: .32rem;
+  height: .32rem;
+  top: .07rem;
+  left: -.04rem;
+  margin-left: .1rem
+}
+
+.ubb-h5-icon {
+  width: .32rem;
+  height: .32rem;
+  vertical-align: middle
+}
+
+.ubb-aa, .ubb-abbr, .ubb-ac, .ubb-email, .ubb-img, .ubb-name, .ubb-sm, .ubb-wiki {
+  font-size: 14px;
+  color: #409bef;
+  line-height: 1.38;
+  padding: 10px 5px 15px 0;
+  word-wrap: break-word;
+  white-space: pre-wrap
+}
+
+.ubb-emotion {
+  max-width: 48px;
+  max-height: 48px;
+  vertical-align: bottom;
+  margin: 2px 0
+}
+
+.ubb-emotion[data-pkgname=AC娘迷你版] {
+  max-width: 26px;
+  max-height: 26px
+}
+
+.ubb-preview {
+  display: block
+}
+
+.ubb-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: top
+}
+
+.ubb-time {
+  color: #409bef;
+  cursor: pointer
+}
 
 div#comment-hot-list {
     background-color: #fe5c5c0a;

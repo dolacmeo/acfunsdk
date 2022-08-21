@@ -28,7 +28,7 @@ function gen_danmaku_item(danmaku_single) {
     danmaku_li.appendChild(dan_user);
     return danmaku_li
 }
-danmaku_data.forEach(function (item, index) {
+danmakuData.forEach(function (item, index) {
     danmaku_list.appendChild(gen_danmaku_item(item));
 })
-document.getElementById('page-info').innerHTML = "共"+danmaku_data.length+"条";
+document.getElementById('page-info').innerHTML = "共"+danmakuData.length+"条";

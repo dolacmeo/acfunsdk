@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+    <link href="../../assets/favicon.ico" rel="shortcut icon">
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
 </head>
 <body>
+{% include 'parts/header.html' %}
 <div id="main" class="single-part">
     <div id="main-content" class="clearfix" style="margin: 0 auto;">
         <div class="left-column">
@@ -37,7 +39,7 @@
             <div class="video-description clearfix dark-style">
                 <h1 class="title">
 <!--                    <a class="reco-tag" href="https://www.acfun.cn/rank/list/#cid=-1;range=1;pcid=-3" title="综合榜Top2" target="_blank">综合榜Top2</a>-->
-                    <a href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a>
+                    <a id="srcUrl" href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a>
                 </h1>
                 <div class="action-area">
                     <div class="left-area">
@@ -85,7 +87,7 @@
                                             <img src="mobile_qrcode.png">
                                         </div>
                                         <p>扫一扫手机继续观看</p></div>
-                                    <div class="mobile-right-area"><p>兔兔那么可爱当然要...</p></div>
+                                    <div class="mobile-right-area"><p>{{ description or "" }}</p></div>
                                 </div>
                             </div>
                         </div>
@@ -141,7 +143,7 @@
                     </div>
                 </div>
             </div>
-            {% include "comment.html" %}
+            {% include "parts/comment.html" %}
         </div>
         <div class="right-column">
             <div id="danmaku" style="display: block;">
@@ -195,13 +197,15 @@
         </div>
     </div>
 </div>
-{% include 'footer.html' %}
+{% include 'parts/toolbar.html' %}
+{% include 'parts/footer.html' %}
 <script type="text/javascript">
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
 </script>
 <script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
+<script type="text/javascript" src="ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.danmaku.js"></script>
-<script type="text/javascript" src="comment.js"></script>
+<script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>
 <script type="text/javascript" src="../../assets/js/localplayer.js"></script>
 <script type="text/javascript" src="../../assets/js/danmakuList.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

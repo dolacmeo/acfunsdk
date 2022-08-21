@@ -3633,7 +3633,7 @@ body {
 body #main {
     padding-top: 20px;
     background-color: #fff;
-    margin: 60px auto 0;
+    margin: auto 0;
 }
 
 body #main.dark-style {

@@ -200,6 +200,11 @@
 {% include 'parts/toolbar.html' %}
 {% include 'parts/footer.html' %}
 <script type="text/javascript">
+    document.querySelector(".danmaku-fold").addEventListener('click', function (ev) {
+        let father = document.querySelector(".danmaku-wrapper");
+        this.classList.toggle('unfold');
+        father.classList.toggle('unfold');
+    });
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
     function goTo(domId) {
         let aTag = document.createElement('a');

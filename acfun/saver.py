@@ -1,15 +1,15 @@
 # coding=utf-8
 import os
-import json
 import re
 import time
+import json
 import arrow
 import shutil
 import zipfile
 from uuid import uuid4
 from urllib.parse import urlparse, urlencode
 from .source import routes, apis
-from .page.utils import downloader
+from .page.utils import downloader, danmaku2ass
 from bs4 import BeautifulSoup as Bs
 from alive_progress import alive_bar
 from jinja2 import PackageLoader, Environment
@@ -46,7 +46,8 @@ class AcSaver:
         "emot": r"(\[emot=acfun,(\S+?)\/])",
         "image": r"(\[img=图片\](http[^\s]*)\[/img\])",
         "at": r"(\[at uid=(\d+)\](@[^\[]+)\[/at\])",
-        "resource": r"(\[resource id=(\d+) type=([1-5]) icon=[^\]]*\]([^\[]*)\[\/resource\])"
+        "resource": r"(\[resource id=(\d+) type=([1-5]) icon=[^\]]*\]([^\[]*)\[\/resource\])",
+        "jump": r"(\[time duration=(\d+)\]([^\[]+)\[/time\])",
     }
     ubb_resource_url = {
         "1": routes['bangumi'],
@@ -255,6 +256,9 @@ class AcSaver:
                 elif n == 'at':
                     comment_json_string = comment_json_string.replace(
                         tag[0], f'<a class=\\"ubb-name\\" target=\\"_blank\\" href=\\"https://www.acfun.cn/u/{tag[1]}\\">{tag[2]}</a>')
+                elif n == 'jump':
+                    comment_json_string = comment_json_string.replace(
+                        tag[0], f'<a class=\\"quickJump\\" onclick=\\"quickJump({tag[1]})\\">{tag[2]}</a>')
                 elif n == 'resource':
                     resource_a = '<a class=\\"ubb-ac\\" data-aid=\\"{ac_num}\\" href=\\"{href}\\" target=\\"_blank\\">{title}</a>'
                     comment_json_string = comment_json_string.replace(
@@ -281,7 +285,18 @@ class AcSaver:
             danmaku_js = f"let danmakuData={danmaku_json_string};"
             js_file.write(danmaku_js.encode())
         danmaku_js_saved = os.path.isfile(danmaku_js_path)
-        return all([danmaku_saved, danmaku_js_saved])
+        danmaku_ass_path = self._danmaku2ass(num)
+        danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
+        danmaku_ass_js_path = os.path.join(folder_path, f"ac{v_num}.ass.js")
+        danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
+        return all([danmaku_saved, danmaku_js_saved, danmaku_ass_saved, danmaku_ass_js_saved])
+
+    def _danmaku2ass(self, num: int = 1):
+        assert num <= len(self.ac_obj.video_list)
+        v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
+        folder_path = self._setup_folder()
+        self.ac_obj.set_video(num)
+        return danmaku2ass(self.acer.client, folder_path, f"ac{v_num}")
 
     def _save_qrcode(self, url: [str, None] = None, filename: str = "share_qrcode.png"):
         size = 200

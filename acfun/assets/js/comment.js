@@ -152,20 +152,14 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
 }
 
 function loadComments(commentData) {
-    let total = 999, totalText = "???";
-    if(typeof contentData === 'object'){
-        let mainData = contentData,
-            totalText = mainData.formatCommentCount,
-            total = mainData.commentCount;
-    }else if(typeof videoData === 'object'){
-        let mainData = videoData,
-            totalText = mainData.commentCountShow,
-            total = mainData.commentCount;
-    }else {console.log('unknown main data');return false;}
+    let totalToolbar = document.querySelector('#to-comm>.pts'),
+        totalText = totalToolbar.innerHTML,
+        total = parseInt(totalText);
     document.querySelector(".area-comm-number").innerHTML +=
         "(总) / "+
         commentData.rootComments.length.toString()+"(存) / "+
         (total - commentData.rootComments.length).toString()+"(删)";
+    totalToolbar.innerHTML = commentData.rootComments.length.toString();
     commentData.hotComments.forEach(function (item, index) {
         hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });

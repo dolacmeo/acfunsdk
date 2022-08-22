@@ -8,12 +8,21 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
+    <style>
+        .left-column.unfold{
+            width: 100% !important;
+            max-width: calc(100% - 40px) !important;
+        }
+        .right-column.unfold{
+            width: 0 !important;
+        }
+    </style>
 </head>
 <body>
 {% include 'parts/header.html' %}
 <div id="main" class="single-part">
     <div id="main-content" class="clearfix" style="margin: 0 auto;">
-        <div class="left-column">
+        <div class="left-column unfold">
             <div class="player-box">
                 <div id="player">
                     <div id="ACPlayer">
@@ -145,9 +154,9 @@
             </div>
             {% include "parts/comment.html" %}
         </div>
-        <div class="right-column">
+        <div class="right-column unfold">
             <div id="danmaku" style="display: block;">
-                <div class="danmaku-wrapper unfold">
+                <div class="danmaku-wrapper">
                     <div class="danmaku-container">
                         <div class="danmaku-list-container">
                             <div class="danmaku-list">
@@ -181,7 +190,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="danmaku-fold unfold">弹幕列表</div>
+                    <div class="danmaku-fold">弹幕列表</div>
                 </div>
             </div>
 <!--            <div class="part">-->
@@ -201,9 +210,12 @@
 {% include 'parts/footer.html' %}
 <script type="text/javascript">
     document.querySelector(".danmaku-fold").addEventListener('click', function (ev) {
-        let father = document.querySelector(".danmaku-wrapper");
-        this.classList.toggle('unfold');
-        father.classList.toggle('unfold');
+        let father = document.querySelector(".danmaku-wrapper"),
+            leftC = document.querySelector(".left-column"),
+            rightC = document.querySelector(".right-column");
+        [this, father, leftC, rightC].forEach(function (item) {
+            item.classList.toggle('unfold');
+        })
     });
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
     function goTo(domId) {

@@ -207,14 +207,28 @@ class AcSaver:
         return os.path.isfile(json_path)
 
     def _save_comment(self):
+        folder_path = self._setup_folder()
+        local_comment_data, local_comment_floors = None, []
+        comment_json_path = os.path.join(folder_path, f"ac{self.ac_obj.ac_num}.comment.json")
+        if os.path.isfile(comment_json_path):
+            local_comment_data = json.load(open(comment_json_path, 'rb'))
+            local_comment_floors = [x['floor'] for x in local_comment_data['rootComments']]
         comment_obj = self.ac_obj.comment()
         comment_obj.get_all_comment()
-        comment_data = {
-            "hotComments": comment_obj.hot_comments,
-            "rootComments": comment_obj.root_comments,
-            "subCommentsMap": comment_obj.sub_comments,
-            "save_unix": time.time()
-        }
+        if local_comment_data is not None:
+            comment_data = local_comment_data
+            comment_data['hotComments'] = comment_obj.hot_comments
+            comment_data['subCommentsMap'].update(comment_obj.sub_comments)
+            comment_data['save_unix'] = time.time()
+            comment_data['rootComments'].extend([c for c in comment_obj.root_comments
+                                                 if c['floor'] not in local_comment_floors])
+        else:
+            comment_data = {
+                "hotComments": comment_obj.hot_comments,
+                "rootComments": comment_obj.root_comments,
+                "subCommentsMap": comment_obj.sub_comments,
+                "save_unix": time.time()
+            }
         uids = list()
         for c in comment_data['rootComments']:
             if c['userId'] not in uids:

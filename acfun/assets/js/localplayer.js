@@ -51,3 +51,4 @@ player.addEventListener('resize', function (ev) {
     }
     // this.handleTitleDescSize()
 });
+function quickJump(sec) {player.currentTime = sec;goTo("ACPlayer")}

@@ -201,6 +201,11 @@
 {% include 'parts/footer.html' %}
 <script type="text/javascript">
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
+    function goTo(domId) {
+        let aTag = document.createElement('a');
+        aTag.setAttribute('href', '#'+domId);
+        aTag.click();
+    }
 </script>
 <script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.js"></script>

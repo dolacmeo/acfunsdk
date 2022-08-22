@@ -13,6 +13,9 @@ function gen_danmaku_item(danmaku_single) {
     danmaku_li.setAttribute('data-user', danmaku_single.userId);
     danmaku_li.setAttribute('data-time', (danmaku_single.position / 1000).toString());
     danmaku_li.setAttribute('data-message', danmaku_single.body);
+    danmaku_li.addEventListener('click', function () {
+        document.getElementById('localPlayer').currentTime = (danmaku_single.position / 1000).toString();
+    });
 
     dan_time.setAttribute('class', 'danmaku-time');
     dan_time.innerHTML = pos2time(danmaku_single.position);

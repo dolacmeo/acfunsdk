@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
+    <title>{{ RAW.title }}</title>
     <link href="../../assets/favicon.ico" rel="shortcut icon">
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
@@ -16,19 +16,22 @@
         .right-column.unfold{
             width: 0 !important;
         }
+        .left-column.unfold #player{
+            position: unset !important;
+        }
     </style>
 </head>
 <body>
 {% include 'parts/header.html' %}
 <div id="main" class="single-part">
     <div id="main-content" class="clearfix" style="margin: 0 auto;">
-        <div class="left-column unfold">
+        <div class="left-column">
             <div class="player-box">
                 <div id="player">
                     <div id="ACPlayer">
                         <div class="container-player" style="">
                             <div class="container-video">
-                                <video id="localPlayer" preload="auto" poster="cover.jpg" controls>
+                                <video id="localPlayer" preload="auto" poster="cover.{{ cover_ext }}" controls>
                                     <source src="ac{{ v_num }}.mp4" type="video/mp4">
                                 </video>
                                 <div class="container-plugins-inner">
@@ -48,23 +51,23 @@
             <div class="video-description clearfix dark-style">
                 <h1 class="title">
 <!--                    <a class="reco-tag" href="https://www.acfun.cn/rank/list/#cid=-1;range=1;pcid=-3" title="综合榜Top2" target="_blank">综合榜Top2</a>-->
-                    <a id="srcUrl" href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ title }}</span></a>
+                    <a id="srcUrl" href="https://www.acfun.cn/v/ac{{ v_num }}"><span>{{ RAW.title }}</span></a>
                 </h1>
                 <div class="action-area">
                     <div class="left-area">
-                        {% if originalDeclare %}
+                        {% if RAW.originalDeclare %}
                         <div class="originalDeclare" style="display: inline-block;"><span class="originalDeclareText icon-ks icon-icon_-jin-zhi-zhuan-zai">未经作者授权，禁止转载</span></div>
                         {% endif %}
-                        <div class="views"><span class="viewsCount" title="{{ viewCount }}">{{ viewCountShow }}</span>播放</div>
-                        <div class="danmu"><span class="danmuCount sp2" title="{{ danmakuCount }}">{{ danmakuCountShow }}</span>弹幕</div>
-                        <div class="comment"><span class="commentCount" title="{{ commentCount }}">{{ commentCountShow }}</span>评论</div>
+                        <div class="views"><span class="viewsCount" title="{{ RAW.viewCount }}">{{ RAW.viewCountShow }}</span>播放</div>
+                        <div class="danmu"><span class="danmuCount sp2" title="{{ RAW.danmakuCount }}">{{ RAW.danmakuCountShow }}</span>弹幕</div>
+                        <div class="comment"><span class="commentCount" title="{{ RAW.commentCount }}">{{ RAW.commentCountShow }}</span>评论</div>
                         <div class="cache"><span>{{ cache_date }}</span><span>缓存</span></div>
                     </div>
                     <div class="right-area">
-                        <div class="like"><span class="icon"></span><span class="likeCount" title="{{ likeCount }}">{{ likeCountShow }}</span></div>
-                        <div class="collection"><span class="icon"></span><span class="collectionCount" title="{{ stowCount }}">{{ stowCountShow }}</span></div>
-                        <div class="banana"><span class="icon"></span><span class="bananaCount" title="{{ bananaCount }}">{{ bananaCountShow }}</span></div>
-                        <div class="share"><span class="icon"></span><span title="{{ shareCount }}">{{ shareCountShow }}</span>
+                        <div class="like"><span class="icon"></span><span class="likeCount" title="{{ RAW.likeCount }}">{{ RAW.likeCountShow }}</span></div>
+                        <div class="collection"><span class="icon"></span><span class="collectionCount" title="{{ RAW.stowCount }}">{{ RAW.stowCountShow }}</span></div>
+                        <div class="banana"><span class="icon"></span><span class="bananaCount" title="{{ RAW.bananaCount }}">{{ RAW.bananaCountShow }}</span></div>
+                        <div class="share"><span class="icon"></span><span title="{{ RAW.shareCount }}">{{ RAW.shareCountShow }}</span>
                             <div class="share-module">
                                 <div class="share-title">分享本视频给朋友吧</div>
                                 <div class="share-action-area">
@@ -96,7 +99,7 @@
                                             <img src="mobile_qrcode.png">
                                         </div>
                                         <p>扫一扫手机继续观看</p></div>
-                                    <div class="mobile-right-area"><p>{{ title }}</p></div>
+                                    <div class="mobile-right-area"><p>{{ RAW.title }}</p></div>
                                 </div>
                             </div>
                         </div>
@@ -104,22 +107,23 @@
                 </div>
             </div>
             <div class="introduction">
-                <div class="up-area">
+                <div class="up-area">{% set hasStaffContribute = RAW.get('staffContribute') == True %}
+                    {% if not hasStaffContribute %}
                     <div class="up-details">
-                        <a href="https://www.acfun.cn/u/{{ user.href }}" class="up-avatar up-avatar-wrapper" target="_blank">
-                            <img src="../../member/{{ user.href }}_avatar" class="avatar live-avatar">
+                        <a href="https://www.acfun.cn/u/{{ RAW.user.href }}" class="up-avatar up-avatar-wrapper" target="_blank">
+                            <img src="../../member/{{ RAW.user.href }}_avatar" class="avatar live-avatar">
                         </a>
                         <div class="up-data">
                             <div class="up-info">
-                                <a class="up-name" href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" title="注册于 {{ up_reg_date }}"
-                                        {% if user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}>{{ user.name }}</a>
+                                <a class="up-name" href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank" title="注册于 {{ up_reg_date }}"
+                                        {% if RAW.user.nameColor == 1 %} style="{{ RAW.user.nameStyle }}"{% endif %}>{{ RAW.user.name }}</a>
                                 {% if up_data.isContractUp %}
                                 <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
                                 {% endif %}
-                                {% if 2 in user.verifiedTypes %}
-                                <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + user.verifiedText or '' }}"></span>
+                                {% if 2 in RAW.user.verifiedTypes %}
+                                <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + RAW.user.verifiedText or '' }}"></span>
                                 {% endif %}
-                                {% if 5 in user.verifiedTypes %}
+                                {% if 5 in RAW.user.verifiedTypes %}
                                 <span class="up-college-verified verified-icon">
                                     <span class="verified-icon up-college-verified-icon"></span>
                                     <span class="up-college-verified-content">
@@ -132,19 +136,39 @@
                                 <span class="verified-icon avi-verified-icon" title="AVI虚拟偶像标识" style="display: none;"></span>
                                 <span class="verified-icon advanced-danmaku-verified-icon" title="高弹达人标识" style="display:none"></span>
                             </div>
-                            <div class="publish-time">发布于&nbsp;{{ createTimeMillis|unix2datestr }}</div>
+                            <div class="publish-time">发布于&nbsp;{{ RAW.createTimeMillis|unix2datestr }}</div>
                         </div>
                     </div>
+                    {% else %}
+                        <div class="up-details staff-details">
+                            <a href="/u/{{ RAW.user.href }}" class="up-avatar up-avatar-wrapper" target="_blank">
+                                <img src="../../member/{{ RAW.user.href }}_avatar" class="avatar live-avatar">
+                            </a>
+                            <a href="/u/{{ RAW.user.href }}" class="up-name">{{ RAW.user.name }}</a>
+                            <div class="role">{{ RAW.upInfo.staffRoleName }}</div><div class="follow hidden">+</div>
+                        </div>
+                    {% for staff in RAW.get('staffInfos') %}
+                    <div class="staff-details">
+                        <div>
+                            <a href="https://www.acfun.cn/u/{{ staff.href }}" target="_blank" class="staff-avatar">
+                                <img alt="{{ staff.verifiedText }}" src="../../member/{{ staff.href }}_avatar" class="avatar live-avatar">
+                            </a>
+                        </div>
+                        <a href="https://www.acfun.cn/u/{{ staff.href }}" class="staff-name">{{ staff.name }}</a>
+                        <div class="role">{{ staff.staffRoleName }}</div><div class="follow hidden">+</div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
                     <div class="up-interactive">
-                        <div class="follow-up not-follow" title="{{ fanCountValue }}">关注&nbsp;{{ user.fanCount }}</div>
+                        <div class="follow-up not-follow" title="{{ RAW.fanCountValue }}">关注&nbsp;{{ RAW.user.fanCount }}</div>
 <!--                            <div class="btn-reward">鼓励</div>-->
                     </div>
                 </div>
                 <div class="content-description">
-                    <div class="description-container">{{ description or "" }}</div>
-                    <div class="originalLink">{{ originalLinkUrl or "" }}</div>
+                    <div class="description-container">{{ RAW.description or "" }}</div>
+                    <div class="originalLink">{{ RAW.originalLinkUrl or "" }}</div>
                     <div class="tag" id="bd_tag">
-                        {% for tag in tagList %}
+                        {% for tag in RAW.tagList %}
                         <span class="tag-single fl">
                             <a href="https://www.acfun.cn/search?keyword={{ tag.name }}" data-tid="{{ tag.id }}" target="_blank" class="fl">{{ tag.name }}</a>
                         </span>
@@ -154,9 +178,9 @@
             </div>
             {% include "parts/comment.html" %}
         </div>
-        <div class="right-column unfold">
+        <div class="right-column">
             <div id="danmaku" style="display: block;">
-                <div class="danmaku-wrapper">
+                <div class="danmaku-wrapper unfold">
                     <div class="danmaku-container">
                         <div class="danmaku-list-container">
                             <div class="danmaku-list">
@@ -190,19 +214,24 @@
                             </div>
                         </div>
                     </div>
-                    <div class="danmaku-fold">弹幕列表</div>
+                    <div class="danmaku-fold unfold">弹幕列表</div>
                 </div>
             </div>
-<!--            <div class="part">-->
-<!--                <div class="part-title"><h3>分段列表</h3>-->
-<!--                    <p>共2P, 当前正在播放<span class="current-priority">1</span>P</p></div>-->
-<!--                <div class="fl part-wrap">-->
-<!--                    <ul class="scroll-div">-->
-<!--                        <li class="single-p active" data-href="/v/ac17693897_1" title="定稿" data-id="14121044">定稿</li>-->
-<!--                        <li class="single-p" data-href="/v/ac17693897_2" title="舞蹈纯享" data-id="14121042">舞蹈纯享</li>-->
-<!--                    </ul>-->
-<!--                </div>-->
-<!--            </div>-->
+            {% if RAW.videoList|length > 1 %}
+            <div class="part">
+                <div class="part-title"><h3>分段列表</h3>
+                    <p>共{{ RAW.videoList|length }}P, 当前正在播放<span class="current-priority">{{ partNum }}</span>P</p></div>
+                <div class="fl part-wrap">
+                    <ul class="scroll-div">
+                        {% for part in RAW.videoList %}
+                        <li class="single-p{% if loop.index == partNum %} active{% endif %}"
+                            data-href="ac{{ RAW.dougaId }}{{ "_"+loop.index|string if loop.index > 1 else "" }}.html"
+                            title="{{ part.title }}" data-id="{{ part.id }}">{{ part.title }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -217,6 +246,13 @@
             item.classList.toggle('unfold');
         })
     });
+    {% if RAW.videoList|length > 1 %}
+    document.querySelectorAll(".part-wrap .single-p").forEach(function (item) {
+        item.addEventListener('click', function (ev) {
+            window.location.href = item.getAttribute('data-href');
+        });
+    });
+    {% endif %}
     const copyText = (text) => navigator.clipboard?.writeText && navigator.clipboard.writeText(text)
     function goTo(domId) {
         let aTag = document.createElement('a');
@@ -224,7 +260,7 @@
         aTag.click();
     }
 </script>
-<script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
+<script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.danmaku.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>

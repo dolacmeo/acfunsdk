@@ -152,6 +152,8 @@ class AcSaver:
         return self._download(src_url, fname, ex_dir)
 
     def _save_member(self, ids: list, force: bool = False):
+        if len(ids) == 0:
+            return []
         done = list()
         member_dir = os.path.join(self.dest_path, 'member')
         saved = os.listdir(member_dir)
@@ -218,10 +220,10 @@ class AcSaver:
         if local_comment_data is not None:
             comment_data = local_comment_data
             comment_data['hotComments'] = comment_obj.hot_comments
+            comment_data['rootComments'].extend(
+                [c for c in comment_obj.root_comments if c['floor'] not in local_comment_floors])
             comment_data['subCommentsMap'].update(comment_obj.sub_comments)
             comment_data['save_unix'] = time.time()
-            comment_data['rootComments'].extend([c for c in comment_obj.root_comments
-                                                 if c['floor'] not in local_comment_floors])
         else:
             comment_data = {
                 "hotComments": comment_obj.hot_comments,
@@ -300,9 +302,12 @@ class AcSaver:
             js_file.write(danmaku_js.encode())
         danmaku_js_saved = os.path.isfile(danmaku_js_path)
         danmaku_ass_path = self._danmaku2ass(num)
-        danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
-        danmaku_ass_js_path = os.path.join(folder_path, f"ac{v_num}.ass.js")
-        danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
+        if danmaku_ass_path is None:
+            danmaku_ass_saved, danmaku_ass_js_saved = True, True
+        else:
+            danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
+            danmaku_ass_js_path = os.path.join(folder_path, f"ac{v_num}.ass.js")
+            danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
         return all([danmaku_saved, danmaku_js_saved, danmaku_ass_saved, danmaku_ass_js_saved])
 
     def _danmaku2ass(self, num: int = 1):
@@ -329,50 +334,62 @@ class ArticleSaver(AcSaver):
 
     def __init__(self, acer, ac_obj):
         super().__init__(acer, ac_obj)
+        self.folder_path = self._setup_folder()
+        self.v_num = f"{self.ac_obj.ac_num}"
 
-    def _save_content(self):
-        self._save_member([self.ac_obj.article_data['user']['id']])
-        folder_path = self._setup_folder()
-        v_num = f"{self.ac_obj.ac_num}"
-        up_data = self.get_user(self.ac_obj.article_data['user']['id'])
-        content_raw_saved = self._json_saver(self.ac_obj.article_data, f"ac{v_num}.json")
-        content_json_string = open(os.path.join(folder_path, f"ac{v_num}.json"), 'rb').read().decode()
-        content_js_path = os.path.join(folder_path, f"ac{v_num}.js")
+    def _save_base_data(self):
+        content_raw_saved = self._json_saver(self.ac_obj.article_data, f"ac{self.v_num}.json")
+        content_json_string = open(os.path.join(self.folder_path, f"ac{self.v_num}.json"), 'rb').read().decode()
+        content_js_path = os.path.join(self.folder_path, f"ac{self.v_num}.js")
         with open(content_js_path, 'wb') as js_file:
             content_js = f"let contentData={content_json_string};"
             js_file.write(content_js.encode())
         content_js_saved = os.path.isfile(content_js_path)
-        article_template = self.templates.get_template('article.html')
-        article_html = article_template.render(
-            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
-            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
-            v_num=v_num, up_data=up_data, **self.ac_obj.article_data)
-        html_obj = Bs(article_html, 'lxml')
-        html_img_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
-        self._renew_folder(os.path.join(folder_path, 'img'))
-        for img in html_obj.select('img'):
-            if img.attrs['src'].startswith('http') or img.attrs['src'].startswith('//'):
-                saved_path = self._save_images(img.attrs['src'], ex_dir=html_img_path)
-                img.attrs['alt'] = img.attrs['src']
-                img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
-        comment_saved = self._save_comment()
-        html_path = os.path.join(self.dest_path, folder_path, f'ac{v_num}.html')
-        with open(html_path, 'wb') as html_file:
-            html_file.write(html_obj.prettify().encode())
-        content_html_saved = os.path.isfile(html_path)
+        return all([content_raw_saved, content_js_saved])
+
+    def _save_page(self):
         cover_path = self._save_images(self.ac_obj.article_data['coverUrl'], 'cover',
                                        [self.folder_name, f"ac{self.ac_obj.ac_num}"])
         cover_saved = os.path.isfile(cover_path)
         share_qrcode_path = self._save_qrcode()
         share_qrcode_saved = os.path.isfile(share_qrcode_path)
-        return all([
-            content_raw_saved,
-            content_js_saved,
-            comment_saved,
-            cover_saved,
-            share_qrcode_saved,
-            content_html_saved
+        up_data = self.get_user(self.ac_obj.article_data['user']['id'])
+        article_template = self.templates.get_template('article.html')
+        article_html = article_template.render(
+            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
+            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
+            v_num=self.v_num, up_data=up_data, RAW=self.ac_obj.article_data)
+        html_obj = Bs(article_html, 'lxml')
+        html_img_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
+        self._renew_folder(os.path.join(self.folder_path, 'img'))
+        for img in html_obj.select('.article-content img'):
+            if img.attrs['src'].startswith('http') or img.attrs['src'].startswith('//'):
+                saved_path = self._save_images(img.attrs['src'], ex_dir=html_img_path)
+                img.attrs['alt'] = img.attrs['src']
+                img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
+        html_path = os.path.join(self.dest_path, self.folder_path, f'ac{self.v_num}.html')
+        with open(html_path, 'wb') as html_file:
+            html_file.write(html_obj.prettify().encode())
+        content_html_saved = os.path.isfile(html_path)
+        return all([cover_saved, share_qrcode_saved, content_html_saved])
+
+    def save_all(self):
+        # 保存文章数据
+        data_saved = self._save_base_data()
+        # 保存文章封面、二维码、页面与图片
+        page_saved = self._save_page()
+        # 保存作者信息
+        up_saved = self._save_member([self.ac_obj.article_data['user']['id']])
+        # 保存评论
+        comment_saved = self._save_comment()
+        done = all([
+            data_saved,
+            page_saved,
+            up_saved,
+            comment_saved
         ])
+        print(self.folder_path)
+        return done
 
     pass
 
@@ -389,51 +406,83 @@ class VideoSaver(AcSaver):
 
     def __init__(self, acer, ac_obj):
         super().__init__(acer, ac_obj)
+        self.folder_path = self._setup_folder()
 
-    def _save_video(self, num: int = 1):
-        assert num <= len(self.ac_obj.video_list)
+    def _save_base_data(self, num: int = 1):
         v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
-        up_data = self.get_user(self.ac_obj.video_data['user']['id'])
-        folder_path = self._setup_folder()
         video_raw_saved = self._json_saver(self.ac_obj.video_data, f"ac{v_num}.json")
-        video_json_string = open(os.path.join(folder_path, f"ac{v_num}.json"), 'rb').read().decode()
-        video_js_path = os.path.join(folder_path, f"ac{v_num}.js")
+        video_json_string = open(os.path.join(self.folder_path, f"ac{v_num}.json"), 'rb').read().decode()
+        video_js_path = os.path.join(self.folder_path, f"ac{v_num}.js")
         with open(video_js_path, 'wb') as js_file:
             content_js = f"let videoData={video_json_string};"
             js_file.write(content_js.encode())
         video_js_saved = os.path.isfile(video_js_path)
-        acfun_url = f"{routes['video']}{v_num}"
-        you_get_download(acfun_url, output_dir=folder_path, merge=True)
-        video_saved = os.path.isfile(os.path.join(folder_path, f"{v_num}.mp4"))
+        return all([video_raw_saved, video_js_saved])
+
+    def _save_page(self, num: int = 1):
+        v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
+        cover_path = self._save_images(
+            self.ac_obj.video_data['coverUrl'], 'cover', [self.folder_name, f"ac{self.ac_obj.ac_num}"])
+        cover_ext = os.path.basename(cover_path).split('.')[-1]
+        cover_saved = os.path.isfile(cover_path)
+        if num == 1:
+            share_qrcode_path = self._save_qrcode()
+            share_qrcode_saved = os.path.isfile(share_qrcode_path)
+            mobile_qrcode_path = self._save_qrcode(self.ac_obj.mobile_url, "mobile_qrcode.png")
+            mobile_qrcode_saved = os.path.isfile(mobile_qrcode_path)
+        else:
+            cover_saved, share_qrcode_saved, mobile_qrcode_saved = True, True, True
+        up_data = self.get_user(self.ac_obj.video_data['user']['id'])
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(
             up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
-            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
-            v_num=v_num, up_data=up_data, **self.ac_obj.video_data)
-        cover_path = self._save_images(self.ac_obj.video_data['coverUrl'], 'cover',
-                                       [self.folder_name, f"ac{self.ac_obj.ac_num}"])
-        cover_saved = os.path.isfile(cover_path)
-        share_qrcode_path = self._save_qrcode()
-        share_qrcode_saved = os.path.isfile(share_qrcode_path)
-        mobile_qrcode_path = self._save_qrcode(self.ac_obj.mobile_url, "mobile_qrcode.png")
-        mobile_qrcode_saved = os.path.isfile(mobile_qrcode_path)
-        comment_saved = self._save_comment()
-        html_path = os.path.join(self.dest_path, folder_path, f"ac{v_num}.html")
+            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"), cover_ext=cover_ext, partNum=num,
+            v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
+        html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:
             html_file.write(video_html.encode())
         video_html_saved = os.path.isfile(html_path)
-        video_danmaku_saved = self._save_danmaku(num)
-        return all([
-            video_raw_saved,
-            video_js_saved,
+        return all([cover_saved, share_qrcode_saved, mobile_qrcode_saved, video_html_saved])
+
+    def save_video(self, num: int = 1):
+        assert 0 < num <= len(self.ac_obj.video_list)
+        v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
+        # 保存视频数据
+        data_saved = self._save_base_data(num)
+        # 保存视频封面、二维码、页面
+        page_saved = self._save_page(num)
+        # 保存作者信息
+        uids = [self.ac_obj.video_data['user']['id']]
+        staff = self.ac_obj.video_data.get('staffInfos', [])
+        if len(staff):
+            uids.extend([user['href'] for user in staff])
+        up_saved = self._save_member(uids)
+        # 保存视频弹幕
+        danmaku_saved = self._save_danmaku(num)
+        # 保存视频文件
+        acfun_url = f"{routes['video']}{v_num}"
+        video_saved = os.path.isfile(os.path.join(self.folder_path, f"ac{v_num}.mp4"))
+        if video_saved is False:
+            you_get_download(acfun_url, output_dir=self.folder_path, merge=True)
+            video_saved = os.path.isfile(os.path.join(self.folder_path, f"ac{v_num}.mp4"))
+        # 保存评论
+        comment_saved = self._save_comment() if num == 1 else True
+        done = all([
+            data_saved,
+            page_saved,
+            uids == up_saved,
+            danmaku_saved,
             video_saved,
-            cover_saved,
-            share_qrcode_saved,
-            mobile_qrcode_saved,
-            video_danmaku_saved,
-            comment_saved,
-            video_html_saved
+            comment_saved
         ])
+        print(self.folder_path)
+        return done
+
+    def save_all(self):
+        result = []
+        for i in range(len(self.ac_obj.video_list)):
+            result.append(self.save_video(i + 1))
+        return all(result)
 
     pass
 

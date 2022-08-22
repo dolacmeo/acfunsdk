@@ -3,7 +3,7 @@ import os
 import json
 import js2py
 from bs4 import BeautifulSoup as Bs
-from acfun.source import routes
+from acfun.source import routes, apis
 from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
 from acfun.libs.you_get.extractors.acfun import download as you_get_download
 from acfun.saver import VideoSaver
@@ -61,6 +61,10 @@ class AcVideo:
         self.video_data.update(get_channel_info(req.text))
         self.vid = self.video_data.get("currentVideoId")
         self.page_pagelets = get_page_pagelets(self.page_obj)
+        staff_data = self.staff()
+        if staff_data is not None:
+            self.video_data['staffInfos'] = staff_data.get('staffInfos')
+            self.video_data['upInfo'] = staff_data.get('upInfo')
 
     def saver(self):
         return VideoSaver(self.acer, self)
@@ -87,6 +91,14 @@ class AcVideo:
 
     def up(self):
         return self.acer.AcUp(self.video_data.get('user', {}))
+
+    def staff(self):
+        if self.video_data.get('staffContribute') is not True:
+            return None
+        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        api_req = self.acer.client.post(apis['getStaff'], data=form_data)
+        api_data = api_req.json()
+        return api_data
 
     def danmaku(self):
         return AcDanmaku(self.acer, self.video_data)

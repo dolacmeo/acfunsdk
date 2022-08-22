@@ -7,11 +7,11 @@
                         <h1 class="logo"><a href="https://www.acfun.cn"><img src="../../assets/img/acfunlogo.svg" width="94" height="46" loading="lazy"></a></h1>
                         <a class="fl niudan" target="_blank" href="https://shop213417608.taobao.com/" style="display: none;">
                             <i class="icon-ks icon-dao-hang-shop"></i><span>周边商城</span></a>
-                        <a class="fl niudan face-entry" target="_blank" href="/face-catcher" style="display: none;">
+                        <a class="fl niudan face-entry" target="_blank" href="https://www.acfun.cn/face-catcher" style="display: none;">
                             <i class="icon-ks icon-face-catcher"></i><span>AcFun面捕助手</span></a>
                         <div class="channel-bread">
-                            <a href="https://www.acfun.cn/v/list68/index.htm" target="_blank" class="channel-second">影视</a>
-                            <a href="https://www.acfun.cn/v/list193/index.htm" target="_blank" class="channel-third">电影杂谈</a>
+                            <a href="https://www.acfun.cn/v/list{{ RAW.channel.id }}/index.htm" target="_blank" class="channel-second">{{ RAW.channel.name }}</a>
+                            <a href="https://www.acfun.cn/v/list{{ RAW.channel.parentId }}/index.htm" target="_blank" class="channel-third">{{ RAW.channel.parentName }}</a>
                         </div>
                         <div class="channel-guide">
                             <div class="guide-icon">导航</div>
@@ -50,7 +50,9 @@
                     <div class="search-container">
                         <div id="search-box" class="fl search-box">
                             <div class="form">
-                                <input type="text" placeholder="爆蕉一夏 清爽回归" data-url="https://www.acfun.cn/a/ac36069854" value="" autocomplete="off" id="search-text">
+                                <input id="search-text" aria-label="" type="text" value=""
+                                       data-url="https://www.acfun.cn/a/ac36069854"
+                                       placeholder="爆蕉一夏 清爽回归" autocomplete="off">
                                 <button id="search-btn" class="search-btn"><i class="icon-ks icon-dao-hang-search"></i></button>
                                 <div class="search-result" style="display: none;">
                                     <div class="rec" style="display: block;">
@@ -63,22 +65,19 @@
                                         </div>
                                         <div class="hot-search">今日热搜</div>
                                         <ul>
-                                            <li class="search-hot-item">
-                                                <a href="/search?keyword=化物语" target="_blank">
+                                            <li class="search-hot-item"><a href="https://www.acfun.cn/search?keyword=化物语" target="_blank">
                                                 <span class="num">1</span><b>化物语</b></a></li>
-                                            <li class="search-hot-item">
-                                                <a href="/search?keyword=假面骑士" target="_blank">
+                                            <li class="search-hot-item"><a href="https://www.acfun.cn/search?keyword=假面骑士" target="_blank">
                                                 <span class="num">2</span><b>假面骑士</b></a></li>
-                                            <li class="search-hot-item">
-                                                <a href="/search?keyword=瑞克和莫蒂" target="_blank">
+                                            <li class="search-hot-item"><a href="https://www.acfun.cn/search?keyword=瑞克和莫蒂" target="_blank">
                                                 <span class="num">3</span><b>瑞克和莫蒂</b></a></li>
-                                            <li class=""><a href="/search?keyword=前说" target="_blank">
+                                            <li class=""><a href="https://www.acfun.cn/search?keyword=前说" target="_blank">
                                                 <span class="num">4</span><b>前说</b></a></li>
-                                            <li class=""><a href="/search?keyword=三坪房间的侵略者" target="_blank">
+                                            <li class=""><a href="https://www.acfun.cn/search?keyword=三坪房间的侵略者" target="_blank">
                                                 <span class="num">5</span><b>三坪房间的侵略者</b></a></li>
-                                            <li class=""><a href="/search?keyword=大贵族" target="_blank">
+                                            <li class=""><a href="https://www.acfun.cn/search?keyword=大贵族" target="_blank">
                                                 <span class="num">6</span><b>大贵族</b></a></li>
-                                            <li class=""><a href="/search?keyword=2022 爆蕉一夏" target="_blank">
+                                            <li class=""><a href="https://www.acfun.cn/search?keyword=2022 爆蕉一夏" target="_blank">
                                                 <span class="num">7</span><b>2022 爆蕉一夏</b></a></li>
                                         </ul>
                                     </div>
@@ -97,8 +96,8 @@
                                 <!-- <span>下载客户端</span> -->
                             </a>
                             <div class="app-download">
-                                <img src="../../assets/img/app-download.png"
-                                     alt="下载客户端" loading="lazy"></div>
+                                <img src="../../assets/img/app-download.png" alt="下载客户端" loading="lazy">
+                            </div>
                         </li>
                         <li class="guide-item guide-user">
                             <a class="user-nologin item"
@@ -142,8 +141,7 @@
                                 <span class="guide-item-title">历史</span></a>
                             <div class="guide-item-con">
                                 <div class="empty-cont">
-                                    <img src="https://ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/empty.2894aa451f1f579428a2.svg"
-                                         alt="">
+                                    <img src="../../assets/img/empty.svg" alt="">
                                     <p>尚未记录任何历史信息</p>
                                 </div>
                                 <ul>
@@ -158,8 +156,7 @@
                                 <span class="guide-item-title">动态</span></a>
                             <div class="guide-item-con">
                                 <div class="empty-cont">
-                                    <img src="https://ali-imgs.acfun.cn/kos/nlav10360/static/common/static/img/empty.2894aa451f1f579428a2.svg"
-                                         alt="">
+                                    <img src="../../assets/img/empty.svg" alt="">
                                     <p>暂时没有新动态了哦！</p></div>
                                 <ul></ul>
                                 <a href="https://www.acfun.cn/member/feeds" target="_blank"
@@ -181,7 +178,7 @@
                                 </ul>
                             </div>
                             <div class="guide-item-creative-tips">
-                                <img src="https://static.yximgs.com/udata/pkg/acfun/creative-tips-new.png"></div>
+                                <img src="../../assets/img/creative-tips-new.png"></div>
                         </li>
                         <li class="guide-item guide-upload">
                             <a href="https://member.acfun.cn" target="_blank" class="icon icon-upload item">投稿</a>
@@ -199,112 +196,110 @@
                 <div class="nav-sub">
                     <div class="nav-sub-con">
                         <ul data-category="112" data-cid="177" class="clearfix" style="display: none;">
-                            <li><a href="/u/3216851" target="_blank" data-cid="0">中国日报</a></li>
-                            <li><a href="/u/9755346" target="_blank" data-cid="0">环球时报</a></li>
-                            <li><a href="/u/14194071" target="_blank" data-cid="0">中国网</a></li>
-                            <li><a href="/u/16591709" target="_blank" data-cid="0">法治进行时</a></li>
-                            <li><a href="/u/14706221" target="_blank" data-cid="0">浙样红TV</a></li>
-                            <li><a href="/u/20143211" target="_blank" data-cid="0">快手</a></li>
-                            <li><a href="/u/13423227" target="_blank" data-cid="0">小央视频</a></li>
-                            <li><a href="/u/30169313" target="_blank" data-cid="0">人民资讯</a></li>
+                            <li><a href="https://www.acfun.cn/u/3216851" target="_blank" data-cid="0">中国日报</a></li>
+                            <li><a href="https://www.acfun.cn/u/9755346" target="_blank" data-cid="0">环球时报</a></li>
+                            <li><a href="https://www.acfun.cn/u/14194071" target="_blank" data-cid="0">中国网</a></li>
+                            <li><a href="https://www.acfun.cn/u/16591709" target="_blank" data-cid="0">法治进行时</a></li>
+                            <li><a href="https://www.acfun.cn/u/14706221" target="_blank" data-cid="0">浙样红TV</a></li>
+                            <li><a href="https://www.acfun.cn/u/20143211" target="_blank" data-cid="0">快手</a></li>
+                            <li><a href="https://www.acfun.cn/u/13423227" target="_blank" data-cid="0">小央视频</a></li>
+                            <li><a href="https://www.acfun.cn/u/30169313" target="_blank" data-cid="0">人民资讯</a></li>
                         </ul>
                         <ul data-category="105" data-cid="155" class="clearfix" style="display: none;">
-                            <li><a href="/bangumilist" target="_blank" data-cid="0">番剧列表</a></li>
-                            <li><a href="/v/list67/index.htm" target="_blank" data-cid="67">TV动画</a></li>
-                            <li><a href="/v/list180/index.htm" target="_blank" data-cid="180">剧场动画</a></li>
-                            <li><a href="/v/list120/index.htm" target="_blank" data-cid="120">国产动画</a></li>
+                            <li><a href="https://www.acfun.cn/bangumilist" target="_blank" data-cid="0">番剧列表</a></li>
+                            <li><a href="https://www.acfun.cn/v/list67/index.htm" target="_blank" data-cid="67">TV动画</a></li>
+                            <li><a href="https://www.acfun.cn/v/list180/index.htm" target="_blank" data-cid="180">剧场动画</a></li>
+                            <li><a href="https://www.acfun.cn/v/list120/index.htm" target="_blank" data-cid="120">国产动画</a></li>
                         </ul>
                         <ul data-category="14" data-cid="1" class="clearfix" style="display: none;">
-                            <li><a href="/v/list106/index.htm" target="_blank" data-cid="106">动画综合</a></li>
-                            <li><a href="/v/list190/index.htm" target="_blank" data-cid="190">短片·手书·配音</a></li>
-                            <li><a href="/v/list107/index.htm" target="_blank" data-cid="107">MAD·AMV</a></li>
-                            <li><a href="/v/list108/index.htm" target="_blank" data-cid="108">MMD·3D</a></li>
-                            <li><a href="/v/list207/index.htm" target="_blank" data-cid="207">虚拟偶像</a></li>
-                            <li><a href="/v/list159/index.htm" target="_blank" data-cid="159">动画资讯</a></li>
-                            <li><a href="/v/list133/index.htm" target="_blank" data-cid="133">COSPLAY·声优</a></li>
-                            <li><a href="/v/list99/index.htm" target="_blank" data-cid="99">特摄</a></li>
-                            <li><a href="/v/list212/index.htm" target="_blank" data-cid="212">番剧二创</a></li>
+                            <li><a href="https://www.acfun.cn/v/list106/index.htm" target="_blank" data-cid="106">动画综合</a></li>
+                            <li><a href="https://www.acfun.cn/v/list190/index.htm" target="_blank" data-cid="190">短片·手书·配音</a></li>
+                            <li><a href="https://www.acfun.cn/v/list107/index.htm" target="_blank" data-cid="107">MAD·AMV</a></li>
+                            <li><a href="https://www.acfun.cn/v/list108/index.htm" target="_blank" data-cid="108">MMD·3D</a></li>
+                            <li><a href="https://www.acfun.cn/v/list207/index.htm" target="_blank" data-cid="207">虚拟偶像</a></li>
+                            <li><a href="https://www.acfun.cn/v/list159/index.htm" target="_blank" data-cid="159">动画资讯</a></li>
+                            <li><a href="https://www.acfun.cn/v/list133/index.htm" target="_blank" data-cid="133">COSPLAY·声优</a></li>
+                            <li><a href="https://www.acfun.cn/v/list99/index.htm" target="_blank" data-cid="99">特摄</a></li>
+                            <li><a href="https://www.acfun.cn/v/list212/index.htm" target="_blank" data-cid="212">番剧二创</a></li>
                         </ul>
                         <ul data-category="18" data-cid="60" class="clearfix" style="left: 207.453px; display: none;">
-                            <li><a href="/v/list206/index.htm" target="_blank" data-cid="206">搞笑</a></li>
-                            <li><a href="/v/list87/index.htm" target="_blank" data-cid="87">鬼畜</a></li>
-                            <li><a href="/v/list188/index.htm" target="_blank" data-cid="188">明星</a></li>
+                            <li><a href="https://www.acfun.cn/v/list206/index.htm" target="_blank" data-cid="206">搞笑</a></li>
+                            <li><a href="https://www.acfun.cn/v/list87/index.htm" target="_blank" data-cid="87">鬼畜</a></li>
+                            <li><a href="https://www.acfun.cn/v/list188/index.htm" target="_blank" data-cid="188">明星</a></li>
                         </ul>
                         <ul data-category="153" data-cid="201" class="clearfix" style="left: 148.781px; display: none;">
-                            <li><a href="/v/list86/index.htm" target="_blank" data-cid="86">生活日常</a></li>
-                            <li><a href="/v/list88/index.htm" target="_blank" data-cid="88">萌宠</a></li>
-                            <li><a href="/v/list89/index.htm" target="_blank" data-cid="89">美食</a></li>
-                            <li><a href="/v/list204/index.htm" target="_blank" data-cid="204">旅行</a></li>
-                            <li><a href="/v/list127/index.htm" target="_blank" data-cid="127">手工·绘画</a></li>
-                            <li><a href="/v/list205/index.htm" target="_blank" data-cid="205">美妆·造型</a></li>
+                            <li><a href="https://www.acfun.cn/v/list86/index.htm" target="_blank" data-cid="86">生活日常</a></li>
+                            <li><a href="https://www.acfun.cn/v/list88/index.htm" target="_blank" data-cid="88">萌宠</a></li>
+                            <li><a href="https://www.acfun.cn/v/list89/index.htm" target="_blank" data-cid="89">美食</a></li>
+                            <li><a href="https://www.acfun.cn/v/list204/index.htm" target="_blank" data-cid="204">旅行</a></li>
+                            <li><a href="https://www.acfun.cn/v/list127/index.htm" target="_blank" data-cid="127">手工·绘画</a></li>
+                            <li><a href="https://www.acfun.cn/v/list205/index.htm" target="_blank" data-cid="205">美妆·造型</a></li>
                         </ul>
                         <ul data-category="16" data-cid="58" class="clearfix" style="left: 158.977px; display: none;">
-                            <li><a href="/v/list215/index.htm" target="_blank" data-cid="215">治愈系</a></li>
-                            <li><a href="/v/list136/index.htm" target="_blank" data-cid="136">原创·翻唱</a></li>
-                            <li><a href="/v/list137/index.htm" target="_blank" data-cid="137">演奏·乐器</a></li>
-                            <li><a href="/v/list103/index.htm" target="_blank" data-cid="103">Vocaloid</a></li>
-                            <li><a href="/v/list139/index.htm" target="_blank" data-cid="139">综合音乐</a></li>
-                            <li><a href="/v/list185/index.htm" target="_blank" data-cid="185">音乐选集·电台</a></li>
+                            <li><a href="https://www.acfun.cn/v/list215/index.htm" target="_blank" data-cid="215">治愈系</a></li>
+                            <li><a href="https://www.acfun.cn/v/list136/index.htm" target="_blank" data-cid="136">原创·翻唱</a></li>
+                            <li><a href="https://www.acfun.cn/v/list137/index.htm" target="_blank" data-cid="137">演奏·乐器</a></li>
+                            <li><a href="https://www.acfun.cn/v/list103/index.htm" target="_blank" data-cid="103">Vocaloid</a></li>
+                            <li><a href="https://www.acfun.cn/v/list139/index.htm" target="_blank" data-cid="139">综合音乐</a></li>
+                            <li><a href="https://www.acfun.cn/v/list185/index.htm" target="_blank" data-cid="185">音乐选集·电台</a></li>
                         </ul>
                         <ul data-category="17" data-cid="123" class="clearfix" style="left: 358.789px; display: none;">
-                            <li><a href="/v/list134/index.htm" target="_blank" data-cid="134">宅舞</a></li>
-                            <li><a href="/v/list135/index.htm" target="_blank" data-cid="135">综合舞蹈</a></li>
-                            <li><a href="/v/list129/index.htm" target="_blank" data-cid="129">偶像</a></li>
-                            <li><a href="/v/list208/index.htm" target="_blank" data-cid="208">中国舞</a></li>
+                            <li><a href="https://www.acfun.cn/v/list134/index.htm" target="_blank" data-cid="134">宅舞</a></li>
+                            <li><a href="https://www.acfun.cn/v/list135/index.htm" target="_blank" data-cid="135">综合舞蹈</a></li>
+                            <li><a href="https://www.acfun.cn/v/list129/index.htm" target="_blank" data-cid="129">偶像</a></li>
+                            <li><a href="https://www.acfun.cn/v/list208/index.htm" target="_blank" data-cid="208">中国舞</a></li>
                         </ul>
                         <ul data-category="15" data-cid="59" class="clearfix" style="left: 172.125px; display: none;">
-                            <li><a href="/v/list214/index.htm" target="_blank" data-cid="214">王者荣耀</a></li>
-                            <li><a href="/v/list210/index.htm" target="_blank" data-cid="210">我的世界</a></li>
-                            <li><a href="/v/list216/index.htm" target="_blank" data-cid="216">和平精英</a></li>
-                            <li><a href="/v/list217/index.htm" target="_blank" data-cid="217">第五人格</a></li>
-                            <li><a href="/v/list85/index.htm" target="_blank" data-cid="85">英雄联盟</a></li>
-                            <li><a href="/v/list145/index.htm" target="_blank" data-cid="145">电子竞技</a></li>
-                            <li><a href="/v/list186/index.htm" target="_blank" data-cid="186">网络游戏</a></li>
-                            <li><a href="/v/list84/index.htm" target="_blank" data-cid="84">主机单机</a></li>
-                            <li><a href="/v/list187/index.htm" target="_blank" data-cid="187">手机游戏</a></li>
-                            <li><a href="/v/list165/index.htm" target="_blank" data-cid="165">桌游卡牌</a></li>
+                            <li><a href="https://www.acfun.cn/v/list214/index.htm" target="_blank" data-cid="214">王者荣耀</a></li>
+                            <li><a href="https://www.acfun.cn/v/list210/index.htm" target="_blank" data-cid="210">我的世界</a></li>
+                            <li><a href="https://www.acfun.cn/v/list216/index.htm" target="_blank" data-cid="216">和平精英</a></li>
+                            <li><a href="https://www.acfun.cn/v/list217/index.htm" target="_blank" data-cid="217">第五人格</a></li>
+                            <li><a href="https://www.acfun.cn/v/list85/index.htm" target="_blank" data-cid="85">英雄联盟</a></li>
+                            <li><a href="https://www.acfun.cn/v/list145/index.htm" target="_blank" data-cid="145">电子竞技</a></li>
+                            <li><a href="https://www.acfun.cn/v/list186/index.htm" target="_blank" data-cid="186">网络游戏</a></li>
+                            <li><a href="https://www.acfun.cn/v/list84/index.htm" target="_blank" data-cid="84">主机单机</a></li>
+                            <li><a href="https://www.acfun.cn/v/list187/index.htm" target="_blank" data-cid="187">手机游戏</a></li>
+                            <li><a href="https://www.acfun.cn/v/list165/index.htm" target="_blank" data-cid="165">桌游卡牌</a></li>
                         </ul>
                         <ul data-category="19" data-cid="70" class="clearfix" style="display: none;">
-                            <li><a href="/v/list209/index.htm" target="_blank" data-cid="209">手办模玩</a></li>
-                            <li><a href="/v/list90/index.htm" target="_blank" data-cid="90">科技制造</a></li>
-                            <li><a href="/v/list189/index.htm" target="_blank" data-cid="189">人文科普</a></li>
-                            <li><a href="/v/list122/index.htm" target="_blank" data-cid="122">汽车</a></li>
-                            <li><a href="/v/list91/index.htm" target="_blank" data-cid="91">数码家电</a></li>
-                            <li><a href="/v/list151/index.htm" target="_blank" data-cid="151">演讲·公开课</a></li>
-                            <li><a href="/v/list149/index.htm" target="_blank" data-cid="149">广告</a></li>
+                            <li><a href="https://www.acfun.cn/v/list209/index.htm" target="_blank" data-cid="209">手办模玩</a></li>
+                            <li><a href="https://www.acfun.cn/v/list90/index.htm" target="_blank" data-cid="90">科技制造</a></li>
+                            <li><a href="https://www.acfun.cn/v/list189/index.htm" target="_blank" data-cid="189">人文科普</a></li>
+                            <li><a href="https://www.acfun.cn/v/list122/index.htm" target="_blank" data-cid="122">汽车</a></li>
+                            <li><a href="https://www.acfun.cn/v/list91/index.htm" target="_blank" data-cid="91">数码家电</a></li>
+                            <li><a href="https://www.acfun.cn/v/list151/index.htm" target="_blank" data-cid="151">演讲·公开课</a></li>
+                            <li><a href="https://www.acfun.cn/v/list149/index.htm" target="_blank" data-cid="149">广告</a></li>
                         </ul>
                         <ul data-category="20" data-cid="68" class="clearfix" style="left: 340.11px; display: none;">
-                            <li><a href="https://hd.acfun.cn/doodle/GXEomtJv.html" target="_blank"
-                                   data-cid="0">电视剧放映厅</a></li>
-                            <li><a href="https://hd.acfun.cn/s/QpdpZsjR" target="_blank" data-cid="0">电影放映厅</a>
-                            </li>
-                            <li><a href="/v/list219/index.htm" target="_blank" data-cid="219">影视混剪</a></li>
-                            <li><a href="/v/list192/index.htm" target="_blank" data-cid="192">预告·花絮</a></li>
-                            <li><a href="/v/list193/index.htm" target="_blank" data-cid="193">电影杂谈</a></li>
-                            <li><a href="/v/list194/index.htm" target="_blank" data-cid="194">追剧社</a></li>
-                            <li><a href="/v/list195/index.htm" target="_blank" data-cid="195">综艺show</a></li>
-                            <li><a href="/v/list196/index.htm" target="_blank" data-cid="196">纪录片·短片</a></li>
+                            <li><a href="https://hd.acfun.cn/doodle/GXEomtJv.html" target="_blank" data-cid="0">电视剧放映厅</a></li>
+                            <li><a href="https://hd.acfun.cn/s/QpdpZsjR" target="_blank" data-cid="0">电影放映厅</a></li>
+                            <li><a href="https://www.acfun.cn/v/list219/index.htm" target="_blank" data-cid="219">影视混剪</a></li>
+                            <li><a href="https://www.acfun.cn/v/list192/index.htm" target="_blank" data-cid="192">预告·花絮</a></li>
+                            <li><a href="https://www.acfun.cn/v/list193/index.htm" target="_blank" data-cid="193">电影杂谈</a></li>
+                            <li><a href="https://www.acfun.cn/v/list194/index.htm" target="_blank" data-cid="194">追剧社</a></li>
+                            <li><a href="https://www.acfun.cn/v/list195/index.htm" target="_blank" data-cid="195">综艺show</a></li>
+                            <li><a href="https://www.acfun.cn/v/list196/index.htm" target="_blank" data-cid="196">纪录片·短片</a></li>
                         </ul>
                         <ul data-category="21" data-cid="69" class="clearfix" style="display: none;">
-                            <li><a href="/v/list152/index.htm" target="_blank" data-cid="152">综合体育</a></li>
-                            <li><a href="/v/list94/index.htm" target="_blank" data-cid="94">足球</a></li>
-                            <li><a href="/v/list95/index.htm" target="_blank" data-cid="95">篮球</a></li>
-                            <li><a href="/v/list153/index.htm" target="_blank" data-cid="153">搏击健身</a></li>
-                            <li><a href="/v/list93/index.htm" target="_blank" data-cid="93">极限竞速</a></li>
+                            <li><a href="https://www.acfun.cn/v/list152/index.htm" target="_blank" data-cid="152">综合体育</a></li>
+                            <li><a href="https://www.acfun.cn/v/list94/index.htm" target="_blank" data-cid="94">足球</a></li>
+                            <li><a href="https://www.acfun.cn/v/list95/index.htm" target="_blank" data-cid="95">篮球</a></li>
+                            <li><a href="https://www.acfun.cn/v/list153/index.htm" target="_blank" data-cid="153">搏击健身</a></li>
+                            <li><a href="https://www.acfun.cn/v/list93/index.htm" target="_blank" data-cid="93">极限竞速</a></li>
                         </ul>
                         <ul data-category="22" data-cid="125" class="clearfix" style="display: none;">
-                            <li><a href="/v/list183/index.htm" target="_blank" data-cid="183">普法安全</a></li>
-                            <li><a href="/v/list92/index.htm" target="_blank" data-cid="92">国防军事</a></li>
-                            <li><a href="/v/list131/index.htm" target="_blank" data-cid="131">历史</a></li>
-                            <li><a href="/v/list132/index.htm" target="_blank" data-cid="132">新鲜事·正能量</a></li>
+                            <li><a href="https://www.acfun.cn/v/list183/index.htm" target="_blank" data-cid="183">普法安全</a></li>
+                            <li><a href="https://www.acfun.cn/v/list92/index.htm" target="_blank" data-cid="92">国防军事</a></li>
+                            <li><a href="https://www.acfun.cn/v/list131/index.htm" target="_blank" data-cid="131">历史</a></li>
+                            <li><a href="https://www.acfun.cn/v/list132/index.htm" target="_blank" data-cid="132">新鲜事·正能量</a></li>
                         </ul>
                         <ul data-category="24" data-cid="63" class="clearfix" style="display: none;">
-                            <li><a href="/v/list184/index.htm" target="_blank" data-cid="184">二次元画师</a></li>
-                            <li><a href="/v/list110/index.htm" target="_blank" data-cid="110">综合</a></li>
-                            <li><a href="/v/list73/index.htm" target="_blank" data-cid="73">生活情感</a></li>
-                            <li><a href="/v/list164/index.htm" target="_blank" data-cid="164">游戏</a></li>
-                            <li><a href="/v/list74/index.htm" target="_blank" data-cid="74">动漫文化</a></li>
-                            <li><a href="/v/list75/index.htm" target="_blank" data-cid="75">漫画·文学</a></li>
+                            <li><a href="https://www.acfun.cn/v/list184/index.htm" target="_blank" data-cid="184">二次元画师</a></li>
+                            <li><a href="https://www.acfun.cn/v/list110/index.htm" target="_blank" data-cid="110">综合</a></li>
+                            <li><a href="https://www.acfun.cn/v/list73/index.htm" target="_blank" data-cid="73">生活情感</a></li>
+                            <li><a href="https://www.acfun.cn/v/list164/index.htm" target="_blank" data-cid="164">游戏</a></li>
+                            <li><a href="https://www.acfun.cn/v/list74/index.htm" target="_blank" data-cid="74">动漫文化</a></li>
+                            <li><a href="https://www.acfun.cn/v/list75/index.htm" target="_blank" data-cid="75">漫画·文学</a></li>
                         </ul>
                     </div>
                 </div>

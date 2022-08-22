@@ -17,29 +17,29 @@
             <div class="fl" style="width:800px;">
                 <section class="art-title">
                     <div class="art-title-head">
-                        <div class="caption"><a id="srcUrl" href="https://www.acfun.cn/a/ac{{ v_num }}">{{ title }}</a></div>
+                        <div class="caption"><a id="srcUrl" href="https://www.acfun.cn/a/ac{{ v_num }}">{{ RAW.title }}</a></div>
                         <div class="art-title-census">
                             <div class="article-parent">
-                                <a href="https://www.acfun.cn/v/list{{ channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ channel.parentName }}</a>
+                                <a href="https://www.acfun.cn/v/list{{ channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ RAW.channel.parentName }}</a>
                                 <span>&nbsp;&gt;&nbsp;</span>
-                                <a href="https://www.acfun.cn/v/list{{ channel.id }}/index.htm" target="_blank" class="sort-channel">{{ channel.name }}</a>
+                                <a href="https://www.acfun.cn/v/list{{ channel.id }}/index.htm" target="_blank" class="sort-channel">{{ RAW.channel.name }}</a>
                                 <span>&nbsp;&gt;&nbsp;</span>
-                                <a href="https://www.acfun.cn/v/as{{ realm.realmId }}" target="_blank" class="sort-channel">{{ realm.realmName }}</a>
+                                <a href="https://www.acfun.cn/v/as{{ realm.realmId }}" target="_blank" class="sort-channel">{{ RAW.realm.realmName }}</a>
                             </div>
                             <div class="census-left">
-                                <div class="viewcount"><span>阅读量: </span><span class="quanity">{{ formatViewCount }}</span></div>
-                                <div class="comcount"><span>评论: </span><span class="quanity">{{ formatCommentCount }}</span></div>
+                                <div class="viewcount"><span>阅读量: </span><span class="quanity">{{ RAW.formatViewCount }}</span></div>
+                                <div class="comcount"><span>评论: </span><span class="quanity">{{ RAW.formatCommentCount }}</span></div>
                                 <div class="cache"><span>缓存: </span><span class="quanity">{{ cache_date }}</span></div>
                             </div>
                             <div class="census-right">
                                 <div class="likecount "><i class="icon"></i>
-                                    <span title="{{ likeCount }}">{{ likeCountShow }}</span></div>
+                                    <span title="{{ RAW.likeCount }}">{{ RAW.likeCountShow }}</span></div>
                                 <div class="collectcount"><i class="icon"></i>
-                                    <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
+                                    <span title="{{ RAW.stowCount }}">{{ RAW.formatStowCount }}</span></div>
                                 <div data-status="0" class="bananacount J_banana"><i class="icon"></i>
-                                    <span class="Jba_num" title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
+                                    <span class="Jba_num" title="{{ RAW.bananaCount }}">{{ RAW.formatBananaCount }}</span></div>
                                 <div class="sharecount"><i class="icon"></i>
-                                    <span class="Jba_num" title="{{ shareCount }}">{{ formatShareCount }}</span>
+                                    <span class="Jba_num" title="{{ RAW.shareCount }}">{{ RAW.formatShareCount }}</span>
                                     <div class="sharehead">
                                         <div class="share-title">分享本文章给朋友吧</div>
                                         <div class="share-action-area bdsharebottom bdshare-button-style0-16">
@@ -74,18 +74,18 @@
                         </a>
                         <div class="up-abstract">
                             <div class="up-name">
-                                <a href="https://www.acfun.cn/u/{{ user.href }}"{% if user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}
-                                   target="_blank" class="upname" title="注册于 {{ up_reg_date }}">{{ user.name }}</a>
+                                <a href="https://www.acfun.cn/u/{{ user.href }}"{% if RAW.user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}
+                                   target="_blank" class="upname" title="注册于 {{ up_reg_date }}">{{ RAW.user.name }}</a>
                                 <div class="up-type">UP主</div>
                             </div>
-                            <div class="up-time">{{ createTimeMillis|unix2datestr }}</div>
+                            <div class="up-time">{{ RAW.createTimeMillis|unix2datestr }}</div>
                         </div>
 {#                            <div class="action-up"><a class="message-back">回复</a><a class="reportAction">举报</a></div>#}
                         <div id="article-answer"></div>
                         <div id="article-tags" class="clearfix">
-                            {% if parts|length > 1 %}
+                            {% if RAW.parts|length > 1 %}
                             <ul class="parts-container">
-                            {% for part in parts %}
+                            {% for part in RAW.parts %}
                                 <li data-index="{{ loop.index }}" class="art-part{% if loop.first %} active{% endif %}">{{ part.title }}</li>
                             {% endfor %}
                             </ul>
@@ -93,7 +93,7 @@
                             {% endif %}
                         </div>
                         <div class="article-content">
-                        {% for part in parts %}
+                        {% for part in RAW.parts %}
                             <div id="content-part{{ loop.index }}" style="{% if not loop.first %}display: none{% endif %}">
                             {{ part.content|string|safe }}
                             </div>
@@ -101,13 +101,13 @@
                         </div>
                         <div id="article-operation" class="clearfix">
                             <div class="likecount "><i class="icon"></i>
-                                <span title="{{ likeCount }}">{{ likeCountShow }}</span></div>
+                                <span title="{{ RAW.likeCount }}">{{ RAW.likeCountShow }}</span></div>
                             <div class="collectcount"><i class="icon"></i>
-                                <span title="{{ stowCount }}">{{ formatStowCount }}</span></div>
+                                <span title="{{ RAW.stowCount }}">{{ RAW.formatStowCount }}</span></div>
                             <div data-status="0" class="bananacount J_banana"><i class="icon"></i>
-                                <span class="Jba_num" title="{{ bananaCount }}">{{ formatBananaCount }}</span></div>
+                                <span class="Jba_num" title="{{ RAW.bananaCount }}">{{ RAW.formatBananaCount }}</span></div>
                             <div class="sharecount"><i class="icon"></i>
-                                <span class="Jba_num" title="{{ shareCount }}">{{ formatShareCount }}</span>
+                                <span class="Jba_num" title="{{ RAW.shareCount }}">{{ RAW.formatShareCount }}</span>
                                 <div class="sharehead">
                                     <div class="share-title">分享本文章给朋友吧</div>
                                     <div class="share-action-area bdsharebottom bdshare-button-style0-16">
@@ -132,7 +132,7 @@
                             </div>
                         </div>
                         <div id="bd_tag" class="tag clearfix">
-                            {% for tag in tagList %}
+                            {% for tag in RAW.tagList %}
                             <span class="tag-single fl">
                                 <a href="https://www.acfun.cn/search?keyword={{ tag.name }}" data-tid="{{ tag.id }}" target="_blank" class="fl">{{ tag.name }}</a>
                             </span>
@@ -150,7 +150,7 @@
                         </a>
                         <div class="upname">
                             <a class="name float" href="https://www.acfun.cn/u/{{ user.href }}"
-                               target="_blank"{% if up_data.nameColor == 1 %} style="{{ up_data.nameStyle }}"{% endif %}>{{ user.name }}</a>
+                               target="_blank"{% if up_data.nameColor == 1 %} style="{{ up_data.nameStyle }}"{% endif %}>{{ RAW.user.name }}</a>
                             {% if up_data.isContractUp %}
                             <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
                             {% endif %}
@@ -173,12 +173,12 @@
                         </div>
                     </div>
                     <ul class="up-census">
-                        <li class="vote"><div class="count" title="{{ user.contributeCountValue }}">{{ user.contributeCount }}</div><div class="type">投稿</div></li>
-                        <li data-status="0" class="focus"><div class="count" title="{{ user.followingCountValue }}">{{ user.followingCount }}</div><div class="type">关注</div></li>
-                        <li class="follow"><div class="count" title="{{ user.fanCountValue }}">{{ user.fanCount }}</div><div class="type">粉丝</div></li>
+                        <li class="vote"><div class="count" title="{{ RAW.user.contributeCountValue }}">{{ RAW.user.contributeCount }}</div><div class="type">投稿</div></li>
+                        <li data-status="0" class="focus"><div class="count" title="{{ RAW.user.followingCountValue }}">{{ RAW.user.followingCount }}</div><div class="type">关注</div></li>
+                        <li class="follow"><div class="count" title="{{ RAW.user.fanCountValue }}">{{ RAW.user.fanCount }}</div><div class="type">粉丝</div></li>
                     </ul>
                     <div class="up-operate">
-                        <div data-uid="{{ user.href }}" class="focus">关注</div>
+                        <div data-uid="{{ RAW.user.href }}" class="focus">关注</div>
                         <a href="https://message.acfun.cn/im?targetid={{ user.href }}" target="_blank" class="mail">私信</a>
                     </div>
                 </section>
@@ -228,7 +228,7 @@
     });
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
-<script type="text/javascript" src="../../member/{{ user.id }}.js"></script>
+<script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

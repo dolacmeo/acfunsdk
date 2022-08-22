@@ -52,6 +52,7 @@ apis = {
     'personalBasicInfo': f"{scheme}://{domains['main']}/rest/pc-direct/user/personalBasicInfo",
     'acoinBalance': f"{scheme}://{domains['main']}/rest/pc-direct/pay/wallet/acoinBalance",
     'userInfo': f"{scheme}://{domains['main']}/rest/pc-direct/user/userInfo",
+    'getStaff': f"{scheme}://{domains['main']}//rest/pc-direct/staff/getStaff",
     'updateSignature': f"{scheme}://{domains['main']}/rest/pc-direct/user/updateSignature",
     'channel_list': f"{scheme}://{domains['user']}/common/api/getChannelList",
     'rank_list': f"{scheme}://{domains['main']}/rest/pc-direct/rank/channel",

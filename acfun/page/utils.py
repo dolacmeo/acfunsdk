@@ -4,12 +4,14 @@ import os
 import time
 import math
 import json
+import random
 import base64
 import shutil
 import cssutils
 import filetype
 from uuid import uuid4
 from urllib.parse import urlparse
+from urllib.parse import urlencode
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from datetime import timedelta
@@ -18,6 +20,36 @@ from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, 
 from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
+
+videoQualitiesRefer = {
+    "2160p120HDR": {"definition": "4K", "disableAutoSwitch": True, "limitType": 1, "qualityLabel": "2160P120 HDR",
+                    "qualityType": "2160p120HDR", "width": 3840, "height": 2160},
+    "2160p120": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p120", "qualityLabel": "2160P120",
+                 "definition": "4K", "width": 3840, "height": 2160},
+    "2160p60HDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60HDR",
+                   "qualityLabel": "2160P60 HDR", "definition": "4K", "width": 3840, "height": 2160},
+    "2160p60": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60", "qualityLabel": "2160P60",
+                "definition": "4K", "width": 3840, "height": 2160},
+    "2160pHDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160pHDR", "qualityLabel": "2160P HDR",
+                 "definition": "4K", "width": 3840, "height": 2160},
+    "2160p": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p", "qualityLabel": "2160P",
+              "definition": "4K", "width": 3840, "height": 2160},
+    "1080p60HDR": {"limitType": 1, "qualityType": "1080p60HDR", "qualityLabel": "1080P60 HDR", "definition": "HD",
+                   "width": 1920, "height": 1080},
+    "1080p60": {"limitType": 1, "qualityType": "1080p60", "qualityLabel": "1080P60", "definition": "HD", "width": 1920,
+                "height": 1080},
+    "1080p+": {"limitType": 1, "qualityType": "1080p+", "qualityLabel": "1080P+", "definition": "HD", "width": 1920,
+               "height": 1080},
+    "1080pHDR": {"limitType": 1, "qualityType": "1080pHDR", "qualityLabel": "1080P HDR", "definition": "HD",
+                 "width": 1920, "height": 1080},
+    "1080p": {"limitType": 1, "qualityType": "1080p", "qualityLabel": "1080P", "definition": "HD", "width": 1920,
+              "height": 1080},
+    "720p60": {"limitType": 1, "qualityType": "720p60", "qualityLabel": "720P60", "width": 1280, "height": 720},
+    "720p": {"defaultSelect": True, "qualityType": "720p", "qualityLabel": "720P", "width": 1280, "height": 720},
+    "540p": {"qualityType": "540p", "qualityLabel": "540P", "width": 960, "height": 540},
+    "480p": {"qualityType": "480p", "qualityLabel": "480P", "width": 720, "height": 480},
+    "360p": {"qualityType": "360p", "qualityLabel": "360P", "width": 640, "height": 360},
+}
 
 
 class B64s:
@@ -40,8 +72,153 @@ class B64s:
         return base64.b64decode(self.raw.translate(self.DE_TRANS))
 
 
+def danmaku2ass(client, folder_path: str, filenameId: str):
+    # 检查路径
+    assert os.path.isdir(folder_path) is True
+    folder_name = os.path.basename(folder_path)
+    video_data_path = os.path.join(folder_path, f"{filenameId}.json")
+    danmaku_data_path = os.path.join(folder_path, f"{filenameId}.danmaku.json")
+    assert all([os.path.isfile(video_data_path), os.path.isfile(danmaku_data_path)]) is True
+    video_data = json.load(open(video_data_path, 'rb'))
+    danmaku_data = json.load(open(danmaku_data_path, 'rb'))
+    danmuMotionList = []
+    if len(danmaku_data) == 0:
+        return None
+
+    # https://github.com/niuchaobo/acfun-helper/blob/master/src/fg/modules/danmaku.js
+    thisVideoQuality = "720p"
+    thisDuration = 10
+
+    def channel_check(danmaku: list, index: int):
+        if index == 0:
+            return True
+        lastBullet = danmaku[index - 1]
+        bullet = danmaku[index]
+        lastBulletPos = videoQualitiesRefer[thisVideoQuality]['width']
+        lastS = videoQualitiesRefer[thisVideoQuality]['width'] + lastBullet['fontTailX']
+        lastV = lastS / thisDuration
+        lastT = lastS / lastV
+        newS = videoQualitiesRefer[thisVideoQuality]['width']
+        newV = (newS + bullet['fontTailX']) / thisDuration
+        newT = newS / newV
+
+        if lastV < newV and lastT > newT:
+            return False
+        return True
+
+    def timeProc(second, offset=0):
+        second = second + offset
+        minute = math.floor(second / 60)
+        hours = math.floor(second / 60 / 60)
+        minute = minute - hours * 60
+        second = second - hours * 60 * 60 - minute * 60
+        sec = second + offset
+        return f"{hours:0>2}:{minute:0>2}:{sec:0>2.2f}"
+
+    fontsize = danmaku_data[0]['size'] + 15
+    scriptInfo = "\n".join([
+        "[Script Info]",
+        f"; AcVid: {folder_name}",
+        f"; StreamName: {video_data['title']}",
+        f"Title: {folder_name} - {video_data['user']['name']} - {video_data['title']}",
+        f"Original Script: {folder_name} - {video_data['user']['name']} - {video_data['title']}",
+        "Script Updated By: acfunSDK转换",
+        "ScriptType: v4.00+",
+        "Collisions: Normal",
+        f"PlayResX: {videoQualitiesRefer[thisVideoQuality]['width']}",
+        f"PlayResY: {videoQualitiesRefer[thisVideoQuality]['height']}"
+    ])
+    styles = "\n".join([
+        "[V4+ Styles]",
+        "Format: " + ", ".join([
+            'Name', 'Fontname', 'Fontsize', 'PrimaryColour', 'SecondaryColour', 'OutlineColour',
+            'BackColour', 'Bold', 'Italic', 'Underline', 'StrikeOut', 'ScaleX', 'ScaleY',
+            'Spacing', 'Angle', 'BorderStyle', 'Outline', 'Shadow', 'Alignment', 'MarginL',
+            'MarginR', 'MarginV', 'Encoding']),
+        "Style: " + ",".join([
+            'Danmu', 'Microsoft YaHei', f'{fontsize}',
+            '&H00FFFFFF', '&H00FFFFFF', '&H00000000', '&H00000000',
+            '0', '0', '0', '0', '100', '100', '0', '0', '1', '1',
+            '0', '2', '20', '20', '2', '0'])
+    ])
+    events = "\n".join([
+        "[Events]",
+        "Format: " + ", ".join([
+            'Layer', 'Start', 'End', 'Style', 'Name',
+            'MarginL', 'MarginR', 'MarginV', 'Effect', 'Text\n'])
+    ])
+    fontTailX = None
+    for i in range(len(danmaku_data)):
+        # 略过高级弹幕
+        if danmaku_data[i]['danmakuType'] != 0:
+            danmuMotionList.append({'type': 1})
+            continue
+        # 弹幕挂载时间（文本）（弹幕左边界 接触到 视频的右边界）
+        startTime = danmaku_data[i]['position'] / 1000
+        # 弹幕的长度
+        fontTailX = len(danmaku_data[i]['body']) * fontsize
+        width_tail = videoQualitiesRefer[thisVideoQuality]['width'] + fontTailX
+        # 运动到出界的时间点
+        toLeftTime = startTime + thisDuration + width_tail / videoQualitiesRefer[thisVideoQuality]['width']
+        # 速度
+        toLeftVelocity = width_tail / thisDuration
+        danmuMotionList.append({
+            "startTime": startTime,
+            "fontTailX": fontTailX,
+            "toLeftTime": toLeftTime,
+            "toLeftVelocity": toLeftVelocity,
+            "type": 0
+        })
+    channelNum = math.floor(videoQualitiesRefer[thisVideoQuality]['width'] / fontsize)
+
+    for i in range(len(danmaku_data)):
+        if danmuMotionList[i]['type'] != 0:
+            continue
+        if channel_check(danmuMotionList, i):
+            randHeight = fontsize * random.randint(2, channelNum)
+            dialogue = [
+                "Dialogue: 0",
+                timeProc(danmuMotionList[i]['startTime']),
+                timeProc(danmuMotionList[i]['toLeftTime']),
+                "Danmu",
+                f"{danmaku_data[i]['userId']}",
+                "20", "20", "2", "",
+                "{\\move(" + f"{videoQualitiesRefer[thisVideoQuality]['width']+fontTailX}",
+                f"{randHeight}",
+                f"{- fontTailX}",
+                f"{randHeight})" + "}" + f"{danmaku_data[i]['body']}\n"
+            ]
+        else:
+            dialogue = [
+                "Dialogue: 0",
+                timeProc(danmuMotionList[i]['startTime']),
+                timeProc(danmuMotionList[i]['toLeftTime']),
+                "Danmu",
+                f"{danmaku_data[i]['userId']}",
+                "20", "20", "2", "",
+                "{\\move(" + f"{videoQualitiesRefer[thisVideoQuality]['width'] + fontTailX}",
+                f"{fontsize}",
+                f"{- fontTailX}",
+                f"{fontsize})" + "}" + f"{danmaku_data[i]['body']}\n"
+            ]
+        events += ",".join(dialogue)
+    result = "\n\n".join([scriptInfo, styles, events])
+    ass_path = os.path.join(folder_path, f"{filenameId}.ass")
+    with open(ass_path, 'w', encoding="utf_8_sig") as ass_file:
+        ass_file.write(result)
+    ass_js_path = os.path.join(folder_path, f"{filenameId}.ass.js")
+    ass_js_data = [
+        "let assData=\"\" + \n",
+        *[f"\"{x}\" + \n" for x in result.split('\n')],
+        "\"\";"
+    ]
+    with open(ass_js_path, 'wb') as ass_js:
+        ass_js.write("".join(ass_js_data).encode())
+    return ass_path
+
+
 def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
-    token_req = client.post(apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper()+f'.{ext}'))
+    token_req = client.post(apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
     token_data = token_req.json()
     assert token_data.get('result') == 0
     resume_req = client.get(apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
@@ -1210,9 +1387,3 @@ class AcMessage:
         if obj is True:
             return [SystemMsg(self, **i) for i in api_data]
         return api_data
-
-
-
-
-
-

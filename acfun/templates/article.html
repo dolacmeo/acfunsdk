@@ -228,11 +228,23 @@
             }
         });
     });
+    function loadJs(dataType, acNum) {
+        let sc = document.createElement('script');
+        sc.setAttribute('type', 'text/javascript');
+        sc.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        document.body.append(sc);
+    }
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
+<script type="text/javascript">
+    let contentData = ac{{ v_num }},
+        commentData = ac{{ v_num }}_comment;
+</script>
+<script type="text/javascript" src="../nums.js"></script>
+<script type="text/javascript" src="../leatest.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

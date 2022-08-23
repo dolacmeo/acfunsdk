@@ -25,6 +25,7 @@ def unix2datestr(t):
 class AcSaver:
     templates = Environment(loader=PackageLoader('acfun', 'templates'))
     templates.filters['unix2datestr'] = unix2datestr
+    folder_names = ['article', 'video', 'bangumi', 'live', 'moment']
     obj2folder = {
         "AcArticle": "article",
         "AcMoment": "moment",
@@ -75,6 +76,57 @@ class AcSaver:
             os.makedirs(self.dest_path, exist_ok=True)
         self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
             "referer": routes['index']}).json().get('domain')
+        self._check_folders()
+        # self._check_assets()
+
+    def _check_folders(self):
+        checks = list()
+        for x in self.folder_names:
+            x_path = os.path.join(self.dest_path, x)
+            os.makedirs(x_path)
+            checks.append(os.path.isdir(x_path))
+        return all(checks)
+
+    def _check_assets(self):
+        if os.path.isdir(os.path.join(self.dest_path, 'assets')) is False:
+            return False
+        checks = list()
+        checks.append(os.path.isfile(os.path.join(self.dest_path, 'assets', 'favicon.ico')))
+        for n in ['css', 'js', 'img', 'font', 'emot']:
+            checks.append(os.path.isdir(os.path.join(self.dest_path, 'assets', n)))
+        return all(checks)
+
+    def folder_list_update(self):
+        jsFiles = []
+        for fn in self.folder_names:
+            fpath = os.path.join(self.dest_path, fn)
+            f_all = os.listdir(fpath)
+            f_all = [i for i in f_all if os.path.isdir(os.path.join(fpath, i))]
+            f_all_string = json.dumps(f_all, separators=(',', ':'))
+            nums_js = f"let {fn}Nums={f_all_string};"
+            js_path = os.path.join(fpath, 'nums.js')
+            with open(os.path.join(fpath, 'nums.js'), 'wb') as js:
+                js.write(nums_js.encode())
+            jsFiles.append(os.path.isfile(js_path))
+        return all(jsFiles)
+
+    def record_last(self):
+        last_data = []
+        last_path = os.path.join(self.dest_path, self.folder_name, 'leatest.js')
+        if os.path.isfile(last_path):
+            sn = len(f"let {self.folder_name}Last=")
+            last_text = open(last_path, 'r').read()
+            last_data = json.loads(last_text[sn:-1])
+        ac_num = f"ac{self.ac_obj.ac_num}"
+        if "_" in ac_num:
+            ac_num = ac_num.split('_')[0]
+        if ac_num not in last_data:
+            last_data.append(ac_num)
+        last_string = json.dumps(last_data, separators=(',', ':'))
+        last_js = f"let {self.folder_name}Last={last_string};"
+        with open(last_path, 'wb') as js:
+            js.write(last_js.encode())
+        return os.path.isfile(last_path)
 
     def _setup_folder(self):
         folder_path = os.path.join(self.dest_path, self.folder_name, f"ac{self.ac_obj.ac_num}")
@@ -176,6 +228,7 @@ class AcSaver:
                 if all([f"{uid}.json" in saved, f"{uid}.js" in saved, f"{uid}_avatar" in saved]) is True \
                         and force is False:
                     progress()
+                    done.append(uid)
                     continue
                 user_req = self.acer.client.get(apis['userInfo'], params=dict(userId=uid))
                 user_data = user_req.json()
@@ -186,6 +239,7 @@ class AcSaver:
                 if all([os.path.isfile(user_json), os.path.isfile(user_js), os.path.isfile(user_avatar)]) is True \
                         and force is False:
                     progress()
+                    done.append(uid)
                     continue
                 with open(user_json, 'w') as uid_file:
                     json.dump(profile, uid_file, separators=(',', ':'))
@@ -216,9 +270,9 @@ class AcSaver:
         json_path = os.path.join(folder_path, 'data', filename)
         if dest_path is not None:
             json_path = os.path.join(dest_path, filename)
-        json_string = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+        json_string = json.dumps(data, separators=(',', ':'))
         with open(json_path, 'wb') as json_file:
-            json_file.write(json_string.encode())
+            json_file.write(json_string.encode("UTF-8"))
         return os.path.isfile(json_path)
 
     def _save_comment(self):
@@ -309,7 +363,7 @@ class AcSaver:
         # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
         #     print(tag)
         with open(comment_js_path, 'wb') as js_file:
-            comment_js = f"let commentData={comment_json_string};"
+            comment_js = f"let ac{self.ac_obj.ac_num}_comment={comment_json_string};"
             js_file.write(comment_js.encode())
         return comment_js_path
 
@@ -323,7 +377,7 @@ class AcSaver:
         danmaku_json_string = open(os.path.join(folder_path, 'data', f"ac{v_num}.danmaku.json"), 'rb').read().decode()
         danmaku_js_path = os.path.join(folder_path, 'data', f"ac{v_num}.danmaku.js")
         with open(danmaku_js_path, 'wb') as js_file:
-            danmaku_js = f"let danmakuData={danmaku_json_string};"
+            danmaku_js = f"let ac{v_num}_danmaku={danmaku_json_string};"
             js_file.write(danmaku_js.encode())
         danmaku_js_saved = os.path.isfile(danmaku_js_path)
         danmaku_ass_path = self._danmaku2ass(num)
@@ -367,7 +421,7 @@ class ArticleSaver(AcSaver):
         content_json_string = open(os.path.join(self.folder_path, 'data', f"ac{self.v_num}.json"), 'rb').read().decode()
         content_js_path = os.path.join(self.folder_path, 'data', f"ac{self.v_num}.js")
         with open(content_js_path, 'wb') as js_file:
-            content_js = f"let contentData={content_json_string};"
+            content_js = f"let ac{self.v_num}={content_json_string};"
             js_file.write(content_js.encode())
         content_js_saved = os.path.isfile(content_js_path)
         return all([content_raw_saved, content_js_saved])
@@ -415,6 +469,9 @@ class ArticleSaver(AcSaver):
             up_saved,
             comment_saved
         ])
+        if done:
+            self.record_last()
+            self.folder_list_update()
         print(self.folder_path)
         return done
 
@@ -441,7 +498,7 @@ class VideoSaver(AcSaver):
         video_json_string = open(os.path.join(self.folder_path, 'data', f"ac{v_num}.json"), 'rb').read().decode()
         video_js_path = os.path.join(self.folder_path, 'data', f"ac{v_num}.js")
         with open(video_js_path, 'wb') as js_file:
-            content_js = f"let videoData={video_json_string};"
+            content_js = f"let ac{v_num}={video_json_string};"
             js_file.write(content_js.encode())
         video_js_saved = os.path.isfile(video_js_path)
         return all([video_raw_saved, video_js_saved])
@@ -502,6 +559,9 @@ class VideoSaver(AcSaver):
             video_saved,
             comment_saved
         ])
+        if done:
+            self.record_last()
+            self.folder_list_update()
         print(self.folder_path)
         return done
 

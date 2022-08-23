@@ -261,11 +261,24 @@
         aTag.setAttribute('href', '#'+domId);
         aTag.click();
     }
+    function loadJs(dataType, acNum) {
+        let sc = document.createElement('script');
+        sc.setAttribute('type', 'text/javascript');
+        sc.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        document.body.append(sc);
+    }
 </script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.danmaku.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
+<script type="text/javascript">
+    let videoData = ac{{ v_num }},
+        commentData = ac{{ v_num }}_comment,
+        danmakuData = ac{{ v_num }}_danmaku;
+</script>
+<script type="text/javascript" src="../nums.js"></script>
+<script type="text/javascript" src="../leatest.js"></script>
 <script type="text/javascript" src="../../assets/js/localplayer.js"></script>
 <script type="text/javascript" src="../../assets/js/danmakuList.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

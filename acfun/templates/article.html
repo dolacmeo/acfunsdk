@@ -186,25 +186,11 @@
                 </section>
                 <section class="up-contributions">
                     <div class="ctb-head">
-                        <h1 class="ctb-title">最新投稿</h1>
+                        <h1 class="ctb-title">最新缓存</h1>
                         <a href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank" class="showall">全部</a>
                     </div>
                 </section>
-{#                <div class="contribution weblog-item">#}
-{#                    <p class="contb-title tit">#}
-{#                        <a href="/a/ac36723879" target="_blank">【漫画】物理魔法使马修 第116-118话</a>#}
-{#                    </p>#}
-{#                    <div class="contb-count">#}
-{#                        <div class="view-count">#}
-{#                            <i class="view"></i>#}
-{#                            <span class="count num">1382</span>#}
-{#                        </div>#}
-{#                        <div class="comm-count">#}
-{#                            <i class="comm"></i>#}
-{#                            <span class="count num">1</span>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
+                <div id="recommends"></div>
             </div>
         </div>
     </section>
@@ -228,23 +214,82 @@
             }
         });
     });
-    function loadJs(dataType, acNum) {
-        let sc = document.createElement('script');
-        sc.setAttribute('type', 'text/javascript');
-        sc.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
-        document.body.append(sc);
+    function addRecommend(data) {
+        let base = document.createElement('div'),
+            title = document.createElement('p'),
+            link = document.createElement('a'),
+            info = document.createElement('div'),
+            viewC = document.createElement('div'),
+            viewIco = document.createElement('i'),
+            viewNum = document.createElement('span'),
+            commC = document.createElement('div'),
+            commIco = document.createElement('i'),
+            commNum = document.createElement('span');
+        base.setAttribute('class', 'contribution weblog-item');
+        title.setAttribute('class', 'contb-title tit');
+        link.setAttribute('href', '../ac'+data.articleId+'/ac'+data.articleId+'.html');
+        link.setAttribute('target', '_blank');
+        link.innerHTML = data.title;
+        title.append(link);
+        base.append(title);
+        info.setAttribute('class', 'contb-count');
+        viewC.setAttribute('class', 'view-count');
+        viewIco.setAttribute('class', 'view');
+        viewNum.setAttribute('class', 'count num');
+        viewNum.innerHTML = data.formatViewCount;
+        viewC.append(viewIco);
+        viewC.append(viewNum);
+        info.append(viewC);
+        commC.setAttribute('class', 'comm-count');
+        commIco.setAttribute('class', 'comm');
+        commNum.setAttribute('class', 'count num');
+        commNum.innerHTML = data.commentCount;
+        commC.append(commIco);
+        commC.append(commNum);
+        info.append(commC);
+        base.append(info);
+        document.getElementById('recommends').append(base);
     }
+    function loadJs(dataType, acNum, callback) {
+        let script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        if (script.readyState) {  // only required for IE <9
+            script.onreadystatechange = function () {
+                if (script.readyState === "loaded" || script.readyState === "complete") {
+                    script.onreadystatechange = null;
+                    callback();
+                }
+            };
+        } else {  //Others
+            script.onload = function () {
+                callback();
+            };
+        }
+        document.body.append(script);
+    }
+</script>
+<script type="text/javascript">
+    let contentId = "ac{{ v_num }}", articles = {};
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
-<script type="text/javascript">
-    let contentData = ac{{ v_num }},
-        commentData = ac{{ v_num }}_comment;
-</script>
 <script type="text/javascript" src="../nums.js"></script>
 <script type="text/javascript" src="../leatest.js"></script>
+<script type="text/javascript">
+    let contentData = articles["ac{{ v_num }}"],
+        commentData = ac{{ v_num }}_comment;
+    articleLast.forEach(function (acNum) {
+        if(acNum!==contentId){
+            loadJs('article', acNum, function () {
+                addRecommend(articles[acNum]);
+            });
+        }
+    });
+    
+</script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

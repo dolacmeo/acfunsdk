@@ -60,8 +60,11 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
                     commentAcerAvatarLink.setAttribute('class', 'thumb');
                     commentAcerAvatarLink.setAttribute('target', '_blank');
                     commentAcerAvatarLink.setAttribute('href', userLink+commentItem.userId.toString());
-                        commentAcerAvatarImg.setAttribute('class', 'avatar');
-                        commentAcerAvatarImg.setAttribute('src', userPath+commentItem.userId.toString()+'_avatar');
+                        commentAcerAvatarImg.setAttribute('class', 'avatar lazy');
+                        commentAcerAvatarImg.setAttribute('alt', commentItem.userId.toString());
+                        commentAcerAvatarImg.setAttribute('src', "../../assets/img/avatar_default.jpg");
+                        commentAcerAvatarImg.setAttribute('data-src', userPath+commentItem.userId.toString()+'_avatar');
+
                     commentAcerAvatarLink.appendChild(commentAcerAvatarImg);
                 commentFirstLeft.appendChild(commentAcerAvatarLink);
 
@@ -93,7 +96,7 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
 
                     commentTool.setAttribute('class', 'area-comment-tool');
                         commentToolLike.setAttribute('class', 'area-comment-like area-comment-up');
-                        commentToolLike.innerHTML = "赞"+commentItem.likeCount?"":commentItem.likeCountFormat;
+                        commentToolLike.innerHTML = "赞"+(parseInt(commentItem.likeCount)>0?commentItem.likeCountFormat:"");
                         commentToolLike.setAttribute('target', '_blank');
                         commentToolLike.href = srcUrl+"#ncid="+commentItem.commentId;
 
@@ -166,6 +169,7 @@ function loadComments(commentData) {
     commentData.rootComments.forEach(function (item, index) {
         rootList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
+    lazyLoadInstance.update();
 }
 
 window.onload = function () {

@@ -8,6 +8,8 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
+    <script type="text/javascript" src="../../assets/js/lazyload.min.js"></script>
+    <script type="text/javascript">var lazyLoadInstance = new LazyLoad({});</script>
     <style>
         .left-column.unfold{
             width: 100% !important;
@@ -72,7 +74,7 @@
                                 <div class="share-title">分享本视频给朋友吧</div>
                                 <div class="share-action-area">
                                     <div class="share-left-area">
-                                        <div class="qrcode"><img src="share_qrcode.png"></div>
+                                        <div class="qrcode"><img src="data/share_qrcode.png"></div>
                                         <p class="scan">扫一扫</p><p>分享到微信/朋友圈</p>
                                     </div>
                                     <div class="share-right-area">
@@ -96,7 +98,7 @@
                                 <div class="mobile-action-area">
                                     <div class="mobile-left-area">
                                         <div class="qrcode">
-                                            <img src="mobile_qrcode.png">
+                                            <img src="data/mobile_qrcode.png">
                                         </div>
                                         <p>扫一扫手机继续观看</p></div>
                                     <div class="mobile-right-area"><p>{{ RAW.title }}</p></div>
@@ -261,9 +263,9 @@
     }
 </script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
-<script type="text/javascript" src="ac{{ v_num }}.js"></script>
-<script type="text/javascript" src="ac{{ v_num }}.danmaku.js"></script>
-<script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.danmaku.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
 <script type="text/javascript" src="../../assets/js/localplayer.js"></script>
 <script type="text/javascript" src="../../assets/js/danmakuList.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

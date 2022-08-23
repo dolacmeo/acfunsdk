@@ -2,11 +2,13 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
+    <title>{{ RAW.title }}</title>
     <link href="../../assets/favicon.ico" rel="shortcut icon">
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/article.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
+    <script type="text/javascript" src="../../assets/js/lazyload.min.js"></script>
+    <script type="text/javascript">var lazyLoadInstance = new LazyLoad({});</script>
 </head>
 <body>
 {% include 'parts/header.html' %}
@@ -20,11 +22,11 @@
                         <div class="caption"><a id="srcUrl" href="https://www.acfun.cn/a/ac{{ v_num }}">{{ RAW.title }}</a></div>
                         <div class="art-title-census">
                             <div class="article-parent">
-                                <a href="https://www.acfun.cn/v/list{{ channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ RAW.channel.parentName }}</a>
+                                <a href="https://www.acfun.cn/v/list{{ RAW.channel.parentId }}/index.htm" target="_blank" class="art-channel">{{ RAW.channel.parentName }}</a>
                                 <span>&nbsp;&gt;&nbsp;</span>
-                                <a href="https://www.acfun.cn/v/list{{ channel.id }}/index.htm" target="_blank" class="sort-channel">{{ RAW.channel.name }}</a>
+                                <a href="https://www.acfun.cn/v/list{{ RAW.channel.id }}/index.htm" target="_blank" class="sort-channel">{{ RAW.channel.name }}</a>
                                 <span>&nbsp;&gt;&nbsp;</span>
-                                <a href="https://www.acfun.cn/v/as{{ realm.realmId }}" target="_blank" class="sort-channel">{{ RAW.realm.realmName }}</a>
+                                <a href="https://www.acfun.cn/v/as{{ RAW.realm.realmId }}" target="_blank" class="sort-channel">{{ RAW.realm.realmName }}</a>
                             </div>
                             <div class="census-left">
                                 <div class="viewcount"><span>阅读量: </span><span class="quanity">{{ RAW.formatViewCount }}</span></div>
@@ -44,7 +46,7 @@
                                         <div class="share-title">分享本文章给朋友吧</div>
                                         <div class="share-action-area bdsharebottom bdshare-button-style0-16">
                                             <div class="share-left-area">
-                                                <div class="qrcode"><img src="share_qrcode.png"></div>
+                                                <div class="qrcode"><img src="data/share_qrcode.png"></div>
                                                 <p class="scan">扫一扫</p><p>分享到微信/朋友圈</p>
                                             </div>
                                             <div class="share-right-area">
@@ -69,12 +71,12 @@
                 <section class="art-subject"><div id="filter" class="clearfix"></div></section>
                 <section id="article-content">
                     <div id="article-up" class="article-up">
-                        <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank">
-                            <div style="background-image:url(../../member/{{ user.href }}_avatar)" class="up-cover live-avatar"></div>
+                        <a href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank">
+                            <div style="background-image:url(../../member/{{ RAW.user.href }}_avatar)" class="up-cover live-avatar"></div>
                         </a>
                         <div class="up-abstract">
                             <div class="up-name">
-                                <a href="https://www.acfun.cn/u/{{ user.href }}"{% if RAW.user.nameColor == 1 %} style="{{ user.nameStyle }}"{% endif %}
+                                <a href="https://www.acfun.cn/u/{{ RAW.user.href }}"{% if RAW.user.nameColor == 1 %} style="{{ RAW.user.nameStyle }}"{% endif %}
                                    target="_blank" class="upname" title="注册于 {{ up_reg_date }}">{{ RAW.user.name }}</a>
                                 <div class="up-type">UP主</div>
                             </div>
@@ -112,7 +114,7 @@
                                     <div class="share-title">分享本文章给朋友吧</div>
                                     <div class="share-action-area bdsharebottom bdshare-button-style0-16">
                                         <div class="share-left-area">
-                                            <div class="qrcode"><img src="share_qrcode.png"></div>
+                                            <div class="qrcode"><img src="data/share_qrcode.png"></div>
                                             <p class="scan">扫一扫</p><p>分享到微信/朋友圈</p>
                                         </div>
                                         <div class="share-right-area">
@@ -145,11 +147,11 @@
             <div class="fr" style="width:280px">
                 <section id="up-info">
                     <div class="up-detail">
-                        <a target="_blank" href="https://www.acfun.cn/u/{{ user.href }}">
-                            <div class="upcover live-avatar" style="background-image:url(../../member/{{ user.href }}_avatar)"></div>
+                        <a target="_blank" href="https://www.acfun.cn/u/{{ RAW.user.href }}">
+                            <div class="upcover live-avatar" style="background-image:url(../../member/{{ RAW.user.href }}_avatar)"></div>
                         </a>
                         <div class="upname">
-                            <a class="name float" href="https://www.acfun.cn/u/{{ user.href }}"
+                            <a class="name float" href="https://www.acfun.cn/u/{{ RAW.user.href }}"
                                target="_blank"{% if up_data.nameColor == 1 %} style="{{ up_data.nameStyle }}"{% endif %}>{{ RAW.user.name }}</a>
                             {% if up_data.isContractUp %}
                             <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
@@ -179,13 +181,13 @@
                     </ul>
                     <div class="up-operate">
                         <div data-uid="{{ RAW.user.href }}" class="focus">关注</div>
-                        <a href="https://message.acfun.cn/im?targetid={{ user.href }}" target="_blank" class="mail">私信</a>
+                        <a href="https://message.acfun.cn/im?targetid={{ RAW.user.href }}" target="_blank" class="mail">私信</a>
                     </div>
                 </section>
                 <section class="up-contributions">
                     <div class="ctb-head">
                         <h1 class="ctb-title">最新投稿</h1>
-                        <a href="https://www.acfun.cn/u/{{ user.href }}" target="_blank" class="showall">全部</a>
+                        <a href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank" class="showall">全部</a>
                     </div>
                 </section>
 {#                <div class="contribution weblog-item">#}
@@ -229,8 +231,8 @@
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
-<script type="text/javascript" src="ac{{ v_num }}.js"></script>
-<script type="text/javascript" src="ac{{ v_num }}.comment.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>
 </body>
 </html>

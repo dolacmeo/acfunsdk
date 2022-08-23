@@ -76,8 +76,8 @@ def danmaku2ass(client, folder_path: str, filenameId: str):
     # 检查路径
     assert os.path.isdir(folder_path) is True
     folder_name = os.path.basename(folder_path)
-    video_data_path = os.path.join(folder_path, f"{filenameId}.json")
-    danmaku_data_path = os.path.join(folder_path, f"{filenameId}.danmaku.json")
+    video_data_path = os.path.join(folder_path, 'data', f"{filenameId}.json")
+    danmaku_data_path = os.path.join(folder_path, 'data', f"{filenameId}.danmaku.json")
     assert all([os.path.isfile(video_data_path), os.path.isfile(danmaku_data_path)]) is True
     video_data = json.load(open(video_data_path, 'rb'))
     danmaku_data = json.load(open(danmaku_data_path, 'rb'))
@@ -206,7 +206,7 @@ def danmaku2ass(client, folder_path: str, filenameId: str):
     ass_path = os.path.join(folder_path, f"{filenameId}.ass")
     with open(ass_path, 'w', encoding="utf_8_sig") as ass_file:
         ass_file.write(result)
-    ass_js_path = os.path.join(folder_path, f"{filenameId}.ass.js")
+    ass_js_path = os.path.join(folder_path, 'data', f"{filenameId}.ass.js")
     ass_js_data = [
         "let assData=\"\" + \n",
         *[f"\"{x}\" + \n" for x in result.split('\n')],

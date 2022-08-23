@@ -78,6 +78,7 @@ class AcSaver:
 
     def _setup_folder(self):
         folder_path = os.path.join(self.dest_path, self.folder_name, f"ac{self.ac_obj.ac_num}")
+        os.makedirs(os.path.join(folder_path, 'data'), exist_ok=True)
         if self.folder_name in ["article", "moment", "video", "bangumi"]:
             os.makedirs(os.path.join(folder_path, 'img'), exist_ok=True)
         else:
@@ -212,7 +213,7 @@ class AcSaver:
 
     def _json_saver(self, data: dict, filename: str, dest_path=None):
         folder_path = self._setup_folder()
-        json_path = os.path.join(self.dest_path, folder_path, filename)
+        json_path = os.path.join(folder_path, 'data', filename)
         if dest_path is not None:
             json_path = os.path.join(dest_path, filename)
         json_string = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
@@ -223,7 +224,7 @@ class AcSaver:
     def _save_comment(self):
         folder_path = self._setup_folder()
         local_comment_data, local_comment_floors = None, []
-        comment_json_path = os.path.join(folder_path, f"ac{self.ac_obj.ac_num}.comment.json")
+        comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
         if os.path.isfile(comment_json_path):
             local_comment_data = json.load(open(comment_json_path, 'rb'))
             local_comment_floors = [x['floor'] for x in local_comment_data['rootComments']]
@@ -259,8 +260,8 @@ class AcSaver:
 
     def _tans_comment_uub2html(self):
         folder_path = self._setup_folder()
-        comment_json_path = os.path.join(folder_path, f"ac{self.ac_obj.ac_num}.comment.json")
-        comment_js_path = os.path.join(folder_path, f"ac{self.ac_obj.ac_num}.comment.js")
+        comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
+        comment_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.js")
         comment_json_string = open(comment_json_path, 'rb').read().decode()
         # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
         for ubb, tag in self.ubb_tag_basic.items():
@@ -287,7 +288,7 @@ class AcSaver:
                     img_path = self._save_images(tag[1], ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'img'])
                     img_name = os.path.basename(img_path)
                     comment_json_string = comment_json_string.replace(
-                        tag[0], f'<img src=\\"img/{img_name}\\" alt=\\"{tag[1]}\\">')
+                        tag[0], f'<img class=\\"lazy\\" data-src=\\"img/{img_name}\\" alt=\\"{tag[1]}\\">')
                 elif n == 'at':
                     comment_json_string = comment_json_string.replace(
                         tag[0], f'<a class=\\"ubb-name\\" target=\\"_blank\\" href=\\"https://www.acfun.cn/u/{tag[1]}\\">{tag[2]}</a>')
@@ -319,8 +320,8 @@ class AcSaver:
         self.ac_obj.set_video(num)
         danmaku_obj = self.ac_obj.danmaku()
         danmaku_saved = self._json_saver(danmaku_obj.danmaku_data, f"ac{v_num}.danmaku.json")
-        danmaku_json_string = open(os.path.join(folder_path, f"ac{v_num}.danmaku.json"), 'rb').read().decode()
-        danmaku_js_path = os.path.join(folder_path, f"ac{v_num}.danmaku.js")
+        danmaku_json_string = open(os.path.join(folder_path, 'data', f"ac{v_num}.danmaku.json"), 'rb').read().decode()
+        danmaku_js_path = os.path.join(folder_path, 'data', f"ac{v_num}.danmaku.js")
         with open(danmaku_js_path, 'wb') as js_file:
             danmaku_js = f"let danmakuData={danmaku_json_string};"
             js_file.write(danmaku_js.encode())
@@ -330,7 +331,7 @@ class AcSaver:
             danmaku_ass_saved, danmaku_ass_js_saved = True, True
         else:
             danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
-            danmaku_ass_js_path = os.path.join(folder_path, f"ac{v_num}.ass.js")
+            danmaku_ass_js_path = os.path.join(folder_path, 'data', f"ac{v_num}.ass.js")
             danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
         return all([danmaku_saved, danmaku_js_saved, danmaku_ass_saved, danmaku_ass_js_saved])
 
@@ -351,7 +352,7 @@ class AcSaver:
             "height": size
         }
         qr_url = f"{apis['qrcode']}?{urlencode(param)}"
-        return self._save_images(qr_url, filename, ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}"])
+        return self._save_images(qr_url, filename, ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'data'])
 
 
 class ArticleSaver(AcSaver):
@@ -363,8 +364,8 @@ class ArticleSaver(AcSaver):
 
     def _save_base_data(self):
         content_raw_saved = self._json_saver(self.ac_obj.article_data, f"ac{self.v_num}.json")
-        content_json_string = open(os.path.join(self.folder_path, f"ac{self.v_num}.json"), 'rb').read().decode()
-        content_js_path = os.path.join(self.folder_path, f"ac{self.v_num}.js")
+        content_json_string = open(os.path.join(self.folder_path, 'data', f"ac{self.v_num}.json"), 'rb').read().decode()
+        content_js_path = os.path.join(self.folder_path, 'data', f"ac{self.v_num}.js")
         with open(content_js_path, 'wb') as js_file:
             content_js = f"let contentData={content_json_string};"
             js_file.write(content_js.encode())
@@ -390,7 +391,9 @@ class ArticleSaver(AcSaver):
             if img.attrs['src'].startswith('http') or img.attrs['src'].startswith('//'):
                 saved_path = self._save_images(img.attrs['src'], ex_dir=html_img_path)
                 img.attrs['alt'] = img.attrs['src']
-                img.attrs['src'] = f"./img/{os.path.basename(saved_path)}"
+                img.attrs['class'] = "lazy"
+                img.attrs['src'] = "../../assets/img/logo-gray.png"
+                img.attrs['data-src'] = f"./img/{os.path.basename(saved_path)}"
         html_path = os.path.join(self.dest_path, self.folder_path, f'ac{self.v_num}.html')
         with open(html_path, 'wb') as html_file:
             html_file.write(html_obj.prettify().encode())
@@ -435,8 +438,8 @@ class VideoSaver(AcSaver):
     def _save_base_data(self, num: int = 1):
         v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
         video_raw_saved = self._json_saver(self.ac_obj.video_data, f"ac{v_num}.json")
-        video_json_string = open(os.path.join(self.folder_path, f"ac{v_num}.json"), 'rb').read().decode()
-        video_js_path = os.path.join(self.folder_path, f"ac{v_num}.js")
+        video_json_string = open(os.path.join(self.folder_path, 'data', f"ac{v_num}.json"), 'rb').read().decode()
+        video_js_path = os.path.join(self.folder_path, 'data', f"ac{v_num}.js")
         with open(video_js_path, 'wb') as js_file:
             content_js = f"let videoData={video_json_string};"
             js_file.write(content_js.encode())

@@ -119,8 +119,8 @@
                             <div class="up-info">
                                 <a class="up-name" href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank" title="注册于 {{ up_reg_date }}"
                                         {% if RAW.user.nameColor == 1 %} style="{{ RAW.user.nameStyle }}"{% endif %}>{{ RAW.user.name }}</a>
-                                {% if up_data.isContractUp %}
-                                <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
+                                {% if 1 in RAW.user.verifiedTypes %}
+                                <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证"></span>
                                 {% endif %}
                                 {% if 2 in RAW.user.verifiedTypes %}
                                 <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + RAW.user.verifiedText or '' }}"></span>

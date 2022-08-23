@@ -153,7 +153,7 @@
                         <div class="upname">
                             <a class="name float" href="https://www.acfun.cn/u/{{ RAW.user.href }}"
                                target="_blank"{% if up_data.nameColor == 1 %} style="{{ up_data.nameStyle }}"{% endif %}>{{ RAW.user.name }}</a>
-                            {% if up_data.isContractUp %}
+                            {% if 1 in up_data.verifiedTypes %}
                             <span class="verified-icon monkey-verified-icon" title="AcFun管理员认证(签约)"></span>
                             {% endif %}
                             {% if 2 in up_data.verifiedTypes %}

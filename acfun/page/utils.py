@@ -252,6 +252,10 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
 
     with open(fpath, 'wb') as download_file:
         with client.stream("GET", src_url) as response:
+            if response.status_code // 100 != 2:
+                download_file.close()
+                os.remove(fpath)
+                return None
             total = int(response.headers.get("Content-Length", 0))
             total = None if total == 0 else total // 1024
             downloaded = 0

@@ -44,8 +44,10 @@ class AcSaver:
     ubb_tag_rex = {
         "color": r"(\[color=(#[a-f0-9]{6})\])",
         "emot": r"(\[emot=acfun,(\S+?)\/])",
+        "emot_old": r"(\[emot=([a-z0-9]+),(\S+?)\/])",
         "image": r"(\[img=图片\](http[^\s]*)\[/img\])",
         "at": r"(\[at uid=(\d+)\](@[^\[]+)\[/at\])",
+        "at_old": r"(\[at\]([^\[]+)\[/at\])",
         "resource": r"(\[resource id=(\d+) type=([1-5]) icon=[^\]]*\]([^\[]*)\[\/resource\])",
         "jump": r"(\[time duration=(\d+)\]([^\[]+)\[/time\])",
     }
@@ -123,6 +125,16 @@ class AcSaver:
                 self._download(src, f"{n}.gif", ['assets', 'emot', 'big'])
         local_emot_list = os.listdir(os.path.join(emot_dir, 'big'))
         emot_map = {em.split('.')[0]: f"../../assets/emot/big/{em}" for em in local_emot_list}
+        for alias in ['ac', 'ac2', 'ac3', 'dog', 'tsj', 'brd']:
+            alias_emot_path = os.path.join(emot_dir, alias)
+            os.makedirs(alias_emot_path, exist_ok=True)
+            alias_emot_list = os.listdir(alias_emot_path)
+            for n in range(1, 60):
+                if f"{n:0>2}.gif" not in alias_emot_list:
+                    src = f"https://cdnfile.aixifan.com/static/umeditor/emotion/images/{alias}/{n:0>2}.gif"
+                    self._download(src, f"{n:0>2}.gif", ['assets', 'emot', alias])
+            emot_map.update({"_".join([alias, em.split('.')[0]]): f"../../assets/emot/{alias}/{em}"
+                             for em in os.listdir(alias_emot_path)})
         emot_map_saved = self._json_saver(emot_map, "emotion_map.json", emot_dir)
         return all([emot_json_saved, emot_map_saved])
 
@@ -264,6 +276,13 @@ class AcSaver:
                     if tag[1] in emot_map:
                         comment_json_string = comment_json_string.replace(
                             tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[tag[1]]}\\">')
+                elif n == 'emot_old':
+                    alias = "_".join(tag[1:])
+                    if alias in emot_map:
+                        comment_json_string = comment_json_string.replace(
+                            tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[alias]}\\">')
+                    else:
+                        print("old emot:", tag)
                 elif n == 'image':
                     img_path = self._save_images(tag[1], ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'img'])
                     img_name = os.path.basename(img_path)
@@ -272,6 +291,9 @@ class AcSaver:
                 elif n == 'at':
                     comment_json_string = comment_json_string.replace(
                         tag[0], f'<a class=\\"ubb-name\\" target=\\"_blank\\" href=\\"https://www.acfun.cn/u/{tag[1]}\\">{tag[2]}</a>')
+                elif n == 'at_old':
+                    comment_json_string = comment_json_string.replace(
+                        tag[0], f'<a class=\\"ubb-name\\">@{tag[1]}</a>')
                 elif n == 'jump':
                     comment_json_string = comment_json_string.replace(
                         tag[0], f'<a class=\\"quickJump\\" onclick=\\"quickJump({tag[1]})\\">{tag[2]}</a>')
@@ -283,6 +305,8 @@ class AcSaver:
                             href=self.ubb_resource_url[tag[2]]+tag[1],
                             title=tag[3]
                         ))
+        # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
+        #     print(tag)
         with open(comment_js_path, 'wb') as js_file:
             comment_js = f"let commentData={comment_json_string};"
             js_file.write(comment_js.encode())

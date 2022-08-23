@@ -271,7 +271,7 @@ class AcSaver:
         json_path = os.path.join(folder_path, 'data', filename)
         if dest_path is not None:
             json_path = os.path.join(dest_path, filename)
-        json_string = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+        json_string = json.dumps(data, separators=(',', ':'))
         with open(json_path, 'wb') as json_file:
             json_file.write(json_string.encode())
         return os.path.isfile(json_path)
@@ -526,7 +526,7 @@ class VideoSaver(AcSaver):
             v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
         html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:
-            html_file.write(video_html.encode())
+            html_file.write(video_html.encode(errors='ignore'))
         video_html_saved = os.path.isfile(html_path)
         return all([cover_saved, share_qrcode_saved, mobile_qrcode_saved, video_html_saved])
 

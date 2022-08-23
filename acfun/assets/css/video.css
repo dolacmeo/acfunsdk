@@ -3747,3 +3747,402 @@ body #main #main-content .right-column.dark-style {
     }
 }
 
+a {
+    text-decoration: none;
+    color: #333;
+    outline: none;
+    font: inherit
+}
+
+.recmd {
+    width: 340px;
+    background: #fff;
+    height: auto;
+    position: relative;
+    z-index: 1
+}
+
+.recmd .recommend-title {
+    width: 100%;
+    font-size: 16px;
+    line-height: 16px;
+    text-align: left;
+    color: #000;
+    padding-bottom: 10px;
+    text-indent: 2px
+}
+
+.recmd .block-video {
+    margin-bottom: 10px;
+    height: 90px
+}
+
+.recmd .block-video:hover .block-title a {
+    overflow: hidden
+}
+
+.recmd .block-video:hover .block-title p {
+    bottom: -18px;
+    opacity: 0
+}
+
+.recmd .block-video.no-animate:hover .block-title p {
+    bottom: 0;
+    opacity: 1
+}
+
+.recmd .block-video .block-img {
+    display: inline-block;
+    height: 90px;
+    width: 160px;
+    vertical-align: middle
+}
+
+.recmd .block-video .block-img img {
+    border-radius: 3px;
+    width: 100%;
+    height: 100%;
+}
+
+.recmd .block-video .block-img:hover .danmaku-mask {
+    display: block
+}
+
+.recmd .block-video .block-img .action-data {
+    width: 160px;
+    height: 40px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .4));
+    border-radius: 0 0 3px 3px;
+    z-index: 1
+}
+
+.recmd .block-video .block-img .action-data span {
+    display: inline-block;
+    color: #fff;
+    font-size: 12px;
+    line-height: 12px;
+    text-align: left;
+    text-indent: 16px;
+    position: relative;
+    margin-top: 18px
+}
+
+.recmd .block-video .block-img .action-data span:before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background-size: 100% 100%;
+    color: #d8d8d8;
+    position: absolute;
+    left: 0;
+    top: 0
+}
+
+.recmd .block-video .block-img .action-data span.viewCount {
+    margin-left: 8px
+}
+
+.recmd .block-video .block-img .action-data span.viewCount:before {
+    background-image: url(../img/icon_view_player.svg)
+}
+
+.recmd .block-video .block-img .action-data span.commentCount {
+    margin-left: 20px
+}
+
+.recmd .block-video .block-img .action-data span.commentCount:before {
+    background-image: url(../img/icon_message.svg)
+}
+
+.recmd .block-video .block-img .action-data span.likeCount {
+    margin-left: 8px
+}
+
+.recmd .block-video .block-img .action-data span.likeCount:before {
+    background-image: url(../img/icon_like.svg)
+}
+
+.recmd .block-video .block-img .action-data span.onlineCount {
+    margin-left: 20px
+}
+
+.recmd .block-video .block-img .action-data span.onlineCount:before {
+    background-image: url(../img/icon_online.svg)
+}
+
+.recmd .block-video .block-img .content-sign {
+    position: absolute;
+    text-align: center;
+    top: 6px;
+    right: 6px;
+    height: 18px;
+    padding: 0 5px;
+    line-height: 17px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #fff
+}
+
+.recmd .block-video .block-img .content-sign.free-bangumi {
+    background-color: #fd4c5d
+}
+
+.recmd .block-video .block-img .content-sign.notfree-bangumi {
+    background-color: #e0b050
+}
+
+.recmd .block-video .block-img .live-status {
+    position: absolute;
+    width: 62px;
+    height: 18px;
+    top: 4px;
+    right: 4px;
+    border-radius: 3px;
+    color: #fff;
+    background-color: rgba(253, 76, 93, .7);
+    text-align: center;
+    z-index: 1
+}
+
+.recmd .block-video .block-img .live-status .live-status-desc {
+    font-size: 12px;
+    line-height: 17px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: top;
+    width: 36px
+}
+
+.recmd .block-video .block-img .live-status .living-icon {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    width: 12px;
+    height: 18px;
+    margin-left: 2px
+}
+
+.recmd .block-video .block-img .live-status .live-animate {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    vertical-align: top;
+    font-size: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%)
+}
+
+.recmd .block-video .block-img .live-status .live-animate img {
+    width: 100%;
+    height: 100%
+}
+
+.recmd .block-video .block-img .danmaku-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+    letter-spacing: .06em;
+    overflow: hidden;
+    background: rgba(0, 0, 0, .7)
+}
+
+.recmd .block-video .block-title {
+    display: inline-block;
+    position: relative;
+    margin-left: 10px;
+    width: 160px;
+    overflow: hidden;
+    vertical-align: middle
+}
+
+.recmd .block-video .block-title h3 {
+    width: 100%;
+    max-block-size: 66px;
+    margin-bottom: 10px
+}
+
+.recmd .block-video .block-title h3 a {
+    max-height: 66px;
+    font-size: 14px;
+    line-height: 20px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    text-overflow: -o-ellipsis-lastline;
+    text-overflow: ellipsis;
+    overflow: hidden
+}
+
+.recmd .block-video .block-title .uper-name {
+    display: block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #999;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.recmd .block-box {
+    width: 340px;
+    position: relative;
+    margin-bottom: 10px;
+    overflow: hidden
+}
+
+.recmd .block-box.has-hover-bg:hover {
+    padding: 4px;
+    margin: -4px 16px -4px -4px;
+    background: #f5f5f5
+}
+
+.recmd .block-box.is-recommend i {
+    width: 36px;
+    height: 18px;
+    line-height: 18px;
+    background: #fd4c5b;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    text-align: center;
+    border-radius: 0 5px 0 3px;
+    color: #fff;
+    z-index: 10
+}
+
+.recmd .block-box .block-top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10
+}
+
+.recmd .block-box a:hover time {
+    display: block
+}
+
+.recmd .block-box time {
+    display: none;
+    font-size: 12px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    line-height: 18px;
+    z-index: 2;
+    padding: 0 5px;
+    color: #fff;
+    font-weight: 400
+}
+
+.recmd .text-overflow {
+    max-width: 100%;
+    display: inherit;
+    overflow: hidden;
+    word-break: break-all;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis
+}
+
+.recmd .intelligent-recommend {
+    background-color: #fff;
+    width: 1162px;
+    margin: 20px auto 0;
+    min-height: 231px;
+    font-family: AcFun Symbol, Helvetica Neue, Helvetica, Arial, pingfang SC, Microsoft Yahei, STHeiti, sans-serif;
+    overflow: hidden;
+    position: relative
+}
+
+.recmd .intelligent-recommend .recommendation {
+    white-space: nowrap;
+    overflow: hidden
+}
+
+.recmd .intelligent-recommend .recommendation .block-video {
+    height: 140px;
+    float: inherit;
+    display: none
+}
+
+.recmd .intelligent-recommend .recommendation .block-video.block-show {
+    display: inline-block
+}
+
+.recmd .intelligent-recommend .recommendation .block-video .block-img {
+    width: 177px;
+    height: 100px
+}
+
+.recmd .intelligent-recommend .recommendation .block-video .block-title .up-info {
+    transition: bottom .2s ease, opacity .2s ease;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #f8f8f8;
+    background-color: #fff
+}
+
+.recmd .intelligent-recommend .recommendation .block-video .block-title .up-info .up {
+    color: rgba(0, 0, 0, .4)
+}
+
+.recmd .intelligent-recommend .recommendation .block-video .block-title b a {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    word-break: break-all;
+    word-wrap: break-word;
+    display: inline-block;
+    width: 100%
+}
+
+.recmd .intelligent-recommend .recommendation .block-box {
+    width: 177px
+}
+
+.recmd .space-danmaku {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    letter-spacing: .06em;
+    background-color: transparent;
+    z-index: 1;
+    border-radius: 3px
+}
+
+.recmd .space-danmaku span {
+    position: absolute;
+    color: #fff;
+    font-size: 12px;
+    pointer-events: none;
+    white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, .8)
+}
+
+.recmd .has-danmu {
+    position: relative
+}
+
+.recmd .has-danmu:hover .space-danmaku {
+    background: rgba(0, 0, 0, .7)
+}

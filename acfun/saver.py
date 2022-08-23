@@ -251,8 +251,9 @@ class AcSaver:
                 user_js_saved = os.path.isfile(user_js)
                 avatar = urlparse(profile['headUrl'])
                 avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", str(uid), ['member'])
-                shutil.move(avatar_path, user_avatar)
                 avatar_saved = os.path.isfile(user_avatar)
+                if avatar_saved:
+                    shutil.move(avatar_path, user_avatar)
                 if all([user_json_saved, user_js_saved, avatar_saved]):
                     done.append(uid)
                 progress()
@@ -498,7 +499,7 @@ class VideoSaver(AcSaver):
         video_json_string = open(os.path.join(self.folder_path, 'data', f"ac{v_num}.json"), 'rb').read().decode()
         video_js_path = os.path.join(self.folder_path, 'data', f"ac{v_num}.js")
         with open(video_js_path, 'wb') as js_file:
-            content_js = f"let ac{v_num}={video_json_string};"
+            content_js = f"videos['ac{v_num}']={video_json_string};"
             js_file.write(content_js.encode())
         video_js_saved = os.path.isfile(video_js_path)
         return all([video_raw_saved, video_js_saved])
@@ -509,6 +510,7 @@ class VideoSaver(AcSaver):
             self.ac_obj.video_data['coverUrl'], 'cover', [self.folder_name, f"ac{self.ac_obj.ac_num}"])
         cover_ext = os.path.basename(cover_path).split('.')[-1]
         cover_saved = os.path.isfile(cover_path)
+        shutil.copy(cover_path, os.path.join(self.dest_path, self.folder_path, f"cover._"))
         if num == 1:
             share_qrcode_path = self._save_qrcode()
             share_qrcode_saved = os.path.isfile(share_qrcode_path)
@@ -520,7 +522,7 @@ class VideoSaver(AcSaver):
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(
             up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
-            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"), cover_ext=cover_ext, partNum=num,
+            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"), partNum=num,
             v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
         html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:

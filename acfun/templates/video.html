@@ -33,7 +33,7 @@
                     <div id="ACPlayer">
                         <div class="container-player" style="">
                             <div class="container-video">
-                                <video id="localPlayer" preload="auto" poster="cover.{{ cover_ext }}" controls>
+                                <video id="localPlayer" preload="auto" poster="cover._" controls>
                                     <source src="ac{{ v_num }}.mp4" type="video/mp4">
                                 </video>
                                 <div class="container-plugins-inner">
@@ -234,6 +234,14 @@
                 </div>
             </div>
             {% endif %}
+            <div id="pagelet_newrecommend" style="visibility: visible;">
+                <div class="recmd">
+                    <h2 class="recommend-title">最新保存</h2>
+                    <div class="clearfix area recommendation" id="recommends">
+
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -261,24 +269,87 @@
         aTag.setAttribute('href', '#'+domId);
         aTag.click();
     }
-    function loadJs(dataType, acNum) {
-        let sc = document.createElement('script');
-        sc.setAttribute('type', 'text/javascript');
-        sc.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
-        document.body.append(sc);
+    function addRecommend(data) {
+        let base = document.createElement('figure'),
+            leftS = document.createElement('a'),
+            info = document.createElement('div'),
+            viewC = document.createElement('span'),
+            commC = document.createElement('span'),
+            cover = document.createElement('img'),
+            rightS = document.createElement('figure'),
+            h3 = document.createElement('h3'),
+            title = document.createElement('a'),
+            up = document.createElement('a');
+        base.setAttribute('class', 'fl block-box block-video no-animate auto-recommend block-show');
+        leftS.setAttribute('class', 'block-img has-danmu');
+        leftS.setAttribute('target', '_self');
+        leftS.setAttribute('href', '../ac'+data.dougaId+'/ac'+data.dougaId+'.html');
+        info.setAttribute('class', 'action-data');
+        viewC.setAttribute('class', 'viewCount');
+        viewC.innerHTML = data.viewCountShow;
+        info.append(viewC);
+        commC.setAttribute('class', 'commentCount');
+        commC.innerHTML = data.commentCountShow;
+        info.append(commC);
+        leftS.append(info);
+        cover.setAttribute('src', '../ac'+data.dougaId+'/cover._');
+        leftS.append(cover);
+        rightS.setAttribute('class', 'block-title');
+        title.setAttribute('title', data.title);
+        title.setAttribute('target', '_self');
+        title.setAttribute('href', '../ac'+data.dougaId+'/ac'+data.dougaId+'.html');
+        title.innerHTML = data.title;
+        h3.append(title);
+        rightS.append(h3);
+        up.setAttribute('class', 'uper-name');
+        up.setAttribute('target', '_blank');
+        up.setAttribute('href', 'https://www.acfun.cn/u/'+data.user.id);
+        up.innerHTML = "UP：" + data.user.name;
+        rightS.append(up);
+        base.append(leftS);
+        base.append(rightS);
+        document.getElementById('recommends').append(base);
     }
+    function loadJs(dataType, acNum, callback) {
+        let script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        if (script.readyState) {  // only required for IE <9
+            script.onreadystatechange = function () {
+                if (script.readyState === "loaded" || script.readyState === "complete") {
+                    script.onreadystatechange = null;
+                    callback();
+                }
+            };
+        } else {  //Others
+            script.onload = function () {
+                callback();
+            };
+        }
+        document.body.append(script);
+    }
+</script>
+<script type="text/javascript">
+    let videoId = "ac{{ v_num }}", videos = {};
 </script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.danmaku.js"></script>
-<script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
-<script type="text/javascript">
-    let videoData = ac{{ v_num }},
-        commentData = ac{{ v_num }}_comment,
-        danmakuData = ac{{ v_num }}_danmaku;
-</script>
-<script type="text/javascript" src="../nums.js"></script>
+<script type="text/javascript" src="data/ac{{ RAW.dougaId }}.comment.js"></script>
 <script type="text/javascript" src="../leatest.js"></script>
+<script type="text/javascript" src="../nums.js"></script>
+<script type="text/javascript">
+    let videoData = videos["ac{{ v_num }}"],
+        commentData = ac{{ RAW.dougaId }}_comment,
+        danmakuData = ac{{ v_num }}_danmaku;
+    videoLast.forEach(function (acNum) {
+        if(acNum!==videoId){
+            loadJs('video', acNum, function () {
+                addRecommend(videos[acNum]);
+            });
+        }
+    });
+</script>
 <script type="text/javascript" src="../../assets/js/localplayer.js"></script>
 <script type="text/javascript" src="../../assets/js/danmakuList.js"></script>
 <script type="text/javascript" src="../../assets/js/comment.js"></script>

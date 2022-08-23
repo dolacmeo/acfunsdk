@@ -72,7 +72,23 @@ class B64s:
         return base64.b64decode(self.raw.translate(self.DE_TRANS))
 
 
-def danmaku2ass(client, folder_path: str, filenameId: str):
+def danmaku2ass(client, folder_path: str, filenameId: str, vq: str = "720p", fontsize: int = 40):
+    """
+    https://github.com/niuchaobo/acfun-helper/blob/master/src/fg/modules/danmaku.js
+    基础代码复刻自acfun助手中弹幕相关处理
+    关于解决原代码中的弹幕重叠问题：
+        0. 原弹幕数据要按时间进行排序
+        1. 记录每条弹幕通道最后截止位置
+        2. 如果同期所有通道已满，则减少弹幕停留时间(加速通过)
+
+    :param client: acer.client
+    :param folder_path: source path
+    :param filenameId: ac_num
+    :param vq: VideoQuality
+    :return: ass file path
+    :param fontsize: num px
+    """
+
     # 检查路径
     assert os.path.isdir(folder_path) is True
     folder_name = os.path.basename(folder_path)
@@ -85,37 +101,11 @@ def danmaku2ass(client, folder_path: str, filenameId: str):
     if len(danmaku_data) == 0:
         return None
 
-    # https://github.com/niuchaobo/acfun-helper/blob/master/src/fg/modules/danmaku.js
-    thisVideoQuality = "720p"
+    thisVideoInfo = videoQualitiesRefer[vq]
+    thisVideoWidth = thisVideoInfo['width']
+    thisVideoHeight = thisVideoInfo['height']
     thisDuration = 10
-
-    def channel_check(danmaku: list, index: int):
-        if index == 0:
-            return True
-        lastBullet = danmaku[index - 1]
-        bullet = danmaku[index]
-        lastBulletPos = videoQualitiesRefer[thisVideoQuality]['width']
-        lastS = videoQualitiesRefer[thisVideoQuality]['width'] + lastBullet['fontTailX']
-        lastV = lastS / thisDuration
-        lastT = lastS / lastV
-        newS = videoQualitiesRefer[thisVideoQuality]['width']
-        newV = (newS + bullet['fontTailX']) / thisDuration
-        newT = newS / newV
-
-        if lastV < newV and lastT > newT:
-            return False
-        return True
-
-    def timeProc(second, offset=0):
-        second = second + offset
-        minute = math.floor(second / 60)
-        hours = math.floor(second / 60 / 60)
-        minute = minute - hours * 60
-        second = second - hours * 60 * 60 - minute * 60
-        sec = second + offset
-        return f"{hours:0>2}:{minute:0>2}:{sec:0>2.2f}"
-
-    fontsize = danmaku_data[0]['size'] + 15
+    channelNum = math.floor(thisVideoWidth / fontsize)
     scriptInfo = "\n".join([
         "[Script Info]",
         f"; AcVid: {folder_name}",
@@ -125,8 +115,8 @@ def danmaku2ass(client, folder_path: str, filenameId: str):
         "Script Updated By: acfunSDK转换",
         "ScriptType: v4.00+",
         "Collisions: Normal",
-        f"PlayResX: {videoQualitiesRefer[thisVideoQuality]['width']}",
-        f"PlayResY: {videoQualitiesRefer[thisVideoQuality]['height']}"
+        f"PlayResX: {thisVideoWidth}",
+        f"PlayResY: {thisVideoHeight}"
     ])
     styles = "\n".join([
         "[V4+ Styles]",
@@ -147,61 +137,65 @@ def danmaku2ass(client, folder_path: str, filenameId: str):
             'Layer', 'Start', 'End', 'Style', 'Name',
             'MarginL', 'MarginR', 'MarginV', 'Effect', 'Text\n'])
     ])
-    fontTailX = None
-    for i in range(len(danmaku_data)):
+    assData = list()
+    screenChannel = [None for i in range(channelNum)]
+
+    def timeProc(second, offset=0):
+        second = second + offset
+        minute = math.floor(second / 60)
+        hours = math.floor(second / 60 / 60)
+        minute = minute - hours * 60
+        second = second - hours * 60 * 60 - minute * 60
+        sec = second + offset
+        return f"{hours:0>2}:{minute:0>2}:{sec:0>2.2f}"
+
+    def choice_channel(startT, endT):
+        # 按新时间移除频道占位
+        empty = []
+        for i, thisEnd in enumerate(screenChannel):
+            if i in [0, 1]:
+                continue
+            elif thisEnd is None:
+                empty.append(i)
+            elif startT > thisEnd:
+                screenChannel[i] = None
+        # 无空位时返回空
+        if len(empty) == 0:
+            return None
+        # 随机选择空位，记录结束时间，返回结果
+        used = random.choice(empty)
+        screenChannel[used] = endT
+        return used
+
+    for danmaku in danmaku_data:
         # 略过高级弹幕
-        if danmaku_data[i]['danmakuType'] != 0:
-            danmuMotionList.append({'type': 1})
+        if danmaku['danmakuType'] != 0:
             continue
         # 弹幕挂载时间（文本）（弹幕左边界 接触到 视频的右边界）
-        startTime = danmaku_data[i]['position'] / 1000
+        startTime = danmaku['position'] / 1000
         # 弹幕的长度
-        fontTailX = len(danmaku_data[i]['body']) * fontsize
-        width_tail = videoQualitiesRefer[thisVideoQuality]['width'] + fontTailX
+        danmakuLen = len(danmaku['body']) * fontsize
+        danmakuLen_total = danmakuLen + thisVideoWidth
         # 运动到出界的时间点
-        toLeftTime = startTime + thisDuration + width_tail / videoQualitiesRefer[thisVideoQuality]['width']
-        # 速度
-        toLeftVelocity = width_tail / thisDuration
-        danmuMotionList.append({
-            "startTime": startTime,
-            "fontTailX": fontTailX,
-            "toLeftTime": toLeftTime,
-            "toLeftVelocity": toLeftVelocity,
-            "type": 0
-        })
-    channelNum = math.floor(videoQualitiesRefer[thisVideoQuality]['width'] / fontsize)
-
-    for i in range(len(danmaku_data)):
-        if danmuMotionList[i]['type'] != 0:
-            continue
-        if channel_check(danmuMotionList, i):
-            randHeight = fontsize * random.randint(2, channelNum)
-            dialogue = [
-                "Dialogue: 0",
-                timeProc(danmuMotionList[i]['startTime']),
-                timeProc(danmuMotionList[i]['toLeftTime']),
-                "Danmu",
-                f"{danmaku_data[i]['userId']}",
-                "20", "20", "2", "",
-                "{\\move(" + f"{videoQualitiesRefer[thisVideoQuality]['width']+fontTailX}",
-                f"{randHeight}",
-                f"{- fontTailX}",
-                f"{randHeight})" + "}" + f"{danmaku_data[i]['body']}\n"
-            ]
-        else:
-            dialogue = [
-                "Dialogue: 0",
-                timeProc(danmuMotionList[i]['startTime']),
-                timeProc(danmuMotionList[i]['toLeftTime']),
-                "Danmu",
-                f"{danmaku_data[i]['userId']}",
-                "20", "20", "2", "",
-                "{\\move(" + f"{videoQualitiesRefer[thisVideoQuality]['width'] + fontTailX}",
-                f"{fontsize}",
-                f"{- fontTailX}",
-                f"{fontsize})" + "}" + f"{danmaku_data[i]['body']}\n"
-            ]
-        events += ",".join(dialogue)
+        toLeftTime = startTime + thisDuration + (danmakuLen_total / thisVideoWidth)
+        # 寻找频道
+        danmaku_channel = choice_channel(startTime, toLeftTime)
+        if danmaku_channel is None:  # 频道全满，加速通过
+            toLeftTime -= int(thisDuration / 2)
+            danmaku_channel = random.randint(2, channelNum)
+        channelHeight = danmaku_channel * fontsize
+        # 所有点位
+        x1 = danmakuLen_total
+        y1 = channelHeight
+        x2 = - danmakuLen
+        y2 = channelHeight
+        dialogue = [
+            "Dialogue: 0", timeProc(startTime), timeProc(toLeftTime),
+            "Danmu", f"{danmaku['userId']}", "20", "20", "2", "",
+            "{\\move(" + f"{x1}", f"{y1}", f"{x2}", f"{y2})" + "}" + f"{danmaku['body']}"
+        ]
+        assData.append(",".join(dialogue))
+    events += "\n".join(assData)
     result = "\n\n".join([scriptInfo, styles, events])
     ass_path = os.path.join(folder_path, f"{filenameId}.ass")
     with open(ass_path, 'w', encoding="utf_8_sig") as ass_file:

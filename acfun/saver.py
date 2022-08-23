@@ -46,7 +46,7 @@ class AcSaver:
         "color": r"(\[color=(#[a-f0-9]{6})\])",
         "emot": r"(\[emot=acfun,(\S+?)\/])",
         "emot_old": r"(\[emot=([a-z0-9]+),(\S+?)\/])",
-        "image": r"(\[img=图片\](http[^\s]*)\[/img\])",
+        "image": r"(\[img=图片\]([^\[]*)\[\/img\])",
         "at": r"(\[at uid=(\d+)\](@[^\[]+)\[/at\])",
         "at_old": r"(\[at\]([^\[]+)\[/at\])",
         "resource": r"(\[resource id=(\d+) type=([1-5]) icon=[^\]]*\]([^\[]*)\[\/resource\])",
@@ -83,7 +83,7 @@ class AcSaver:
         checks = list()
         for x in self.folder_names:
             x_path = os.path.join(self.dest_path, x)
-            os.makedirs(x_path)
+            os.makedirs(x_path, exist_ok=True)
             checks.append(os.path.isdir(x_path))
         return all(checks)
 
@@ -270,9 +270,9 @@ class AcSaver:
         json_path = os.path.join(folder_path, 'data', filename)
         if dest_path is not None:
             json_path = os.path.join(dest_path, filename)
-        json_string = json.dumps(data, separators=(',', ':'))
+        json_string = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
         with open(json_path, 'wb') as json_file:
-            json_file.write(json_string.encode("UTF-8"))
+            json_file.write(json_string.encode())
         return os.path.isfile(json_path)
 
     def _save_comment(self):
@@ -316,7 +316,7 @@ class AcSaver:
         folder_path = self._setup_folder()
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
         comment_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.js")
-        comment_json_string = open(comment_json_path, 'rb').read().decode()
+        comment_json_string = open(comment_json_path, 'rb').read().decode("UTF-8")
         # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
         for ubb, tag in self.ubb_tag_basic.items():
             comment_json_string = comment_json_string.replace(ubb, tag)
@@ -421,7 +421,7 @@ class ArticleSaver(AcSaver):
         content_json_string = open(os.path.join(self.folder_path, 'data', f"ac{self.v_num}.json"), 'rb').read().decode()
         content_js_path = os.path.join(self.folder_path, 'data', f"ac{self.v_num}.js")
         with open(content_js_path, 'wb') as js_file:
-            content_js = f"let ac{self.v_num}={content_json_string};"
+            content_js = f"articles['ac{self.v_num}']={content_json_string};"
             js_file.write(content_js.encode())
         content_js_saved = os.path.isfile(content_js_path)
         return all([content_raw_saved, content_js_saved])

@@ -166,6 +166,10 @@ function loadComments(commentData) {
     commentData.hotComments.forEach(function (item, index) {
         hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
+    if(commentData.hotComments.length>0){
+        document.querySelector(".ac-comment-hot-list hr:last-child").remove();
+        hotList.innerHTML += "<div><div class=\"hot-comment-divid\"><hr><span>以上为热门评论</span><hr></div></div>";
+    }
     commentData.rootComments.forEach(function (item, index) {
         rootList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });

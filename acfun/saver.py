@@ -26,6 +26,7 @@ class AcSaver:
     templates = Environment(loader=PackageLoader('acfun', 'templates'))
     templates.filters['unix2datestr'] = unix2datestr
     folder_names = ['article', 'video', 'bangumi', 'live', 'moment']
+    emot_alias = ['default', 'ac', 'ac2', 'ac3', 'dog', 'tsj', 'brd', 'ais', 'td', 'zuohe', 'blizzard']
     obj2folder = {
         "AcArticle": "article",
         "AcMoment": "moment",
@@ -40,10 +41,11 @@ class AcSaver:
         "[i]": "<i>", "[/i]": "</i>",
         "[u]": "<u>", "[/u]": "</u>",
         "[s]": "<s>", "[/s]": "</s>",
-        "[/color]": r"</color>",
+        "[/color]": r"</color>"
     }
     ubb_tag_rex = {
         "color": r"(\[color=(#[a-f0-9]{6})\])",
+        "size": r"(\[size=(\d+px)\]([^\[]+)\[/size\])",
         "emot": r"(\[emot=acfun,(\S+?)\/])",
         "emot_old": r"(\[emot=([a-z0-9]+),(\S+?)\/])",
         "image": r"(\[img=\\u56fe\\u7247\]([^\[]*)\[\/img\])",
@@ -74,8 +76,8 @@ class AcSaver:
         self.folder_name = self.obj2folder.get(self.ac_obj.__class__.__name__, "else")
         if not os.path.isdir(self.dest_path):
             os.makedirs(self.dest_path, exist_ok=True)
-        self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
-            "referer": routes['index']}).json().get('domain')
+        # self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
+        #     "referer": routes['index']}).json().get('domain')
         self._check_folders()
         # self._check_assets()
 
@@ -85,6 +87,7 @@ class AcSaver:
             x_path = os.path.join(self.dest_path, x)
             os.makedirs(x_path, exist_ok=True)
             checks.append(os.path.isdir(x_path))
+        os.makedirs(os.path.join(self.dest_path, 'member'), exist_ok=True)
         index_html = self.templates.get_template('index.html').render()
         with open(os.path.join(self.dest_path, 'index.html'), 'wb') as i:
             i.write(index_html.encode())
@@ -97,6 +100,9 @@ class AcSaver:
         checks.append(os.path.isfile(os.path.join(self.dest_path, 'assets', 'favicon.ico')))
         for n in ['css', 'js', 'img', 'font', 'emot']:
             checks.append(os.path.isdir(os.path.join(self.dest_path, 'assets', n)))
+        emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
+        if os.path.isfile(emot_map_path) is False:
+            self._save_emot()
         return all(checks)
 
     def folder_list_update(self):
@@ -193,18 +199,55 @@ class AcSaver:
             if f"{n}.gif" not in local_emot_list:
                 src = f"https://cdnfile.aixifan.com/static/umeditor/emotion/images/ac/{n}.gif"
                 self._download(src, f"{n}.gif", ['assets', 'emot', 'big'])
-        local_emot_list = os.listdir(os.path.join(emot_dir, 'big'))
-        emot_map = {em.split('.')[0]: f"../../assets/emot/big/{em}" for em in local_emot_list}
-        for alias in ['ac', 'ac2', 'ac3', 'dog', 'tsj', 'brd']:
+        emot_map_path = os.path.join(emot_dir, "emotion_map.json")
+        emot_map = {"saved": {}, "lost": []}
+        if os.path.isfile(emot_map_path) is True:
+            emot_map = json.load(open(emot_map_path, 'rb'))
+        else:
+            for emot_name in os.listdir(emot_dir):
+                this_path = os.path.join(emot_dir, emot_name)
+                if os.path.isdir(this_path) is False or emot_name in ['small']:
+                    continue
+                files = os.listdir(this_path)
+                emot_map['saved'].update({
+                    f"acfun,{x.split('.')[0]}" if emot_name == 'big' else f"{emot_name},{x.split('.')[0]}":
+                        f"../../assets/emot/{emot_name}/{x}"
+                    for x in files
+                })
+        for alias in self.emot_alias:
             alias_emot_path = os.path.join(emot_dir, alias)
             os.makedirs(alias_emot_path, exist_ok=True)
             alias_emot_list = os.listdir(alias_emot_path)
             for n in range(1, 60):
-                if f"{n:0>2}.gif" not in alias_emot_list:
-                    src = f"https://cdnfile.aixifan.com/static/umeditor/emotion/images/{alias}/{n:0>2}.gif"
-                    self._download(src, f"{n:0>2}.gif", ['assets', 'emot', alias])
-            emot_map.update({"_".join([alias, em.split('.')[0]]): f"../../assets/emot/{alias}/{em}"
-                             for em in os.listdir(alias_emot_path)})
+                if n < 10:
+                    map_name0 = f"{alias},{n}"
+                    if f"{n}.gif" in alias_emot_list:
+                        emot_map['saved'].update({f"{map_name0}":  f"../../assets/emot/{alias}/{n}.gif"})
+                        continue
+                    elif map_name0 in emot_map['lost']:
+                        continue
+                    src = f"https://cdnfile.aixifan.com/static/umeditor/emotion/images/{alias}/{n}.gif"
+                    name0_save = self._download(src, f"{n}.gif", ['assets', 'emot', alias])
+                    if name0_save is None:
+                        emot_map['lost'].append(map_name0)
+                    elif os.path.isfile(name0_save):
+                        emot_map['saved'].update({f"{map_name0}": f"../../assets/emot/{alias}/{n}.gif"})
+                    else:
+                        print("EMOT UNKNOWN:", map_name0)
+                map_name1 = f"{alias},{n:0>2}"
+                if f"{n:0>2}.gif" in alias_emot_list:
+                    emot_map['saved'].update({f"{map_name1}":  f"../../assets/emot/{alias}/{n:0>2}.gif"})
+                    continue
+                elif map_name1 in emot_map['lost']:
+                    continue
+                src = f"https://cdnfile.aixifan.com/static/umeditor/emotion/images/{alias}/{n:0>2}.gif"
+                name1_save = self._download(src, f"{n:0>2}.gif", ['assets', 'emot', alias])
+                if name1_save is None:
+                    emot_map['lost'].append(map_name1)
+                elif os.path.isfile(name1_save):
+                    emot_map['saved'].update({f"{map_name1}": f"../../assets/emot/{alias}/{n:0>2}.gif"})
+                else:
+                    print("EMOT UNKNOWN:", map_name1)
         emot_map_saved = self._json_saver(emot_map, "emotion_map.json", emot_dir)
         return all([emot_json_saved, emot_map_saved])
 
@@ -239,6 +282,7 @@ class AcSaver:
         done = list()
         member_dir = os.path.join(self.dest_path, 'member')
         saved = os.listdir(member_dir)
+        ids = sorted(list(set(ids)))
         with alive_bar(len(ids), length=30, disable=len(ids) < 5, title="save members",
                        force_tty=True, stats=False) as progress:
             for uid in ids:
@@ -268,7 +312,7 @@ class AcSaver:
                 user_js_saved = os.path.isfile(user_js)
                 avatar = urlparse(profile['headUrl'])
                 avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", str(uid), ['member'])
-                avatar_saved = os.path.isfile(user_avatar)
+                avatar_saved = False if avatar_path is None else os.path.isfile(avatar_path)
                 if avatar_saved:
                     shutil.move(avatar_path, user_avatar)
                 if all([user_json_saved, user_js_saved, avatar_saved]):
@@ -293,11 +337,13 @@ class AcSaver:
             json_file.write(json_string.encode())
         return os.path.isfile(json_path)
 
-    def _save_comment(self):
+    def _save_comment(self, update: bool = False):
         folder_path = self._setup_folder()
         local_comment_data, local_comment_floors = None, []
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
         if os.path.isfile(comment_json_path):
+            if update is False:
+                return True
             local_comment_data = json.load(open(comment_json_path, 'rb'))
             local_comment_floors = [x['floor'] for x in local_comment_data['rootComments']]
         comment_obj = self.ac_obj.comment()
@@ -339,23 +385,31 @@ class AcSaver:
         for ubb, tag in self.ubb_tag_basic.items():
             comment_json_string = comment_json_string.replace(ubb, tag)
         # 正则替换：颜色,表情,图片
-        emot_map = json.load(open(os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json'), 'r'))
+        emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
+        if os.path.isfile(emot_map_path) is False:
+            self._save_emot()
+        emot_map = json.load(open(emot_map_path, 'r'))
         for n, rex_rule in self.ubb_tag_rex.items():
             for tag in re.compile(rex_rule).findall(comment_json_string):
                 if n == 'color':
                     comment_json_string = comment_json_string.replace(
                         tag[0], f'<font color=\\"{tag[1]}\\">')
+                elif n == 'size':
+                    comment_json_string = comment_json_string.replace(
+                        tag[0], f'<span style=\\"font-size:{tag[1]}\\">{tag[2]}</span>')
                 elif n == 'emot':
                     if tag[1] in emot_map:
                         comment_json_string = comment_json_string.replace(
                             tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[tag[1]]}\\">')
                 elif n == 'emot_old':
-                    alias = "_".join(tag[1:])
-                    if alias in emot_map:
+                    alias = ",".join(tag[1:])
+                    if alias in emot_map['saved']:
                         comment_json_string = comment_json_string.replace(
-                            tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[alias]}\\">')
+                            tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map["saved"][alias]}\\">')
+                    elif alias in emot_map['lost']:
+                        pass
                     else:
-                        print("old emot:", tag)
+                        print("??? emot:", tag)
                 elif n == 'image':
                     img_path = self._save_images(tag[1], ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'img'])
                     img_name = os.path.basename(img_path)
@@ -473,6 +527,7 @@ class ArticleSaver(AcSaver):
         return all([cover_saved, share_qrcode_saved, content_html_saved])
 
     def save_all(self):
+        assert os.path.isfile(os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')) is False
         # 保存文章数据
         data_saved = self._save_base_data()
         # 保存文章封面、二维码、页面与图片
@@ -484,7 +539,6 @@ class ArticleSaver(AcSaver):
         done = all([
             data_saved,
             page_saved,
-            up_saved,
             comment_saved
         ])
         if done:
@@ -525,9 +579,14 @@ class VideoSaver(AcSaver):
         v_num = f"{self.ac_obj.ac_num}_{num}" if num > 1 else f"{self.ac_obj.ac_num}"
         cover_path = self._save_images(
             self.ac_obj.video_data['coverUrl'], 'cover', [self.folder_name, f"ac{self.ac_obj.ac_num}"])
-        cover_ext = os.path.basename(cover_path).split('.')[-1]
-        cover_saved = os.path.isfile(cover_path)
-        shutil.copy(cover_path, os.path.join(self.dest_path, self.folder_path, f"cover._"))
+        cover_saved = False if cover_path is None else os.path.isfile(cover_path)
+        cover__path = os.path.join(self.dest_path, self.folder_path, f"cover._")
+        if cover_saved:
+            shutil.copy(cover_path, cover__path)
+        else:
+            ac404 = os.path.join(self.dest_path, 'assets', 'img', 'default_cover.png')
+            shutil.copy(ac404, os.path.join(self.dest_path, self.folder_path, f"cover._"))
+            cover_saved = os.path.isfile(cover__path)
         if num == 1:
             share_qrcode_path = self._save_qrcode()
             share_qrcode_saved = os.path.isfile(share_qrcode_path)
@@ -572,7 +631,6 @@ class VideoSaver(AcSaver):
         done = all([
             data_saved,
             page_saved,
-            uids == up_saved,
             danmaku_saved,
             video_saved,
             comment_saved

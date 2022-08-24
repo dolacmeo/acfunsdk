@@ -177,5 +177,7 @@ function loadComments(commentData) {
 }
 
 window.onload = function () {
-    loadComments(commentData);
+    if(commentCount<1000){
+        loadComments(commentData);
+    }
 }

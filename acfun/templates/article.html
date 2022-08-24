@@ -280,7 +280,8 @@
 <script type="text/javascript" src="../nums.js"></script>
 <script type="text/javascript">
     let contentData = articles["ac{{ v_num }}"],
-        commentData = ac{{ v_num }}_comment;
+        commentData = ac{{ v_num }}_comment,
+        commentCount = {{ RAW.commentCount }};
     articleLast.forEach(function (acNum) {
         if(acNum!==contentId){
             loadJs('article', acNum, function () {

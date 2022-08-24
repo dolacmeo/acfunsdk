@@ -341,7 +341,8 @@
 <script type="text/javascript">
     let videoData = videos["ac{{ v_num }}"],
         commentData = ac{{ RAW.dougaId }}_comment,
-        danmakuData = ac{{ v_num }}_danmaku;
+        danmakuData = ac{{ v_num }}_danmaku,
+        commentCount = {{ RAW.commentCount }};
     videoLast.forEach(function (acNum) {
         if(acNum!==videoId){
             loadJs('video', acNum, function () {

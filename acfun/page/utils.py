@@ -4,6 +4,7 @@ import os
 import time
 import math
 import json
+import httpx
 import random
 import base64
 import shutil
@@ -244,28 +245,33 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
         fname = urlparse(src_url).path.split('/')[-1]
     fpath = os.path.join(dest_dir, fname)
 
-    with open(fpath, 'wb') as download_file:
-        with client.stream("GET", src_url) as response:
-            if response.status_code // 100 != 2:
-                download_file.close()
-                os.remove(fpath)
-                return None
-            total = int(response.headers.get("Content-Length", 0))
-            total = None if total == 0 else total // 1024
-            downloaded = 0
-            with alive_bar(total, manual=True, length=30, disable=not display,
-                           title=fname, title_length=20, force_tty=True,
-                           monitor="{count}/{total} [{percent:.1%}]",
-                           stats=False, elapsed_end=False) as progress:
-                for chunk in response.iter_bytes():
-                    download_file.write(chunk)
-                    if total is None or total == 0:
-                        progress((response.num_bytes_downloaded - downloaded) // 1024)
-                    else:
-                        progress(downloaded / total)
-                    downloaded = response.num_bytes_downloaded
-                if total is not None:
-                    progress(1)
+    try:
+        with open(fpath, 'wb') as download_file:
+            with client.stream("GET", src_url) as response:
+                if response.status_code // 100 != 2:
+                    download_file.close()
+                    os.remove(fpath)
+                    return None
+                total = int(response.headers.get("Content-Length", 0))
+                total = None if total == 0 else total // 1024
+                downloaded = 0
+                with alive_bar(total, manual=True, length=30, disable=not display,
+                               title=fname, title_length=20, force_tty=True,
+                               monitor="{count}/{total} [{percent:.1%}]",
+                               stats=False, elapsed_end=False) as progress:
+                    for chunk in response.iter_bytes():
+                        download_file.write(chunk)
+                        if total is None or total == 0:
+                            progress((response.num_bytes_downloaded - downloaded) // 1024)
+                        else:
+                            progress(downloaded / total)
+                        downloaded = response.num_bytes_downloaded
+                    if total is not None:
+                        progress(1)
+    except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout):
+        print("httpx.ConnectError:", src_url)
+        os.remove(fpath)
+        return None
 
     if os.path.isfile(fpath) and os.path.exists(fpath):
         if '.' not in fname:
@@ -842,12 +848,17 @@ class AcComment:
             page = api_data.get('curPage', 1)
             page += 1
         for lou in self.root_comments:
+            if 'subCommentCount' not in lou:
+                continue
             if lou['subCommentCount'] == 0:
                 continue
             rid = lou['commentId']
             sub_data = {"pcursor": 1, "subComments": []}
             while sub_data['pcursor'] != "no_more":
                 sub_page = self._get_sub(rid, sub_data['pcursor'])
+                if 'subComments' not in sub_page:
+                    sub_data['pcursor'] = "no_more"
+                    break
                 sub_data['subComments'].extend(sub_page['subComments'])
                 if sub_page['curPage'] < sub_page['totalPage']:
                     sub_data['pcursor'] += 1

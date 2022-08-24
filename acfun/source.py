@@ -4,11 +4,12 @@
 __author__ = 'dolacmeo'
 
 header = {
+    "Referer": "https://www.acfun.cn/",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                   'AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/103.0.5060.134 '
-                  'Safari/537.36 '
-                  'Edg/103.0.1264.77'
+                  'Chrome/104.0.5112.102 Safari/537.36'
 }
 
 scheme = "https"

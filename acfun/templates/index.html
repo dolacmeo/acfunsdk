@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>AcFun近期保存内容</title>
+    <link href="assets/favicon.ico" rel="shortcut icon">
+    <link type="text/css" rel="stylesheet" href="assets/css/base.css"/>
+    <script type="text/javascript" src="assets/js/lazyload.min.js"></script>
+    <script type="text/javascript">var lazyLoadInstance = new LazyLoad({});</script>
+</head>
+<body>
+    <div id="app">
+        <div class="layout">
+            <main>
+                <div class="ac-rank-wrapper">
+                    <div class="header">
+                        <div class="header__content">
+                            <a href="/" class="header__logo"></a>
+                            <div class="header__rank-banner">
+                                <div class="text-wrapper">
+                                    <a href="/" class="text--ac">AcFun</a>
+                                    <span class="text--rank">Cache</span>
+                                </div>
+                                <h1>近期保存</h1>
+                            </div>
+                        </div>
+                    </div>
+<!--                    <div class="filter"></div>-->
+                    <div class="rlist" id="ac-list">
+                        <div class="rlist__banner">
+                            <div class="rlist__title rlist__title--rank">
+                                <p class="rlist__text--cn">内容</p>
+                                <p class="rlist__text--en">Shows</p>
+                            </div>
+                            <div class="rlist__title rist__title--author">
+                                <p class="rlist__text--cn">Up主</p>
+                                <p class="rlist__text--en">Author</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="pagelet_footer" style="visibility: visible;">
+                    <div id="footer">
+                        <div class="wp footer-con">
+                            <div class="footer-bottom">
+                                <a href="https://www.acfun.cn">
+                                    <img src="assets/img/logo-gray.png" width="78" height="24" loading="lazy" alt=""></a>
+                                <p>Copyright © 2007-<script>document.write(new Date().getFullYear().toString())</script> AcFun. 保留所有权利</p></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    let articles = {}, articleLast = [],
+        videos = {}, videoLast = [],
+        AcCacheList=[];
+    function loadJs(path, callback) {
+        let script = document.createElement('script');
+        script.setAttribute('type', 'text/javascript');
+        script.setAttribute('src', path);
+
+        if (script.readyState) {
+            script.onreadystatechange = function () {
+                if (script.readyState === "loaded" || script.readyState === "complete") {
+                    console.log(script.readyState);
+                    script.onreadystatechange = null;callback();
+                }};
+        } else {script.onload = function () {callback();};}
+        document.body.append(script);
+    }
+</script>
+<script type="text/javascript" src="assets/data/recent.js"></script>
+<script type="text/javascript" src="assets/js/index.js"></script>
+</html>

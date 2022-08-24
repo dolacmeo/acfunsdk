@@ -46,7 +46,7 @@ class AcSaver:
         "color": r"(\[color=(#[a-f0-9]{6})\])",
         "emot": r"(\[emot=acfun,(\S+?)\/])",
         "emot_old": r"(\[emot=([a-z0-9]+),(\S+?)\/])",
-        "image": r"(\[img=图片\]([^\[]*)\[\/img\])",
+        "image": r"(\[img=\\u56fe\\u7247\]([^\[]*)\[\/img\])",
         "at": r"(\[at uid=(\d+)\](@[^\[]+)\[/at\])",
         "at_old": r"(\[at\]([^\[]+)\[/at\])",
         "resource": r"(\[resource id=(\d+) type=([1-5]) icon=[^\]]*\]([^\[]*)\[\/resource\])",
@@ -85,6 +85,9 @@ class AcSaver:
             x_path = os.path.join(self.dest_path, x)
             os.makedirs(x_path, exist_ok=True)
             checks.append(os.path.isdir(x_path))
+        index_html = self.templates.get_template('index.html').render()
+        with open(os.path.join(self.dest_path, 'index.html'), 'wb') as i:
+            i.write(index_html.encode())
         return all(checks)
 
     def _check_assets(self):
@@ -111,22 +114,36 @@ class AcSaver:
         return all(jsFiles)
 
     def record_last(self):
-        last_data = []
-        last_path = os.path.join(self.dest_path, self.folder_name, 'leatest.js')
-        if os.path.isfile(last_path):
-            sn = len(f"let {self.folder_name}Last=")
-            last_text = open(last_path, 'r').read()
-            last_data = json.loads(last_text[sn:-1])
         ac_num = f"ac{self.ac_obj.ac_num}"
         if "_" in ac_num:
             ac_num = ac_num.split('_')[0]
+
+        last_data = []
+        last_path = os.path.join(self.dest_path, self.folder_name, 'leatest.js')
+        if os.path.isfile(last_path):
+            sn = len(f"{self.folder_name}Last=")
+            last_text = open(last_path, 'r').read()
+            last_data = json.loads(last_text.strip()[sn:-1])
         if ac_num not in last_data:
             last_data.append(ac_num)
         last_string = json.dumps(last_data, separators=(',', ':'))
-        last_js = f"let {self.folder_name}Last={last_string};"
+        last_js = f"{self.folder_name}Last={last_string};"
         with open(last_path, 'wb') as js:
             js.write(last_js.encode())
-        return os.path.isfile(last_path)
+
+        recent_data = []
+        recent_path = os.path.join(self.dest_path, 'assets', 'data', 'recent.js')
+        if os.path.isfile(recent_path):
+            recent_text = open(recent_path, 'r').read()
+            recent_data = json.loads(recent_text.strip()[12:-1])
+        if [self.folder_name, ac_num] not in recent_data:
+            recent_data.append([self.folder_name, ac_num])
+        recent_string = json.dumps(recent_data, separators=(',', ':'))
+        recent_js = f"AcCacheList={recent_string};"
+        with open(recent_path, 'wb') as js:
+            js.write(recent_js.encode())
+
+        return all([os.path.isfile(last_path), os.path.isfile(recent_path)])
 
     def _setup_folder(self):
         folder_path = os.path.join(self.dest_path, self.folder_name, f"ac{self.ac_obj.ac_num}")
@@ -431,13 +448,13 @@ class ArticleSaver(AcSaver):
         cover_path = self._save_images(self.ac_obj.article_data['coverUrl'], 'cover',
                                        [self.folder_name, f"ac{self.ac_obj.ac_num}"])
         cover_saved = os.path.isfile(cover_path)
+        shutil.copy(cover_path, os.path.join(self.dest_path, self.folder_path, f"cover._"))
         share_qrcode_path = self._save_qrcode()
         share_qrcode_saved = os.path.isfile(share_qrcode_path)
         up_data = self.get_user(self.ac_obj.article_data['user']['id'])
         article_template = self.templates.get_template('article.html')
         article_html = article_template.render(
             up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
-            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"),
             v_num=self.v_num, up_data=up_data, RAW=self.ac_obj.article_data)
         html_obj = Bs(article_html, 'lxml')
         html_img_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
@@ -521,8 +538,7 @@ class VideoSaver(AcSaver):
         up_data = self.get_user(self.ac_obj.video_data['user']['id'])
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(
-            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
-            cache_date=arrow.now().format("YYYY-MM-DD HH:mm:ss"), partNum=num,
+            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"), partNum=num,
             v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
         html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:

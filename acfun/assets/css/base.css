@@ -2651,13 +2651,6 @@ body, html {
     margin-right: 4px
 }
 
-.ac-rank-wrapper {
-    background: #e4ecf3 url(../img/bg-stage.png) center 2px repeat-x scroll;
-    padding-bottom: 90px;
-    width: 100vw;
-    min-height: 650px
-}
-
 @media (min-width: 1440px) {
     .ac-rank-wrapper .filter, .ac-rank-wrapper .header__content, .ac-rank-wrapper .rlist {
         width: 1200px
@@ -3325,7 +3318,7 @@ body, html {
 .ac-rank-wrapper {
     background: #e4ecf3 url(../img/bg-stage.png) center 2px repeat-x scroll;
     padding-bottom: 90px;
-    width: 100vw;
+    width: 98vw;
     min-height: 650px
 }
 

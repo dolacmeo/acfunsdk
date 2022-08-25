@@ -288,6 +288,9 @@ class AcSaver:
         member_dir = os.path.join(self.dest_path, 'member')
         saved = os.listdir(member_dir)
         ids = sorted(list(set(ids)))
+        ids_with_ext = [f"{i}.json" for i in ids]
+        ids = list(set(ids_with_ext).difference([x for x in saved if x.endswith('.json')]))
+        ids = [y.split('.')[0] for y in ids]
         with alive_bar(len(ids), length=30, disable=len(ids) < 5, title="save members",
                        force_tty=True, stats=False) as progress:
             for uid in ids:
@@ -316,10 +319,13 @@ class AcSaver:
                     js_file.write(user_js_string.encode())
                 user_js_saved = os.path.isfile(user_js)
                 avatar = urlparse(profile['headUrl'])
-                avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", str(uid), ['member'])
-                avatar_saved = False if avatar_path is None else os.path.isfile(avatar_path)
-                if avatar_saved:
-                    shutil.move(avatar_path, user_avatar)
+                if avatar.path.endswith('defaultAvatar.jpg'):
+                    avatar_saved = True
+                else:
+                    avatar_path = self._save_images(f"{avatar.scheme}://{avatar.netloc}{avatar.path}", str(uid), ['member'])
+                    avatar_saved = False if avatar_path is None else os.path.isfile(avatar_path)
+                    if avatar_saved:
+                        shutil.move(avatar_path, user_avatar)
                 if all([user_json_saved, user_js_saved, avatar_saved]):
                     done.append(uid)
                 progress()
@@ -380,115 +386,130 @@ class AcSaver:
                         uids.append(j['userId'])
             self._save_member(uids)
             comment_saved = self._json_saver(comment_data, f"ac{self.ac_obj.ac_num}.comment.json")
-            print("saved:", comment_saved, comment_json_path)
+            print("SAVED:", comment_saved, comment_json_path)
         else:
             comment_saved = True
-        comment_js_path = self._tans_comment_uub2html()
-        comment_js_saved = os.path.isfile(comment_js_path)
+        comment_js_saved = self._tans_comment_uub2html()
         return all([comment_saved, comment_js_saved])
 
     def _tans_comment_uub2html(self):
         print("loading comment data json")
         folder_path = self._setup_folder()
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
-        comment_json_string = open(comment_json_path, 'rb').read().decode("UTF-8")
-        print('process comment ubb tags')
-        # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
-        for ubb, tag in self.ubb_tag_basic.items():
-            comment_json_string = comment_json_string.replace(ubb, tag)
-        # 正则替换：颜色,表情,图片
-        emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
-        if os.path.isfile(emot_map_path) is False:
-            self._save_emot()
-        emot_map = json.load(open(emot_map_path, 'r'))
-        for n, rex_rule in self.ubb_tag_rex.items():
-            for tag in re.compile(rex_rule).findall(comment_json_string):
-                if n == 'color':
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<font color=\\"{tag[1]}\\">')
-                elif n == 'size':
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<span style=\\"font-size:{tag[1]}\\">{tag[2]}</span>')
-                elif n == 'emot':
-                    if tag[1] in emot_map:
+        comment_json_temp = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.temp")
+        temp_ok = os.path.isfile(comment_json_temp)
+        if temp_ok:
+            print('loading temp')
+            comment_json_string = open(comment_json_temp, 'r').read()
+        else:
+            comment_json_string = open(comment_json_path, 'r').read()
+            print('process comment ubb tags')
+            # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
+            for ubb, tag in self.ubb_tag_basic.items():
+                comment_json_string = comment_json_string.replace(ubb, tag)
+            # 正则替换：颜色,表情,图片
+            emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
+            if os.path.isfile(emot_map_path) is False:
+                self._save_emot()
+            emot_map = json.load(open(emot_map_path, 'r'))
+            for n, rex_rule in self.ubb_tag_rex.items():
+                for tag in re.compile(rex_rule).findall(comment_json_string):
+                    if n == 'color':
                         comment_json_string = comment_json_string.replace(
-                            tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[tag[1]]}\\">')
-                elif n == 'emot_old':
-                    alias = ",".join(tag[1:])
-                    if alias in emot_map['saved']:
+                            tag[0], f'<font color=\\"{tag[1]}\\">')
+                    elif n == 'size':
                         comment_json_string = comment_json_string.replace(
-                            tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map["saved"][alias]}\\">')
-                    elif alias in emot_map['lost']:
-                        pass
-                    else:
-                        print("??? emot:", tag)
-                elif n == 'image':
-                    img_path = self._save_images(tag[1], ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'img'])
-                    img_name = os.path.basename(img_path)
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<img class=\\"lazy\\" data-src=\\"img/{img_name}\\" alt=\\"{tag[1]}\\">')
-                elif n == 'at':
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<a class=\\"ubb-name\\" target=\\"_blank\\" href=\\"https://www.acfun.cn/u/{tag[1]}\\">{tag[2]}</a>')
-                elif n == 'at_old':
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<a class=\\"ubb-name\\">@{tag[1]}</a>')
-                elif n == 'jump':
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], f'<a class=\\"quickJump\\" onclick=\\"quickJump({tag[1]})\\">{tag[2]}</a>')
-                elif n == 'resource':
-                    resource_a = '<a class=\\"ubb-ac\\" data-aid=\\"{ac_num}\\" href=\\"{href}\\" target=\\"_blank\\">{title}</a>'
-                    comment_json_string = comment_json_string.replace(
-                        tag[0], self.ubb_resource_icon[tag[2]]+resource_a.format(
-                            ac_num=tag[1],
-                            href=self.ubb_resource_url[tag[2]]+tag[1],
-                            title=tag[3]
-                        ))
-        # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
-        #     print(tag)
+                            tag[0], f'<span style=\\"font-size:{tag[1]}\\">{tag[2]}</span>')
+                    elif n == 'emot':
+                        if tag[1] in emot_map:
+                            comment_json_string = comment_json_string.replace(
+                                tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map[tag[1]]}\\">')
+                    elif n == 'emot_old':
+                        alias = ",".join(tag[1:])
+                        if alias in emot_map['saved']:
+                            comment_json_string = comment_json_string.replace(
+                                tag[0], f'<img class=\\"ubb-emotion\\" src=\\"{emot_map["saved"][alias]}\\">')
+                        elif alias in emot_map['lost']:
+                            pass
+                        else:
+                            print("??? emot:", tag)
+                    elif n == 'image':
+                        img_path = self._save_images(tag[1], ex_dir=[self.folder_name, f"ac{self.ac_obj.ac_num}", 'img'])
+                        if img_path is None:
+                            print(f"IMG ERROR: {tag[1]}")
+                            comment_json_string = comment_json_string.replace(
+                                tag[0], f'<img class=\\"lazy\\" data-src=\\"../../assets/img/404img.png\\" alt=\\"{tag[1]}\\">')
+                        else:
+                            img_name = os.path.basename(img_path)
+                            comment_json_string = comment_json_string.replace(
+                                tag[0], f'<img class=\\"lazy\\" data-src=\\"img/{img_name}\\" alt=\\"{tag[1]}\\">')
+                    elif n == 'at':
+                        comment_json_string = comment_json_string.replace(
+                            tag[0], f'<a class=\\"ubb-name\\" target=\\"_blank\\" href=\\"https://www.acfun.cn/u/{tag[1]}\\">{tag[2]}</a>')
+                    elif n == 'at_old':
+                        comment_json_string = comment_json_string.replace(
+                            tag[0], f'<a class=\\"ubb-name\\">@{tag[1]}</a>')
+                    elif n == 'jump':
+                        comment_json_string = comment_json_string.replace(
+                            tag[0], f'<a class=\\"quickJump\\" onclick=\\"quickJump({tag[1]})\\">{tag[2]}</a>')
+                    elif n == 'resource':
+                        resource_a = '<a class=\\"ubb-ac\\" data-aid=\\"{ac_num}\\" href=\\"{href}\\" target=\\"_blank\\">{title}</a>'
+                        comment_json_string = comment_json_string.replace(
+                            tag[0], self.ubb_resource_icon[tag[2]]+resource_a.format(
+                                ac_num=tag[1],
+                                href=self.ubb_resource_url[tag[2]]+tag[1],
+                                title=tag[3]
+                            ))
+            # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
+            #     print(tag)
+            print('SAVE TEMP')
+            with open(comment_json_temp, 'w') as t:
+                t.write(comment_json_string)
         print('split comment data')
         comment_data = json.loads(comment_json_string)
         total_comment = len(comment_data['rootComments'])
         # 评论分块存储，每块100条；跟楼按每页划分。
         # 区块正向划分，预留已删除位置；区块顺序列表倒置；热评在最后。
-        blocks = []
         total_block = math.ceil(total_comment / 100)
-        for I in range(total_block):
-            max_floor = (I + 1) * 100
-            comment_block_data = {
-                "hotComments": [],
-                "rootComments": [],
-                "subCommentsMap": {},
-                "save_unix": time.time(),
-                "page": total_block - I,
-                "total": total_block,
-                "totalComment": total_comment
-            }
-            for X in comment_data['rootComments']:
-                if X['floor'] < I * 100:
-                    continue
-                elif X['floor'] >= max_floor:
-                    continue
-                cid = str(X['commentId'])
-                comment_block_data['rootComments'].append(X)
-                if cid in comment_data['subCommentsMap']:
-                    comment_block_data['subCommentsMap'][cid] = comment_data['subCommentsMap'][cid]
-            blocks.append(comment_block_data)
-        blocks[-1]["hotComments"] = comment_data["hotComments"]
-        for Y in comment_data["hotComments"]:
-            cid = str(Y['commentId'])
+        blocks = {}
+        count = 0
+        for X in comment_data['rootComments']:
+            count += 1
+            z = str(math.floor(X['floor'] / 100))
+            if z not in blocks:
+                blocks[z] = {
+                    "hotComments": [],
+                    "rootComments": [],
+                    "subCommentsMap": {},
+                    "save_unix": time.time(),
+                    "totalComment": total_comment
+                }
+            blocks[z]['rootComments'].append(X)
+            cid = str(X['commentId'])
             if cid in comment_data['subCommentsMap']:
-                blocks[-1]["subCommentsMap"][cid] = comment_data['subCommentsMap'][cid]
+                blocks[z]['subCommentsMap'][cid] = comment_data['subCommentsMap'][cid]
+        totals = 0
+        for v in blocks.values():
+            totals += len(v["rootComments"])
+        blocks = [j for i, j in sorted(blocks.items(), reverse=True)]
+        blocks[0]["hotComments"] = comment_data["hotComments"]
+        for Y in blocks[0]["hotComments"]:
+            cid = str(Y['commentId'])
+            if cid not in blocks[0]['subCommentsMap'] and cid in comment_data['subCommentsMap']:
+                blocks[0]['subCommentsMap'][cid] = comment_data['subCommentsMap'][cid]
         for i in range(len(blocks)):
-            B = blocks[::-1][i]
+            B = blocks[i]
+            B.update({'page': i + 1, 'total': len(blocks)})
             B['rootComments'] = sorted(B['rootComments'], key=lambda x: x['floor'], reverse=True)
             comment_block_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.{i+1}.js")
             comment_block_js_string = json.dumps(B, separators=(',', ':'))
             with open(comment_block_js_path, 'wb') as js_file:
                 comment_js = f"commentData[{i+1}]={comment_block_js_string};"
                 js_file.write(comment_js.encode())
-            print("saved:", os.path.isfile(comment_block_js_path), comment_block_js_path)
-        return comment_json_path
+            print("SAVED:", os.path.isfile(comment_block_js_path), comment_block_js_path)
+        if temp_ok:
+            os.remove(comment_json_temp)
+        return os.path.isfile(comment_json_path)
 
     def _save_danmaku(self, num: int = 1):
         assert num <= len(self.ac_obj.video_list)
@@ -503,7 +524,7 @@ class AcSaver:
             danmaku_js = f"let ac{v_num}_danmaku={danmaku_json_string};"
             js_file.write(danmaku_js.encode())
         danmaku_js_saved = os.path.isfile(danmaku_js_path)
-        print("saved:", danmaku_js_saved, danmaku_js_path)
+        print("SAVED:", danmaku_js_saved, danmaku_js_path)
         danmaku_ass_path = self._danmaku2ass(num)
         if danmaku_ass_path is None:
             danmaku_ass_saved, danmaku_ass_js_saved = True, True
@@ -511,7 +532,7 @@ class AcSaver:
             danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
             danmaku_ass_js_path = os.path.join(folder_path, 'data', f"ac{v_num}.ass.js")
             danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
-            print("saved:", danmaku_ass_js_saved, danmaku_ass_js_path)
+            print("SAVED:", danmaku_ass_js_saved, danmaku_ass_js_path)
         return all([danmaku_saved, danmaku_js_saved, danmaku_ass_saved, danmaku_ass_js_saved])
 
     def _danmaku2ass(self, num: int = 1):
@@ -641,7 +662,7 @@ class VideoSaver(AcSaver):
             ac404 = os.path.join(self.dest_path, 'assets', 'img', 'default_cover.png')
             shutil.copy(ac404, os.path.join(self.dest_path, self.folder_path, f"cover._"))
             cover_saved = os.path.isfile(cover__path)
-        print("saved:", cover_saved, cover__path)
+        print("SAVED:", cover_saved, cover__path)
         if num == 1:
             share_qrcode_path = self._save_qrcode()
             share_qrcode_saved = os.path.isfile(share_qrcode_path)
@@ -658,7 +679,7 @@ class VideoSaver(AcSaver):
         with open(html_path, 'wb') as html_file:
             html_file.write(video_html.encode(errors='ignore'))
         video_html_saved = os.path.isfile(html_path)
-        print("saved:", video_html_saved, html_path)
+        print("SAVED:", video_html_saved, html_path)
         return all([cover_saved, share_qrcode_saved, mobile_qrcode_saved, video_html_saved])
 
     def save_video(self, num: int = 1):
@@ -683,7 +704,7 @@ class VideoSaver(AcSaver):
         if video_saved is False:
             you_get_download(acfun_url, output_dir=self.folder_path, merge=True)
             video_saved = os.path.isfile(video_path)
-        print("saved:", video_saved, video_path)
+        print("SAVED:", video_saved, video_path)
         # 保存评论
         comment_saved = self._save_comment() if num == 1 else True
         done = all([

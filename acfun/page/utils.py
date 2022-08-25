@@ -836,24 +836,23 @@ class AcComment:
         self.root_comments = list()
         self.sub_comments = dict()
         page = 1
-        page_max = 2
-        while page <= page_max:
-            api_data = self._get_data(page)
-            if api_data.get('result') != 0:
-                break
-            self.hot_comments.extend(api_data.get('hotComments', []))
-            self.root_comments.extend(api_data.get('rootComments', []))
-            # self.sub_comments.update(api_data.get('subCommentsMap', {}))
-            page_max = api_data.get('totalPage', page)
-            page = api_data.get('curPage', 1)
-            page += 1
-        for lou in self.root_comments:
-            if 'subCommentCount' not in lou:
-                continue
-            if lou['subCommentCount'] == 0:
-                continue
-            rid = lou['commentId']
-            sub_data = {"pcursor": 1, "subComments": []}
+        page_max = 10
+        with alive_bar(100, manual=True, length=30, title="get all comments", force_tty=True, stats=False) as bar:
+            while page <= page_max:
+                api_data = self._get_data(page)
+                if api_data.get('result') != 0:
+                    print(api_data)
+                    break
+                self.hot_comments.extend(api_data.get('hotComments', []))
+                self.root_comments.extend(api_data.get('rootComments', []))
+                self.sub_comments.update(api_data.get('subCommentsMap', {}))
+                page_max = api_data.get('totalPage', page)
+                page = api_data.get('curPage', 1)
+                page += 1
+                bar(page / page_max)
+            bar(1)
+
+        for rid, sub_data in self.sub_comments.items():
             while sub_data['pcursor'] != "no_more":
                 sub_page = self._get_sub(rid, sub_data['pcursor'])
                 if 'subComments' not in sub_page:
@@ -864,8 +863,7 @@ class AcComment:
                     sub_data['pcursor'] += 1
                 else:
                     sub_data['pcursor'] = "no_more"
-            self.sub_comments.update({rid: sub_data})
-            time.sleep(0.5)
+                time.sleep(0.1)
 
     def get_all_floors(self):
         first_page = self._get_data(1, 'comment_floor')

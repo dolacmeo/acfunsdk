@@ -7,6 +7,7 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/base.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/article.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/pager.min.css"/>
     <script type="text/javascript" src="../../assets/js/lazyload.min.js"></script>
     <script type="text/javascript">var lazyLoadInstance = new LazyLoad({});</script>
 </head>
@@ -187,7 +188,7 @@
                 <section class="up-contributions">
                     <div class="ctb-head">
                         <h1 class="ctb-title">最新保存</h1>
-                        <a href="https://www.acfun.cn/u/{{ RAW.user.href }}" target="_blank" class="showall">全部</a>
+                        <a href="../../index.html" target="_blank" class="showall">全部</a>
                     </div>
                 </section>
                 <div id="recommends"></div>
@@ -250,10 +251,14 @@
         base.append(info);
         document.getElementById('recommends').append(base);
     }
-    function loadJs(dataType, acNum, callback) {
+    function loadJs(path, callback, jsId) {
         let script = document.createElement('script');
         script.setAttribute('type', 'text/javascript');
-        script.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        script.setAttribute('src', path);
+        if(typeof (jsId)=="string"){
+            document.querySelector("#"+jsId).remove();
+            script.setAttribute('id', jsId);
+        }
         if (script.readyState) {  // only required for IE <9
             script.onreadystatechange = function () {
                 if (script.readyState === "loaded" || script.readyState === "complete") {
@@ -270,21 +275,20 @@
     }
 </script>
 <script type="text/javascript">
-    let contentId = "ac{{ v_num }}", articles = {}, articleLast = [];
+    let contentId = "ac{{ v_num }}", articles = {}, articleLast = [], commentData;
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
-<script type="text/javascript" src="data/ac{{ v_num }}.comment.js"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.comment.0.js" id="comment-data"></script>
 <script type="text/javascript" src="../leatest.js"></script>
 <script type="text/javascript" src="../nums.js"></script>
 <script type="text/javascript">
     let contentData = articles["ac{{ v_num }}"],
-        commentData = ac{{ v_num }}_comment,
         commentCount = {{ RAW.commentCount }};
     articleLast.forEach(function (acNum) {
         if(acNum!==contentId){
-            loadJs('article', acNum, function () {
+            loadJs('../'+acNum+'/data/'+acNum+'.js', function () {
                 addRecommend(articles[acNum]);
             });
         }

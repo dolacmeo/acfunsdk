@@ -1,4 +1,5 @@
 # coding=utf-8
+import math
 import os
 import re
 import time
@@ -25,6 +26,7 @@ def unix2datestr(t):
 class AcSaver:
     templates = Environment(loader=PackageLoader('acfun', 'templates'))
     templates.filters['unix2datestr'] = unix2datestr
+    templates.filters['math_ceil'] = math.ceil
     folder_names = ['article', 'video', 'bangumi', 'live', 'moment']
     emot_alias = ['default', 'ac', 'ac2', 'ac3', 'dog', 'tsj', 'brd', 'ais', 'td', 'zuohe', 'blizzard']
     obj2folder = {
@@ -76,8 +78,8 @@ class AcSaver:
         self.folder_name = self.obj2folder.get(self.ac_obj.__class__.__name__, "else")
         if not os.path.isdir(self.dest_path):
             os.makedirs(self.dest_path, exist_ok=True)
-        # self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
-        #     "referer": routes['index']}).json().get('domain')
+        self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
+            "referer": routes['index']}).json().get('domain')
         self._check_folders()
         # self._check_assets()
 
@@ -89,7 +91,10 @@ class AcSaver:
             checks.append(os.path.isdir(x_path))
         os.makedirs(os.path.join(self.dest_path, 'member'), exist_ok=True)
         index_html = self.templates.get_template('index.html').render()
-        with open(os.path.join(self.dest_path, 'index.html'), 'wb') as i:
+        index_html_path = os.path.join(self.dest_path, 'index.html')
+        if os.path.isfile(index_html_path) is False:
+            self._check_assets()
+        with open(index_html_path, 'wb') as i:
             i.write(index_html.encode())
         return all(checks)
 
@@ -379,7 +384,6 @@ class AcSaver:
     def _tans_comment_uub2html(self):
         folder_path = self._setup_folder()
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
-        comment_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.js")
         comment_json_string = open(comment_json_path, 'rb').read().decode("UTF-8")
         # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
         for ubb, tag in self.ubb_tag_basic.items():
@@ -434,10 +438,47 @@ class AcSaver:
                         ))
         # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
         #     print(tag)
-        with open(comment_js_path, 'wb') as js_file:
-            comment_js = f"let ac{self.ac_obj.ac_num}_comment={comment_json_string};"
-            js_file.write(comment_js.encode())
-        return comment_js_path
+        comment_data = json.loads(comment_json_string)
+        total_comment = len(comment_data['rootComments'])
+        # 评论分块存储，每块100条；跟楼按每页划分。
+        # 区块正向划分，预留已删除位置；区块顺序列表倒置；热评在最后。
+        blocks = []
+        total_block = math.ceil(total_comment / 100)
+        for I in range(total_block):
+            max_floor = (I + 1) * 100
+            comment_block_data = {
+                "hotComments": [],
+                "rootComments": [],
+                "subCommentsMap": {},
+                "save_unix": time.time(),
+                "page": total_block - I,
+                "total": total_block,
+                "totalComment": total_comment
+            }
+            for X in comment_data['rootComments']:
+                if X['floor'] < I * 100:
+                    continue
+                elif X['floor'] >= max_floor:
+                    continue
+                cid = str(X['commentId'])
+                comment_block_data['rootComments'].append(X)
+                if cid in comment_data['subCommentsMap']:
+                    comment_block_data['subCommentsMap'][cid] = comment_data['subCommentsMap'][cid]
+            blocks.append(comment_block_data)
+        blocks[-1]["hotComments"] = comment_data["hotComments"]
+        for Y in comment_data["hotComments"]:
+            cid = str(Y['commentId'])
+            if cid in comment_data['subCommentsMap']:
+                blocks[-1]["subCommentsMap"][cid] = comment_data['subCommentsMap'][cid]
+        for i in range(len(blocks)):
+            B = blocks[::-1][i]
+            B['rootComments'] = sorted(B['rootComments'], key=lambda x: x['floor'], reverse=True)
+            comment_block_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.{i}.js")
+            comment_block_js_string = json.dumps(B, separators=(',', ':'))
+            with open(comment_block_js_path, 'wb') as js_file:
+                comment_js = f"commentData={comment_block_js_string};"
+                js_file.write(comment_js.encode())
+        return total_block
 
     def _save_danmaku(self, num: int = 1):
         assert num <= len(self.ac_obj.video_list)
@@ -527,7 +568,7 @@ class ArticleSaver(AcSaver):
         return all([cover_saved, share_qrcode_saved, content_html_saved])
 
     def save_all(self):
-        assert os.path.isfile(os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')) is False
+        assert os.path.isfile(os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')) is True
         # 保存文章数据
         data_saved = self._save_base_data()
         # 保存文章封面、二维码、页面与图片

@@ -2,7 +2,15 @@
 let hotList = document.getElementById('comment-hot-list'),
     rootList = document.getElementById('comment-root-list');
 
-function commentBlock(commentItem, subCommentsMap, isTop=false) {
+function loadingPage(n) {
+    if(n==commentData.page){return false;}
+    n-=1;
+    let src = "data/" + contentId + ".comment." + n + ".js";
+    console.log('loading',src);
+    loadJs(src, function () {loadComments(commentData);}, "comment-data");
+}
+
+function commentBlock(commentItem, subCommentsMap, isTop=false, nohr =false) {
     function pos2time(p) {
         let t = new Date(p);
         return t.toLocaleString("zh-CN");
@@ -140,7 +148,9 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
             commentSec.appendChild(commentArea);
         commentMain.appendChild(commentFirst);
         commentMain.appendChild(commentSec);
-        commentMain.appendChild(commentEnd);
+        if(nohr==false){
+            commentMain.appendChild(commentEnd);
+        }
     mainDiv.appendChild(commentMain);
 
     // 循环插入 commentBlock
@@ -154,17 +164,103 @@ function commentBlock(commentItem, subCommentsMap, isTop=false) {
     return mainDiv;
 }
 
+function commentPager(curPage, total) {
+    if(total==1){return false;}
+    function pageBtn(n) {
+        let p = document.createElement('a');
+        p.setAttribute('class', 'pager__btn');
+        p.innerHTML = n;
+        p.addEventListener('click', function () {
+            loadingPage(n);
+        });
+        return p;
+    }
+    let pageMain = document.createElement('div'),
+        pageWrapper = document.createElement('div'),
+        pagePrev = document.createElement('a'),
+        pageNext = document.createElement('a'),
+        pageFirst = document.createElement('a'),
+        pageEnd = document.createElement('a'),
+        pageInput = document.createElement('div'),
+        pageTags = [];
+    pageMain.setAttribute('id', 'page-main');
+    pageWrapper.setAttribute('class', 'pager__wrapper');
+    pagePrev.innerHTML = "上一页";
+    if(commentData.page>1){
+        pagePrev.setAttribute('class', 'pager__btn pager__btn__prev');
+        pagePrev.addEventListener('click', function () {loadingPage(commentData.page-1);});
+    }else{
+        pagePrev.setAttribute('class', 'pager__btn pager__btn__prev pager__btn__disabled');
+    }
+    pageNext.innerHTML = "下一页";
+    if(commentData.page<commentData.total){
+        pageNext.setAttribute('class', 'pager__btn pager__btn__next');
+        pageNext.addEventListener('click', function () {loadingPage(commentData.page+1);});
+    }else{
+        pageNext.setAttribute('class', 'pager__btn pager__btn__next pager__btn__disabled');
+    }
+    pageFirst.setAttribute('class', 'pager__btn');
+    pageFirst.innerHTML = "1";
+    pageEnd.setAttribute('class', 'pager__btn');
+    pageInput.innerHTML = "<div class=\"pager__input\">跳至<input type=\"text\">页</div>";
+    pageTags.push(pagePrev);
+    let cMax = 3,
+        cLeft = curPage - cMax, cRight = curPage + cMax,
+        pStart = cLeft < 1 ? 1 : cLeft, pEnd = cRight > total ? total : cRight;
+    for (let i = pStart; i <= pEnd; i++) {
+        // console.log(i);
+        let nPage = pageBtn(i);
+        if(i == curPage) { // 当前页
+            nPage.setAttribute('class', 'pager__btn pager__btn__selected');
+            pageTags.push(nPage);
+        }else if(curPage - i == cMax){ // 第一个
+            if(i != 1){
+                let ellipsis = document.createElement('span');
+                ellipsis.setAttribute('class', 'pager__ellipsis');
+                ellipsis.innerHTML = "...";
+                nPage.innerHTML = "1";
+                pageTags.push(nPage);
+                pageTags.push(ellipsis);
+            }else{
+                pageTags.push(nPage);
+            }
+        }else if(i - curPage == cMax){ // 最后一个
+            if(i != total){
+                let ellipsis = document.createElement('span');
+                ellipsis.setAttribute('class', 'pager__ellipsis');
+                ellipsis.innerHTML = "...";
+                nPage.innerHTML = total.toString();
+                pageTags.push(ellipsis);
+                pageTags.push(nPage);
+            }else{
+                pageTags.push(nPage);
+            }
+        }else if(Math.abs(curPage - i) < cMax){ // 其他页
+            pageTags.push(nPage);
+        }
+    }
+    pageTags.push(pageNext);
+    pageTags.push(pageInput);
+    pageTags.forEach(function (item) {
+        pageWrapper.append(item);
+    });
+    pageMain.append(pageWrapper);
+    let pager = document.querySelector('.ac-comment-top-pager');
+    pager.innerHTML = "";
+    pager.append(pageMain);
+}
+
 function loadComments(commentData) {
+    hotList.innerHTML = "";rootList.innerHTML = "";
     let totalToolbar = document.querySelector('#to-comm>.pts'),
         totalText = totalToolbar.innerHTML,
         total = parseInt(totalText);
-    document.querySelector(".area-comm-number").innerHTML +=
-        "(总) / "+
-        commentData.rootComments.length.toString()+"(存) / "+
-        (total - commentData.rootComments.length).toString()+"(删)";
-    totalToolbar.innerHTML = commentData.rootComments.length.toString();
+    document.querySelector(".area-comm-number").innerHTML =
+        commentCount + "(总) / "+
+        commentData.totalComment.toString()+"(存) / "+
+        (total - commentData.totalComment).toString()+"(删)";
     commentData.hotComments.forEach(function (item, index) {
-        hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
+        hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true, index==(commentData.hotComments.length-1)));
     });
     if(commentData.hotComments.length>0){
         document.querySelector(".ac-comment-hot-list hr:last-child").remove();
@@ -173,11 +269,33 @@ function loadComments(commentData) {
     commentData.rootComments.forEach(function (item, index) {
         rootList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
     });
+    commentPager(commentData.page, commentData.total);
+    let lastP = document.getElementById('comment-lastPage'),
+        nextP = document.getElementById('comment-nextPage');
+    lastP.addEventListener('click', function () {
+        if(commentData.page>1){loadingPage(commentData.page-1);}
+    });
+    nextP.addEventListener('click', function () {
+        if(commentData.page<commentData.total){loadingPage(commentData.page+1);}
+    });
+    if(commentData.total<=1){
+        lastP.style.display = "none";
+        nextP.style.display = "none";
+    }else{
+        if(commentData.page==1){
+            lastP.style.display = "none";
+            nextP.style.display = "";
+        }else if(commentData.page==commentData.total){
+            lastP.style.display = "";
+            nextP.style.display = "none";
+        }else{
+            lastP.style.display = "";
+            nextP.style.display = "";
+        }
+    }
     lazyLoadInstance.update();
 }
 
 window.onload = function () {
-    if(commentCount<1000){
-        loadComments(commentData);
-    }
+    loadComments(commentData);
 }

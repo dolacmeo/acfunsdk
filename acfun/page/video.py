@@ -66,8 +66,8 @@ class AcVideo:
             self.video_data['staffInfos'] = staff_data.get('staffInfos')
             self.video_data['upInfo'] = staff_data.get('upInfo')
 
-    def saver(self):
-        return VideoSaver(self.acer, self)
+    def saver(self, dest_path=None):
+        return VideoSaver(self.acer, self, dest_path)
 
     @property
     def video_list(self):

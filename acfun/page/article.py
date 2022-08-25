@@ -51,8 +51,8 @@ class AcArticle:
         self.article_data = js2py.eval_js(js_code).to_dict()
         self.page_pagelets = get_page_pagelets(self.page_obj)
 
-    def saver(self):
-        return ArticleSaver(self.acer, self)
+    def saver(self, dest_path=None):
+        return ArticleSaver(self.acer, self, dest_path)
 
     def recommends(self):
         articles = list()

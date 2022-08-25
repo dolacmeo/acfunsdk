@@ -536,8 +536,8 @@ class AcSaver:
 
 class ArticleSaver(AcSaver):
 
-    def __init__(self, acer, ac_obj):
-        super().__init__(acer, ac_obj)
+    def __init__(self, acer, ac_obj, dest_path=None):
+        super().__init__(acer, ac_obj, dest_path)
         self.folder_path = self._setup_folder()
         self.v_num = f"{self.ac_obj.ac_num}"
 
@@ -613,8 +613,8 @@ class MomentSaver(AcSaver):
 
 class VideoSaver(AcSaver):
 
-    def __init__(self, acer, ac_obj):
-        super().__init__(acer, ac_obj)
+    def __init__(self, acer, ac_obj, dest_path=None):
+        super().__init__(acer, ac_obj, dest_path)
         self.folder_path = self._setup_folder()
 
     def _save_base_data(self, num: int = 1):

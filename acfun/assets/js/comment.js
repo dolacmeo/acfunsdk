@@ -278,7 +278,6 @@ function loadComments(pageNum) {
         hotList.appendChild(commentBlock(item, cData.subCommentsMap, true, index==(cData.hotComments.length-1)));
     });
     if(cData.hotComments.length>0){
-        document.querySelector(".ac-comment-hot-list hr:last-child").remove();
         hotList.innerHTML += "<div><div class=\"hot-comment-divid\"><hr><span>以上为热门评论</span><hr></div></div>";
     }
     cData.rootComments.forEach(function (item, index) {

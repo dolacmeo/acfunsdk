@@ -251,14 +251,10 @@
         base.append(info);
         document.getElementById('recommends').append(base);
     }
-    function loadJs(path, callback, jsId) {
+    function loadJs(path, callback) {
         let script = document.createElement('script');
         script.setAttribute('type', 'text/javascript');
         script.setAttribute('src', path);
-        if(typeof (jsId)=="string"){
-            document.querySelector("#"+jsId).remove();
-            script.setAttribute('id', jsId);
-        }
         if (script.readyState) {  // only required for IE <9
             script.onreadystatechange = function () {
                 if (script.readyState === "loaded" || script.readyState === "complete") {
@@ -275,19 +271,19 @@
     }
 </script>
 <script type="text/javascript">
-    let contentId = "ac{{ v_num }}", articles = {}, articleLast = [], commentData;
+    let sourceId = "ac{{ v_num }}", articles = {}, articleLast = [], commentData=[];
 </script>
 <script type="text/javascript" src="../../assets/js/html2canvas.min.js"></script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
-<script type="text/javascript" src="data/ac{{ v_num }}.comment.0.js" id="comment-data"></script>
+<script type="text/javascript" src="data/ac{{ v_num }}.comment.1.js"></script>
 <script type="text/javascript" src="../leatest.js"></script>
 <script type="text/javascript" src="../nums.js"></script>
 <script type="text/javascript">
     let contentData = articles["ac{{ v_num }}"],
         commentCount = {{ RAW.commentCount }};
     articleLast.forEach(function (acNum) {
-        if(acNum!==contentId){
+        if(acNum!==sourceId){
             loadJs('../'+acNum+'/data/'+acNum+'.js', function () {
                 addRecommend(articles[acNum]);
             });

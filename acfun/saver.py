@@ -340,51 +340,59 @@ class AcSaver:
         json_string = json.dumps(data, separators=(',', ':'))
         with open(json_path, 'wb') as json_file:
             json_file.write(json_string.encode())
-        return os.path.isfile(json_path)
+        result = os.path.isfile(json_path)
+        print("SAVED:", result, json_path)
+        return result
 
     def _save_comment(self, update: bool = False):
         folder_path = self._setup_folder()
         local_comment_data, local_comment_floors = None, []
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
-        if os.path.isfile(comment_json_path):
-            if update is False:
-                return True
+        comment_json_path_saved = os.path.isfile(comment_json_path)
+        if comment_json_path_saved:
+            print("loading comment data.json")
             local_comment_data = json.load(open(comment_json_path, 'rb'))
             local_comment_floors = [x['floor'] for x in local_comment_data['rootComments']]
-        comment_obj = self.ac_obj.comment()
-        comment_obj.get_all_comment()
-        if local_comment_data is not None:
-            comment_data = local_comment_data
-            comment_data['hotComments'] = comment_obj.hot_comments
-            comment_data['rootComments'].extend(
-                [c for c in comment_obj.root_comments if c['floor'] not in local_comment_floors])
-            comment_data['subCommentsMap'].update(comment_obj.sub_comments)
-            comment_data['save_unix'] = time.time()
+        if update is True or comment_json_path_saved is False:
+            comment_obj = self.ac_obj.comment()
+            comment_obj.get_all_comment()
+            if local_comment_data is not None:
+                comment_data = local_comment_data
+                comment_data['hotComments'] = comment_obj.hot_comments
+                comment_data['rootComments'].extend(
+                    [c for c in comment_obj.root_comments if c['floor'] not in local_comment_floors])
+                comment_data['subCommentsMap'].update(comment_obj.sub_comments)
+                comment_data['save_unix'] = time.time()
+            else:
+                comment_data = {
+                    "hotComments": comment_obj.hot_comments,
+                    "rootComments": comment_obj.root_comments,
+                    "subCommentsMap": comment_obj.sub_comments,
+                    "save_unix": time.time()
+                }
+            uids = list()
+            for c in comment_data['rootComments']:
+                if c['userId'] not in uids:
+                    uids.append(c['userId'])
+            for _, i in comment_data['subCommentsMap'].items():
+                for j in i['subComments']:
+                    if j['userId'] not in uids:
+                        uids.append(j['userId'])
+            self._save_member(uids)
+            comment_saved = self._json_saver(comment_data, f"ac{self.ac_obj.ac_num}.comment.json")
+            print("saved:", comment_saved, comment_json_path)
         else:
-            comment_data = {
-                "hotComments": comment_obj.hot_comments,
-                "rootComments": comment_obj.root_comments,
-                "subCommentsMap": comment_obj.sub_comments,
-                "save_unix": time.time()
-            }
-        uids = list()
-        for c in comment_data['rootComments']:
-            if c['userId'] not in uids:
-                uids.append(c['userId'])
-        for _, i in comment_data['subCommentsMap'].items():
-            for j in i['subComments']:
-                if j['userId'] not in uids:
-                    uids.append(j['userId'])
-        self._save_member(uids)
-        comment_saved = self._json_saver(comment_data, f"ac{self.ac_obj.ac_num}.comment.json")
+            comment_saved = True
         comment_js_path = self._tans_comment_uub2html()
         comment_js_saved = os.path.isfile(comment_js_path)
         return all([comment_saved, comment_js_saved])
 
     def _tans_comment_uub2html(self):
+        print("loading comment data json")
         folder_path = self._setup_folder()
         comment_json_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.json")
         comment_json_string = open(comment_json_path, 'rb').read().decode("UTF-8")
+        print('process comment ubb tags')
         # 基础替换：换行,加粗,斜体,下划线,删除线,颜色结尾
         for ubb, tag in self.ubb_tag_basic.items():
             comment_json_string = comment_json_string.replace(ubb, tag)
@@ -438,6 +446,7 @@ class AcSaver:
                         ))
         # for tag in re.compile(r"(\[([^\]]+)\])").findall(comment_json_string):
         #     print(tag)
+        print('split comment data')
         comment_data = json.loads(comment_json_string)
         total_comment = len(comment_data['rootComments'])
         # 评论分块存储，每块100条；跟楼按每页划分。
@@ -473,12 +482,13 @@ class AcSaver:
         for i in range(len(blocks)):
             B = blocks[::-1][i]
             B['rootComments'] = sorted(B['rootComments'], key=lambda x: x['floor'], reverse=True)
-            comment_block_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.{i}.js")
+            comment_block_js_path = os.path.join(folder_path, 'data', f"ac{self.ac_obj.ac_num}.comment.{i+1}.js")
             comment_block_js_string = json.dumps(B, separators=(',', ':'))
             with open(comment_block_js_path, 'wb') as js_file:
-                comment_js = f"commentData={comment_block_js_string};"
+                comment_js = f"commentData[{i+1}]={comment_block_js_string};"
                 js_file.write(comment_js.encode())
-        return total_block
+            print("saved:", os.path.isfile(comment_block_js_path), comment_block_js_path)
+        return comment_json_path
 
     def _save_danmaku(self, num: int = 1):
         assert num <= len(self.ac_obj.video_list)
@@ -493,6 +503,7 @@ class AcSaver:
             danmaku_js = f"let ac{v_num}_danmaku={danmaku_json_string};"
             js_file.write(danmaku_js.encode())
         danmaku_js_saved = os.path.isfile(danmaku_js_path)
+        print("saved:", danmaku_js_saved, danmaku_js_path)
         danmaku_ass_path = self._danmaku2ass(num)
         if danmaku_ass_path is None:
             danmaku_ass_saved, danmaku_ass_js_saved = True, True
@@ -500,6 +511,7 @@ class AcSaver:
             danmaku_ass_saved = os.path.isfile(danmaku_ass_path)
             danmaku_ass_js_path = os.path.join(folder_path, 'data', f"ac{v_num}.ass.js")
             danmaku_ass_js_saved = os.path.isfile(danmaku_ass_js_path)
+            print("saved:", danmaku_ass_js_saved, danmaku_ass_js_path)
         return all([danmaku_saved, danmaku_js_saved, danmaku_ass_saved, danmaku_ass_js_saved])
 
     def _danmaku2ass(self, num: int = 1):
@@ -614,6 +626,7 @@ class VideoSaver(AcSaver):
             content_js = f"videos['ac{v_num}']={video_json_string};"
             js_file.write(content_js.encode())
         video_js_saved = os.path.isfile(video_js_path)
+        print("SAVED:", video_js_saved, video_js_path)
         return all([video_raw_saved, video_js_saved])
 
     def _save_page(self, num: int = 1):
@@ -628,6 +641,7 @@ class VideoSaver(AcSaver):
             ac404 = os.path.join(self.dest_path, 'assets', 'img', 'default_cover.png')
             shutil.copy(ac404, os.path.join(self.dest_path, self.folder_path, f"cover._"))
             cover_saved = os.path.isfile(cover__path)
+        print("saved:", cover_saved, cover__path)
         if num == 1:
             share_qrcode_path = self._save_qrcode()
             share_qrcode_saved = os.path.isfile(share_qrcode_path)
@@ -644,6 +658,7 @@ class VideoSaver(AcSaver):
         with open(html_path, 'wb') as html_file:
             html_file.write(video_html.encode(errors='ignore'))
         video_html_saved = os.path.isfile(html_path)
+        print("saved:", video_html_saved, html_path)
         return all([cover_saved, share_qrcode_saved, mobile_qrcode_saved, video_html_saved])
 
     def save_video(self, num: int = 1):
@@ -663,10 +678,12 @@ class VideoSaver(AcSaver):
         danmaku_saved = self._save_danmaku(num)
         # 保存视频文件
         acfun_url = f"{routes['video']}{v_num}"
-        video_saved = os.path.isfile(os.path.join(self.folder_path, f"ac{v_num}.mp4"))
+        video_path = os.path.join(self.folder_path, f"ac{v_num}.mp4")
+        video_saved = os.path.isfile(video_path)
         if video_saved is False:
             you_get_download(acfun_url, output_dir=self.folder_path, merge=True)
-            video_saved = os.path.isfile(os.path.join(self.folder_path, f"ac{v_num}.mp4"))
+            video_saved = os.path.isfile(video_path)
+        print("saved:", video_saved, video_path)
         # 保存评论
         comment_saved = self._save_comment() if num == 1 else True
         done = all([

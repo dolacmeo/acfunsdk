@@ -1,14 +1,7 @@
 
 let hotList = document.getElementById('comment-hot-list'),
-    rootList = document.getElementById('comment-root-list');
-
-function loadingPage(n) {
-    if(n==commentData.page){return false;}
-    n-=1;
-    let src = "data/" + contentId + ".comment." + n + ".js";
-    console.log('loading',src);
-    loadJs(src, function () {loadComments(commentData);}, "comment-data");
-}
+    rootList = document.getElementById('comment-root-list'),
+    commentPageNow=1;
 
 function commentBlock(commentItem, subCommentsMap, isTop=false, nohr =false) {
     function pos2time(p) {
@@ -171,7 +164,7 @@ function commentPager(curPage, total) {
         p.setAttribute('class', 'pager__btn');
         p.innerHTML = n;
         p.addEventListener('click', function () {
-            loadingPage(n);
+            loadComments(parseInt(p.innerHTML));
         });
         return p;
     }
@@ -181,28 +174,43 @@ function commentPager(curPage, total) {
         pageNext = document.createElement('a'),
         pageFirst = document.createElement('a'),
         pageEnd = document.createElement('a'),
-        pageInput = document.createElement('div'),
+        pageInputDiv = document.createElement('div'),
+        pageInput = document.createElement('input'),
         pageTags = [];
     pageMain.setAttribute('id', 'page-main');
     pageWrapper.setAttribute('class', 'pager__wrapper');
     pagePrev.innerHTML = "上一页";
-    if(commentData.page>1){
+    if(curPage>1){
         pagePrev.setAttribute('class', 'pager__btn pager__btn__prev');
-        pagePrev.addEventListener('click', function () {loadingPage(commentData.page-1);});
+        pagePrev.addEventListener('click', function () {loadComments(curPage-1);});
     }else{
         pagePrev.setAttribute('class', 'pager__btn pager__btn__prev pager__btn__disabled');
     }
     pageNext.innerHTML = "下一页";
-    if(commentData.page<commentData.total){
+    if(curPage<total){
         pageNext.setAttribute('class', 'pager__btn pager__btn__next');
-        pageNext.addEventListener('click', function () {loadingPage(commentData.page+1);});
+        pageNext.addEventListener('click', function () {loadComments(curPage+1);});
     }else{
         pageNext.setAttribute('class', 'pager__btn pager__btn__next pager__btn__disabled');
     }
     pageFirst.setAttribute('class', 'pager__btn');
     pageFirst.innerHTML = "1";
     pageEnd.setAttribute('class', 'pager__btn');
-    pageInput.innerHTML = "<div class=\"pager__input\">跳至<input type=\"text\">页</div>";
+    pageInputDiv.setAttribute('class', 'pager__input');
+    pageInputDiv.append("跳至");
+    pageInput.setAttribute('type', 'text');
+    pageInput.addEventListener('keydown', function (ev) {
+        if (ev.key == 'Enter') {
+            let i = parseInt(pageInput.value);
+            if (i == NaN || 1 > i > total || i == commentPageNow) {
+                return false;
+            } else {
+                loadComments(i);
+            }
+        }
+    })
+    pageInputDiv.append(pageInput);
+    pageInputDiv.append("页");
     pageTags.push(pagePrev);
     let cMax = 3,
         cLeft = curPage - cMax, cRight = curPage + cMax,
@@ -240,7 +248,7 @@ function commentPager(curPage, total) {
         }
     }
     pageTags.push(pageNext);
-    pageTags.push(pageInput);
+    pageTags.push(pageInputDiv);
     pageTags.forEach(function (item) {
         pageWrapper.append(item);
     });
@@ -250,42 +258,49 @@ function commentPager(curPage, total) {
     pager.append(pageMain);
 }
 
-function loadComments(commentData) {
+function loadComments(pageNum) {
+    let cData = commentData[pageNum];
+    if(cData==undefined){
+        let src = "data/" + sourceId + ".comment." + pageNum + ".js";
+        loadJs(src, function () {loadComments(pageNum);});
+        return false
+    }
+    commentPageNow=pageNum;
     hotList.innerHTML = "";rootList.innerHTML = "";
     let totalToolbar = document.querySelector('#to-comm>.pts'),
         totalText = totalToolbar.innerHTML,
         total = parseInt(totalText);
     document.querySelector(".area-comm-number").innerHTML =
         commentCount + "(总) / "+
-        commentData.totalComment.toString()+"(存) / "+
-        (total - commentData.totalComment).toString()+"(删)";
-    commentData.hotComments.forEach(function (item, index) {
-        hotList.appendChild(commentBlock(item, commentData.subCommentsMap, true, index==(commentData.hotComments.length-1)));
+        cData.totalComment.toString()+"(存) / "+
+        (total - cData.totalComment).toString()+"(删)";
+    cData.hotComments.forEach(function (item, index) {
+        hotList.appendChild(commentBlock(item, cData.subCommentsMap, true, index==(cData.hotComments.length-1)));
     });
-    if(commentData.hotComments.length>0){
+    if(cData.hotComments.length>0){
         document.querySelector(".ac-comment-hot-list hr:last-child").remove();
         hotList.innerHTML += "<div><div class=\"hot-comment-divid\"><hr><span>以上为热门评论</span><hr></div></div>";
     }
-    commentData.rootComments.forEach(function (item, index) {
-        rootList.appendChild(commentBlock(item, commentData.subCommentsMap, true));
+    cData.rootComments.forEach(function (item, index) {
+        rootList.appendChild(commentBlock(item, cData.subCommentsMap, true));
     });
-    commentPager(commentData.page, commentData.total);
+    commentPager(cData.page, cData.total);
     let lastP = document.getElementById('comment-lastPage'),
         nextP = document.getElementById('comment-nextPage');
     lastP.addEventListener('click', function () {
-        if(commentData.page>1){loadingPage(commentData.page-1);}
+        if(pageNum>1){loadComments(pageNum-1);}
     });
     nextP.addEventListener('click', function () {
-        if(commentData.page<commentData.total){loadingPage(commentData.page+1);}
+        if(pageNum<cData.total){loadComments(pageNum+1);}
     });
-    if(commentData.total<=1){
+    if(cData.total<=1){
         lastP.style.display = "none";
         nextP.style.display = "none";
     }else{
-        if(commentData.page==1){
+        if(pageNum==1){
             lastP.style.display = "none";
             nextP.style.display = "";
-        }else if(commentData.page==commentData.total){
+        }else if(pageNum==cData.total){
             lastP.style.display = "";
             nextP.style.display = "none";
         }else{
@@ -297,5 +312,5 @@ function loadComments(commentData) {
 }
 
 window.onload = function () {
-    loadComments(commentData);
+    loadComments(1);
 }

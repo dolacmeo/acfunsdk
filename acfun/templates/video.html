@@ -8,6 +8,7 @@
     <link type="text/css" rel="stylesheet" href="../../assets/css/video.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/player.css"/>
     <link type="text/css" rel="stylesheet" href="../../assets/css/comment.css"/>
+    <link type="text/css" rel="stylesheet" href="../../assets/css/pager.min.css"/>
     <script type="text/javascript" src="../../assets/js/lazyload.min.js"></script>
     <script type="text/javascript">var lazyLoadInstance = new LazyLoad({});</script>
     <style>
@@ -310,10 +311,10 @@
         base.append(rightS);
         document.getElementById('recommends').append(base);
     }
-    function loadJs(dataType, acNum, callback) {
+    function loadJs(path, callback) {
         let script = document.createElement('script');
         script.setAttribute('type', 'text/javascript');
-        script.setAttribute('src', '../../'+dataType+'/'+acNum+'/data/'+acNum+'.js');
+        script.setAttribute('src', path);
         if (script.readyState) {  // only required for IE <9
             script.onreadystatechange = function () {
                 if (script.readyState === "loaded" || script.readyState === "complete") {
@@ -330,22 +331,21 @@
     }
 </script>
 <script type="text/javascript">
-    let videoId = "ac{{ v_num }}", videos = {}, videoLast = [];
+    let sourceId = "ac{{ v_num }}", videos = {}, videoLast = [], commentData=[];
 </script>
 <script type="text/javascript" src="../../member/{{ RAW.user.id }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.js"></script>
 <script type="text/javascript" src="data/ac{{ v_num }}.danmaku.js"></script>
-<script type="text/javascript" src="data/ac{{ RAW.dougaId }}.comment.js"></script>
+<script type="text/javascript" src="data/ac{{ RAW.dougaId }}.comment.1.js"></script>
 <script type="text/javascript" src="../leatest.js"></script>
 <script type="text/javascript" src="../nums.js"></script>
 <script type="text/javascript">
     let videoData = videos["ac{{ v_num }}"],
-        commentData = ac{{ RAW.dougaId }}_comment,
         danmakuData = ac{{ v_num }}_danmaku,
-        commentCount = {{ RAW.commentCount }};
+        commentCount = {{ RAW.commentCountRealValue }};
     videoLast.forEach(function (acNum) {
-        if(acNum!==videoId){
-            loadJs('video', acNum, function () {
+        if(acNum!==sourceId){
+            loadJs('../'+acNum+'/data/'+acNum+'.js', function () {
                 addRecommend(videos[acNum]);
             });
         }

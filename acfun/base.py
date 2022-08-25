@@ -94,21 +94,12 @@ class Acer:
         self.client = AcClient() if debug else httpx.Client(headers=source.header)
         self.moment = AcMoment(self)
         self._get_nav()
-        self._setup_folder()
         if self.check_online() is False:
             raise AcExploded("阿禅爆炸 (今天A站挂了吗？)")
 
     def __repr__(self):
         show_name = self.username or ''
         return f"Acer(#{self.uid or 'UNKNOWN'} {show_name})"
-
-    def _setup_folder(self):
-        download_path = os.path.join(self.BASE_PATH, 'download')
-        if not os.path.exists(download_path):
-            os.mkdir(download_path)
-            for sub in ['video', 'article', 'bangumi', 'moment', 'live']:
-                os.mkdir(os.path.join(download_path, sub))
-        self.DOWNLOAD_PATH = download_path
 
     def AcIndex(self):
         return AcIndex(self)

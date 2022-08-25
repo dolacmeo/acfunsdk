@@ -195,3 +195,5 @@ dmypy.json
 cython_debug/
 
 download/
+
+acfun/assets/

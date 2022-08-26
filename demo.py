@@ -3,15 +3,12 @@ from acfun import Acer
 
 __author__ = 'dolacmeo'
 
-# todo 保存弹幕ass
-# todo 保存文章
 # todo cil
 
 # todo 实用功能
 #   发稿件
 #   传视频
 #   支持ws：IM，直播互动
-#   离线查看保存资源
 
 # 实例化一个Acer
 acer = Acer(debug=True)

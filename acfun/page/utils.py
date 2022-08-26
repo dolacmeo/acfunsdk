@@ -17,40 +17,10 @@ from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from datetime import timedelta
 from alive_progress import alive_bar
-from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, pagelets_normal
+from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, pagelets_normal, videoQualitiesRefer
 from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
-
-videoQualitiesRefer = {
-    "2160p120HDR": {"definition": "4K", "disableAutoSwitch": True, "limitType": 1, "qualityLabel": "2160P120 HDR",
-                    "qualityType": "2160p120HDR", "width": 3840, "height": 2160},
-    "2160p120": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p120", "qualityLabel": "2160P120",
-                 "definition": "4K", "width": 3840, "height": 2160},
-    "2160p60HDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60HDR",
-                   "qualityLabel": "2160P60 HDR", "definition": "4K", "width": 3840, "height": 2160},
-    "2160p60": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60", "qualityLabel": "2160P60",
-                "definition": "4K", "width": 3840, "height": 2160},
-    "2160pHDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160pHDR", "qualityLabel": "2160P HDR",
-                 "definition": "4K", "width": 3840, "height": 2160},
-    "2160p": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p", "qualityLabel": "2160P",
-              "definition": "4K", "width": 3840, "height": 2160},
-    "1080p60HDR": {"limitType": 1, "qualityType": "1080p60HDR", "qualityLabel": "1080P60 HDR", "definition": "HD",
-                   "width": 1920, "height": 1080},
-    "1080p60": {"limitType": 1, "qualityType": "1080p60", "qualityLabel": "1080P60", "definition": "HD", "width": 1920,
-                "height": 1080},
-    "1080p+": {"limitType": 1, "qualityType": "1080p+", "qualityLabel": "1080P+", "definition": "HD", "width": 1920,
-               "height": 1080},
-    "1080pHDR": {"limitType": 1, "qualityType": "1080pHDR", "qualityLabel": "1080P HDR", "definition": "HD",
-                 "width": 1920, "height": 1080},
-    "1080p": {"limitType": 1, "qualityType": "1080p", "qualityLabel": "1080P", "definition": "HD", "width": 1920,
-              "height": 1080},
-    "720p60": {"limitType": 1, "qualityType": "720p60", "qualityLabel": "720P60", "width": 1280, "height": 720},
-    "720p": {"defaultSelect": True, "qualityType": "720p", "qualityLabel": "720P", "width": 1280, "height": 720},
-    "540p": {"qualityType": "540p", "qualityLabel": "540P", "width": 960, "height": 540},
-    "480p": {"qualityType": "480p", "qualityLabel": "480P", "width": 720, "height": 480},
-    "360p": {"qualityType": "360p", "qualityLabel": "360P", "width": 640, "height": 360},
-}
 
 
 class B64s:

@@ -105,10 +105,28 @@ class AcSaver:
         checks.append(os.path.isfile(os.path.join(self.dest_path, 'assets', 'favicon.ico')))
         for n in ['css', 'js', 'img', 'font', 'emot']:
             checks.append(os.path.isdir(os.path.join(self.dest_path, 'assets', n)))
-        emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
-        if os.path.isfile(emot_map_path) is False:
-            self._save_emot()
         return all(checks)
+
+    def download_assets_from_github(self):
+        assert_zip_path = os.path.join(self.dest_path, 'assets.zip')
+        assert_zip_saved = os.path.isfile(assert_zip_path)
+        if assert_zip_saved is False:
+            assets_url = r"https://archive.fastgit.org/dolaCmeo/acfunSDK/archive/refs/heads/assets.zip"
+            assert_download = self._download(assets_url, display=True)
+            if assert_download is None:
+                return False
+        zip_file = zipfile.ZipFile(assert_zip_path)
+        zip_file.extractall(self.dest_path)
+        assert_zip_folder = os.path.join(self.dest_path, 'acfunSDK-assets', 'assets')
+        assert_folder = os.path.join(self.dest_path, 'assets')
+        shutil.move(assert_zip_folder, assert_folder)
+        shutil.rmtree(os.path.join(self.dest_path, 'acfunSDK-assets'), ignore_errors=True)
+        assert_folder_ok = os.path.isdir(assert_folder)
+        if assert_folder_ok is True:
+            emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
+            if os.path.isfile(emot_map_path) is False:
+                self._save_emot()
+        return assert_folder_ok
 
     def folder_list_update(self):
         jsFiles = []
@@ -171,9 +189,9 @@ class AcSaver:
             shutil.rmtree(abs_path, True)
         os.makedirs(abs_path)
 
-    def _download(self, src_url: str, fname: [str, None] = None, ex_dir: [list, None] = None):
+    def _download(self, src_url: str, fname: [str, None] = None, ex_dir: [list, None] = None, display: bool = False):
         save_path = self.dest_path if ex_dir is None else os.path.join(self.dest_path, *ex_dir)
-        return downloader(self.acer.client, src_url, fname, save_path, display=False)
+        return downloader(self.acer.client, src_url, fname, save_path, display)
 
     def _save_emot(self):
         emot_req = self.acer.client.post(apis['emot'])

@@ -255,14 +255,17 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
                 total = int(response.headers.get("Content-Length", 0))
                 total = None if total == 0 else total // 1024
                 downloaded = 0
-                with alive_bar(total, manual=True, length=30, disable=not display,
+                with alive_bar(total, manual=False if total is None else True,
+                               length=30, disable=not display,
                                title=fname, title_length=20, force_tty=True,
-                               monitor="{count}/{total} [{percent:.1%}]",
+                               monitor=None if total is None else "{count}/{total} [{percent:.1%}]",
                                stats=False, elapsed_end=False) as progress:
                     for chunk in response.iter_bytes():
                         download_file.write(chunk)
-                        if total is None or total == 0:
-                            progress((response.num_bytes_downloaded - downloaded) // 1024)
+                        if total is None:
+                            progress(int(response.num_bytes_downloaded // 1024))
+                        elif total == 0:
+                            progress(int((response.num_bytes_downloaded - downloaded) // 1024))
                         else:
                             progress(downloaded / total)
                         downloaded = response.num_bytes_downloaded
@@ -272,6 +275,9 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
         print("httpx.ConnectError:", src_url)
         os.remove(fpath)
         return None
+    except KeyboardInterrupt:
+        os.remove(fpath)
+        raise KeyboardInterrupt
 
     if os.path.isfile(fpath) and os.path.exists(fpath):
         if '.' not in fname:

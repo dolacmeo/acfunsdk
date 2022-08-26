@@ -17,6 +17,17 @@ class AcLive:
         self.acer = acer
         self._get_list()
 
+    def login(self):
+        index_req = self.acer.client.get(routes['live_index'])
+        _did = index_req.cookies.get('_did')
+        if self.acer.is_logined:
+            token_req = self.acer.client.post(apis['token'], data={'sid': "acfun.midground.api"})
+            token = token_req.json()
+        else:
+            token_req = self.acer.client.post(apis['token_visitor'], data={'sid': "acfun.api.visitor"})
+            token = token_req.json()
+        print(token)
+
     def _get_list(self):
         if self.last_update is None or time.time() - self.last_update >= 60:
             api_req = self.acer.client.get(apis['live_list'])

@@ -11,7 +11,8 @@ __author__ = 'dolacmeo'
 # https://github.com/wpscott/AcFunDanmaku/blob/master/AcFunDanmu/README.md
 # https://github.com/wpscott/AcFunDanmaku/blob/master/AcFunDanmu/data.md
 # https://github.com/orzogc/acfundanmu/blob/master/proto.go
-
+# https://developers.google.com/protocol-buffers/docs/pythontutorial
+# https://websocket-client.readthedocs.io/en/latest/getting_started.html
 
 class AcWsConfig:
     did = None

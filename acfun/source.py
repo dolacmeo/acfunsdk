@@ -136,6 +136,12 @@ apis = {
     'qrcode': "https://ksurl.cn/createqrcode",
 }
 
+websocket_links = [
+    # "wss://klink-newproduct-ws1.kwaizt.com",
+    "wss://klink-newproduct-ws2.kwaizt.com",
+    "wss://klink-newproduct-ws3.kwaizt.com"
+]
+
 pagelets_from_page = [
     "pagelet_banner",  # banner
     "pagelet_navigation",  # 导航栏

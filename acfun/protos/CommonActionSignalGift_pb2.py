@@ -15,7 +15,7 @@ import ZtLiveUserInfo_pb2 as ZtLiveUserInfo__pb2
 import ZtDrawGiftInfo_pb2 as ZtDrawGiftInfo__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x43ommonActionSignalGift.proto\x12\nAcFunDanmu\x1a\x14ZtLiveUserInfo.proto\x1a\x14ZtDrawGiftInfo.proto\"\x8f\x02\n\x16\x43ommonActionSignalGift\x12(\n\x04user\x18\x01 \x01(\x0b\x32\x1a.AcFunDanmu.ZtLiveUserInfo\x12\x12\n\nsendTimeMs\x18\x02 \x01(\x03\x12\x0e\n\x06giftId\x18\x03 \x01(\x03\x12\r\n\x05\x63ount\x18\x04 \x01(\x05\x12\r\n\x05\x63ombo\x18\x05 \x01(\x05\x12\r\n\x05value\x18\x06 \x01(\x03\x12\x0f\n\x07\x63omboId\x18\x07 \x01(\t\x12\x1d\n\x15slotDisplayDurationMs\x18\x08 \x01(\x03\x12\x18\n\x10\x65xpireDurationMs\x18\t \x01(\x03\x12\x30\n\x0c\x64rawGiftInfo\x18\n \x01(\x0b\x32\x1a.AcFunDanmu.ZtDrawGiftInfob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1c\x43ommonActionSignalGift.proto\x12\nAcFunDanmu\x1a\x14ZtLiveUserInfo.proto\x1a\x14ZtDrawGiftInfo.proto\"\x9c\x02\n\x16\x43ommonActionSignalGift\x12,\n\x08userInfo\x18\x01 \x01(\x0b\x32\x1a.AcFunDanmu.ZtLiveUserInfo\x12\x12\n\nsendTimeMs\x18\x02 \x01(\x03\x12\x0e\n\x06giftId\x18\x03 \x01(\x03\x12\x11\n\tbatchSize\x18\x04 \x01(\x05\x12\x12\n\ncomboCount\x18\x05 \x01(\x05\x12\x0c\n\x04rank\x18\x06 \x01(\x03\x12\x10\n\x08\x63omboKey\x18\x07 \x01(\t\x12\x1d\n\x15slotDisplayDurationMs\x18\x08 \x01(\x03\x12\x18\n\x10\x65xpireDurationMs\x18\t \x01(\x03\x12\x30\n\x0c\x64rawGiftInfo\x18\n \x01(\x0b\x32\x1a.AcFunDanmu.ZtDrawGiftInfob\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'CommonActionSignalGift_pb2', globals())
@@ -23,5 +23,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _COMMONACTIONSIGNALGIFT._serialized_start=89
-  _COMMONACTIONSIGNALGIFT._serialized_end=360
+  _COMMONACTIONSIGNALGIFT._serialized_end=373
 # @@protoc_insertion_point(module_scope)

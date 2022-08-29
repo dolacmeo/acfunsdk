@@ -14,6 +14,8 @@ __author__ = 'dolacmeo'
 # https://developers.google.com/protocol-buffers/docs/pythontutorial
 # https://websocket-client.readthedocs.io/en/latest/getting_started.html
 
+# https://protogen.marcgravell.com/decode
+
 
 class AcWsConfig:
     did = None
@@ -93,12 +95,12 @@ class AcWebSocket:
 
     def _register(self, ws):
         basic_register = self.protos.Basic_Register()
-        print("reg req", base64.standard_b64encode(basic_register))
+        print("send: ", base64.standard_b64encode(basic_register))
         self.ws.send(basic_register)
         self.protos.SeqId += 1
 
     def _message(self, ws, message):
-        print(base64.standard_b64encode(message))
+        print("recv: ", base64.standard_b64encode(message))
         self.protos.receive(message)
 
     def _close(self, ws):

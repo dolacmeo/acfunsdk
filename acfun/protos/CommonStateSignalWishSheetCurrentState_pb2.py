@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,CommonStateSignalWishSheetCurrentState.proto\x12\nAcFunDanmu\"\xd9\x01\n&CommonStateSignalWishSheetCurrentState\x12\t\n\x01\x61\x18\x01 \x01(\t\x12N\n\x01\x62\x18\x02 \x03(\x0b\x32\x43.AcFunDanmu.CommonStateSignalWishSheetCurrentState.WishCurrentState\x1aT\n\x10WishCurrentState\x12\t\n\x01\x63\x18\x01 \x01(\t\x12\t\n\x01\x64\x18\x02 \x01(\x03\x12\t\n\x01\x65\x18\x03 \x01(\x03\x12\t\n\x01\x66\x18\x04 \x01(\x03\x12\t\n\x01g\x18\x05 \x01(\t\x12\t\n\x01h\x18\x06 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,CommonStateSignalWishSheetCurrentState.proto\x12\nAcFunDanmu\"\xd9\x01\n&CommonStateSignalWishSheetCurrentState\x12\t\n\x01\x61\x18\x01 \x01(\t\x12N\n\x01\x62\x18\x02 \x03(\x0b\x32\x43.AcFunDanmu.CommonStateSignalWishSheetCurrentState.WishCurrentState\x1aT\n\x10WishCurrentState\x12\t\n\x01\x61\x18\x01 \x01(\t\x12\t\n\x01\x62\x18\x02 \x01(\x03\x12\t\n\x01\x63\x18\x03 \x01(\x03\x12\t\n\x01\x64\x18\x04 \x01(\x03\x12\t\n\x01\x65\x18\x05 \x01(\t\x12\t\n\x01\x66\x18\x06 \x01(\tb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'CommonStateSignalWishSheetCurrentState_pb2', globals())

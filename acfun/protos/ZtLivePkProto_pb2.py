@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13ZtLivePkProto.proto\x12\nAcFunDanmu*+\n\rZtLivePkProto\x12\x05\n\x01\x64\x10\x00\x12\x05\n\x01\x65\x10\x01\x12\x05\n\x01\x66\x10\x02\x12\x05\n\x01g\x10\x03\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13ZtLivePkProto.proto\x12\nAcFunDanmu*_\n\rZtLivePkProto\x12\x12\n\x0eZtLivePkProtoA\x10\x00\x12\x12\n\x0eZtLivePkProtoB\x10\x01\x12\x12\n\x0eZtLivePkProtoC\x10\x02\x12\x12\n\x0eZtLivePkProtoD\x10\x03\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'ZtLivePkProto_pb2', globals())
@@ -21,5 +21,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _ZTLIVEPKPROTO._serialized_start=35
-  _ZTLIVEPKPROTO._serialized_end=78
+  _ZTLIVEPKPROTO._serialized_end=130
 # @@protoc_insertion_point(module_scope)

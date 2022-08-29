@@ -1,16 +1,16 @@
 # coding=utf-8
 import random
 import sys
-sys.path.append("./acfun/protos")
+sys.path.append("./acfun/protos/Im")
 import base64
 from Crypto import Random
 from Crypto.Cipher import AES
-import acfun.protos.TokenInfo_pb2 as TokenInfo_pb2
-import acfun.protos.PacketHeader_pb2 as PacketHeader_pb2
-import acfun.protos.UpstreamPayload_pb2 as UpstreamPayload_pb2
-import acfun.protos.DownstreamPayload_pb2 as DownstreamPayload_pb2
-import acfun.protos.Register_pb2 as Register_pb2
-import acfun.protos.ErrorMessage_pb2 as ErrorMessage_pb2
+import acfun.protos.Im.TokenInfo_pb2 as TokenInfo_pb2
+import acfun.protos.Im.PacketHeader_pb2 as PacketHeader_pb2
+import acfun.protos.Im.UpstreamPayload_pb2 as UpstreamPayload_pb2
+import acfun.protos.Im.DownstreamPayload_pb2 as DownstreamPayload_pb2
+import acfun.protos.Im.RegisterRequest_pb2 as Register_pb2
+import acfun.protos.Im.ErrorMessage_pb2 as ErrorMessage_pb2
 
 
 class AcProtos:
@@ -30,8 +30,10 @@ class AcProtos:
         print("iv:", iv)
         p = len(payload) % AES.block_size
         if p != 0:
-            pad = bytes([p]) * (AES.block_size - p)
-            payload = payload + pad
+            pad_len = (AES.block_size - p)
+            payload = payload + b'\x00'
+            if pad_len > 1:
+                payload = payload + b'\r' * (pad_len - 1)
         cipher = AES.new(key, AES.MODE_CBC, iv)
         result = cipher.encrypt(payload)
         return iv + result
@@ -45,8 +47,6 @@ class AcProtos:
         print(f"payload {len(payload)}: {payload}")
         cipher = AES.new(key, AES.MODE_CBC, iv)
         result = cipher.decrypt(payload)
-        # if len(result) % AES.block_size == int(result[-1]):
-        #     return result[:-int(result[-1])]
         return result
 
     def receive(self, message: bytes):
@@ -58,9 +58,10 @@ class AcProtos:
         packet_header = PacketHeader_pb2.PacketHeader()
         header = message[self.header_offset:self.header_offset + packet_header_len]
         packet_header.ParseFromString(header)
-        print(packet_header)
-        print("=" * 40)
-        if not packet_header:
+        # print(packet_header)
+        # print("=" * 40)
+        if packet_header.decodedPayloadLen == 17:
+            print("recv error: ", base64.standard_b64encode(message[self.header_offset + packet_header_len:]))
             return
         payload_data = message[self.header_offset + packet_header_len:]
         # print(f"payload: {payload_data}")
@@ -86,7 +87,7 @@ class AcProtos:
         # reg.ParseFromString(upstream_payload.payloadData)
         # print(reg)
 
-    def PacketHeader(self, payload_len: int):
+    def PacketHeader(self, payload_len: int, encrypted_len: int):
         token_info = TokenInfo_pb2.TokenInfo()
         token_info.tokenType = 1
         if self.config.acer.is_logined:
@@ -94,7 +95,9 @@ class AcProtos:
         else:
             token_info.token = self.config.visitor_st
         header = PacketHeader_pb2.PacketHeader()
+        # header.appId = 13
         header.uid = self.config.userId
+        # header.instanceId = 0
         header.decodedPayloadLen = payload_len
         header.encryptionMode = 1
         header.tokenInfo.CopyFrom(token_info)
@@ -104,7 +107,7 @@ class AcProtos:
         return [
             bytes.fromhex("abcd0001"),
             len(header_payload).to_bytes(4, "big"),
-            (payload_len + self.payload_offset).to_bytes(4, "big"),
+            encrypted_len.to_bytes(4, "big"),
             header_payload
         ]
 
@@ -119,6 +122,7 @@ class AcProtos:
         payload = Register_pb2.RegisterRequest()
         app_info = Register_pb2.AppInfo__pb2.AppInfo()
         app_info.sdkVersion = "2.13.11-rc.2"
+        app_info.linkVersion = "2.13.8"
         payload.appInfo.CopyFrom(app_info)
         device_info = Register_pb2.DeviceInfo__pb2.DeviceInfo()
         device_info.platformType = 9
@@ -141,7 +145,8 @@ class AcProtos:
         payload_body = upstream_payload.SerializeToString()
         key = self.config.ssecurity if self.config.acer.is_logined else self.config.acSecurity
         # print(f"key: {key}", len(payload_body))
-        data = self.PacketHeader(len(payload_body))
-        data.append(self._aes_encrypt(key, payload_body))
+        encrypted = self._aes_encrypt(key, payload_body)
+        data = self.PacketHeader(len(payload_body), len(encrypted))
+        data.append(encrypted)
         return b"".join(data)
 

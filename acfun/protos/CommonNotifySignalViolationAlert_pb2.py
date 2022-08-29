@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&CommonNotifySignalViolationAlert.proto\x12\nAcFunDanmu\"<\n CommonNotifySignalViolationAlert\x12\x18\n\x10violationContent\x18\x01 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n&CommonNotifySignalViolationAlert.proto\x12\nAcFunDanmu\"G\n CommonNotifySignalViolationAlert\x12\x18\n\x10violationContent\x18\x01 \x01(\t\x12\t\n\x01\x62\x18\x02 \x01(\tb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'CommonNotifySignalViolationAlert_pb2', globals())
@@ -21,5 +21,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _COMMONNOTIFYSIGNALVIOLATIONALERT._serialized_start=54
-  _COMMONNOTIFYSIGNALVIOLATIONALERT._serialized_end=114
+  _COMMONNOTIFYSIGNALVIOLATIONALERT._serialized_end=125
 # @@protoc_insertion_point(module_scope)

@@ -11,15 +11,16 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+import ZtLivePkProto_pb2 as ZtLivePkProto__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11PkRoundInfo.proto\x12\nAcFunDanmu\"D\n\x0bPkRoundInfo\x12\t\n\x01\x61\x18\x01 \x01(\x03\x12\t\n\x01\x62\x18\x02 \x01(\x05\x12\t\n\x01\x63\x18\x03 \x01(\x05\x12\t\n\x01\x64\x18\x04 \x01(\x03\x12\t\n\x01\x65\x18\x05 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11PkRoundInfo.proto\x12\nAcFunDanmu\x1a\x13ZtLivePkProto.proto\"_\n\x0bPkRoundInfo\x12\t\n\x01\x61\x18\x01 \x01(\x03\x12\t\n\x01\x62\x18\x02 \x01(\x05\x12\t\n\x01\x63\x18\x03 \x01(\x05\x12\t\n\x01\x64\x18\x04 \x01(\x03\x12$\n\x01\x65\x18\x05 \x01(\x0e\x32\x19.AcFunDanmu.ZtLivePkProtob\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'PkRoundInfo_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _PKROUNDINFO._serialized_start=33
-  _PKROUNDINFO._serialized_end=101
+  _PKROUNDINFO._serialized_start=54
+  _PKROUNDINFO._serialized_end=149
 # @@protoc_insertion_point(module_scope)

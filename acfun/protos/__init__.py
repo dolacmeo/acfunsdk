@@ -1,4 +1,5 @@
 # coding=utf-8
+import random
 import sys
 sys.path.append("./acfun/protos")
 import base64
@@ -9,6 +10,7 @@ import acfun.protos.PacketHeader_pb2 as PacketHeader_pb2
 import acfun.protos.UpstreamPayload_pb2 as UpstreamPayload_pb2
 import acfun.protos.DownstreamPayload_pb2 as DownstreamPayload_pb2
 import acfun.protos.Register_pb2 as Register_pb2
+import acfun.protos.ErrorMessage_pb2 as ErrorMessage_pb2
 
 
 class AcProtos:
@@ -21,53 +23,68 @@ class AcProtos:
         self.SeqId += 1
         pass
 
-    def _aes_encode(self, key, payload):
+    def _aes_encrypt(self, key, payload):
         print("key: ", key)
         key = base64.standard_b64decode(key)
         iv = Random.new().read(AES.block_size)
         print("iv:", iv)
-
-        def pad(m):
-            return m + chr(16 - len(m) % 16).encode() * (16 - len(m) % 16)
+        p = len(payload) % AES.block_size
+        if p != 0:
+            pad = bytes([p]) * (AES.block_size - p)
+            payload = payload + pad
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        result = cipher.encrypt(pad(payload))
+        result = cipher.encrypt(payload)
         return iv + result
 
-    def _aes_decode(self, key, data):
+    def _aes_decrypt(self, key, data):
         key = base64.standard_b64decode(key)
         iv = data[:self.payload_offset]
         payload = data[self.payload_offset:]
+        print(f"key: {key}")
+        print(f"iv : {iv}")
+        print(f"payload {len(payload)}: {payload}")
         cipher = AES.new(key, AES.MODE_CBC, iv)
         result = cipher.decrypt(payload)
+        # if len(result) % AES.block_size == int(result[-1]):
+        #     return result[:-int(result[-1])]
+        return result
 
-        def unpad(ct):
-            return ct[:-ord(ct[-1])]
-        return unpad(result)
-
-    def reveive(self, message: bytes):
-        print(f"total length: {len(message)}")
+    def receive(self, message: bytes):
+        # print(f"total length: {len(message)}")
         packet_header_len = int.from_bytes(message[4:8], byteorder='big')
         payload_len = int.from_bytes(message[8:12], byteorder='big')
-        print(f"packet_header_len: {packet_header_len}")
-        print(f"payload_len: {payload_len}")
+        # print(f"packet_header_len: {packet_header_len} {str(message[4:8])}")
+        # print(f"payload_len: {payload_len} {str(message[8:12])}")
         packet_header = PacketHeader_pb2.PacketHeader()
         header = message[self.header_offset:self.header_offset + packet_header_len]
         packet_header.ParseFromString(header)
         print(packet_header)
+        print("=" * 40)
         if not packet_header:
             return
-        payload_data = message[self.header_offset + packet_header_len:
-                               self.header_offset + packet_header_len + payload_len]
-        print(f"payload_data: {payload_data[self.payload_offset:]}")
-        if len(payload_data) < 20:
-            return
+        payload_data = message[self.header_offset + packet_header_len:]
+        # print(f"payload: {payload_data}")
         key = self.config.ssecurity if self.config.acer.is_logined else self.config.acSecurity
-        if packet_header.encryptionMode == 0:
+        # print(f"encryptionMode: {packet_header.kEncryptionServiceToken}")
+        print(f"{len(payload_data)} {payload_data}")
+        if packet_header.encryptionMode == 0:  # kEncryptionServiceToken
             decode_data = payload_data[self.payload_offset:]
         else:
-            decode_data = self._aes_decode(key, payload_data)
-        payload = self.Downstream(decode_data)
-        print(payload)
+            decode_data = self._aes_decrypt(key, payload_data)
+        print(len(decode_data), decode_data)
+        upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
+        upstream_payload.ParseFromString(decode_data[:packet_header.decodedPayloadLen])
+        print(upstream_payload)
+        print("=" * 40)
+        reg = Register_pb2.RegisterRequest()
+        reg.ParseFromString(upstream_payload.payloadData)
+        print(reg)
+        print("=" * 40)
+        # payload = self.Downstream(decode_data)
+        # print(payload)
+        # reg = Register_pb2.RegisterResponse()
+        # reg.ParseFromString(upstream_payload.payloadData)
+        # print(reg)
 
     def PacketHeader(self, payload_len: int):
         token_info = TokenInfo_pb2.TokenInfo()
@@ -101,11 +118,11 @@ class AcProtos:
         # reg_resp = Register_pb2.RegisterResponse()
         payload = Register_pb2.RegisterRequest()
         app_info = Register_pb2.AppInfo__pb2.AppInfo()
-        app_info.sdkVersion = b"2.13.11-rc.2"
+        app_info.sdkVersion = "2.13.11-rc.2"
         payload.appInfo.CopyFrom(app_info)
         device_info = Register_pb2.DeviceInfo__pb2.DeviceInfo()
         device_info.platformType = 9
-        device_info.deviceModel = b"h5"
+        device_info.deviceModel = "h5"
         device_info.deviceId = self.config.did
         payload.deviceInfo.CopyFrom(device_info)
         payload.presenceStatus = 1
@@ -113,11 +130,11 @@ class AcProtos:
         ztcommon_info = Register_pb2.ZtCommonInfo__pb2.ZtCommonInfo()
         ztcommon_info.kpn = b"ACFUN_APP"
         ztcommon_info.kpf = b"PC_WEB"
-        ztcommon_info.uid = self.config.userId
+        ztcommon_info.uid = int(self.config.userId)
         ztcommon_info.did = self.config.did
         payload.ztCommonInfo.CopyFrom(ztcommon_info)
         upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
-        upstream_payload.command = b"Basic.Register"
+        upstream_payload.command = "Basic.Register"
         upstream_payload.seqId = self.SeqId
         upstream_payload.retryCount = 1
         upstream_payload.payloadData = payload.SerializeToString()
@@ -125,6 +142,6 @@ class AcProtos:
         key = self.config.ssecurity if self.config.acer.is_logined else self.config.acSecurity
         # print(f"key: {key}", len(payload_body))
         data = self.PacketHeader(len(payload_body))
-        data.append(self._aes_encode(key, payload_body))
+        data.append(self._aes_encrypt(key, payload_body))
         return b"".join(data)
 

@@ -14,6 +14,7 @@ __author__ = 'dolacmeo'
 # https://developers.google.com/protocol-buffers/docs/pythontutorial
 # https://websocket-client.readthedocs.io/en/latest/getting_started.html
 
+
 class AcWsConfig:
     did = None
     userId = None
@@ -55,14 +56,31 @@ class AcWebSocket:
     ws_link = None
     config = None
 
-    def __init__(self, config: AcWsConfig):
+    def __init__(self, acer):
+        self.acer = acer
         self.ws_link = random.choice(websocket_links)
         print(self.ws_link)
-        self.config = config
+        self.config = AcWsConfig(self.acer)
         self.protos = AcProtos(self.config)
+        # self.ws_key = base64.standard_b64encode(bytes([random.randint(0, 255) for _ in range(16)]))
+        hh = {
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+            "Cache-Control": "no-cache",
+            "Connection": "Upgrade",
+            "Origin": "https://live.acfun.cn",
+            "Pragma": "no-cache",
+            # "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits",
+            # "Sec-WebSocket-Version": "13",
+            "Upgrade": "websocket",
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/104.0.5112.102 Safari/537.36'
+        }
+        hh.update({"Origin": "https://live.acfun.cn"})
         self.ws = websocket.WebSocketApp(
             url=self.ws_link,
-            header=header,
+            header=hh,
             on_open=self._register,
             on_message=self._message,
             on_error=self._error,
@@ -81,7 +99,7 @@ class AcWebSocket:
 
     def _message(self, ws, message):
         print(base64.standard_b64encode(message))
-        self.protos.reveive(message)
+        self.protos.receive(message)
 
     def _close(self, ws):
         pass

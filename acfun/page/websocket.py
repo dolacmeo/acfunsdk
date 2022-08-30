@@ -74,13 +74,14 @@ class AcWebSocket:
             on_pong=self.keep_alive_response,
         )
         self.protos = AcProtos(self.config)
+
+    def run(self):
         self.ws.run_forever(
             # sslopt={"cert_reqs": ssl.CERT_NONE},
             ping_interval=30, ping_timeout=10,
             skip_utf8_validation=True,
             origin="live.acfun.cn",
         )
-        pass
 
     def register(self, ws):
         basic_register = self.protos.Basic_Register_Request()
@@ -90,7 +91,7 @@ class AcWebSocket:
 
     def message(self, ws, message):
         print("recv: ", base64.standard_b64encode(message))
-        self.protos.decode(message)
+        self.protos.decode(ws, message)
 
     # def keep_alive_request(self, ws, message):
     #     pass

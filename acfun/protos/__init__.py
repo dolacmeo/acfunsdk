@@ -6,6 +6,7 @@ import base64
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
+import proto
 import acfun.protos.Im.TokenInfo_pb2 as TokenInfo_pb2
 import acfun.protos.Im.PacketHeader_pb2 as PacketHeader_pb2
 import acfun.protos.Im.UpstreamPayload_pb2 as UpstreamPayload_pb2
@@ -15,9 +16,25 @@ import acfun.protos.Im.RegisterResponse_pb2 as RegisterResponse_pb2
 import acfun.protos.Im.ErrorMessage_pb2 as ErrorMessage_pb2
 import acfun.protos.Im.KeepAliveRequest_pb2 as KeepAliveRequest_pb2
 import acfun.protos.Im.KeepAliveResponse_pb2 as KeepAliveResponse_pb2
+import acfun.protos.Im.ClientConfigGetResponse_pb2 as ClientConfigGetResponse_pb2
+import acfun.protos.Im.SessionListResponse_pb2 as SessionListResponse_pb2
+import acfun.protos.Im.GroupMemberListGetRequest_pb2 as GroupMemberListGetRequest_pb2
+import acfun.protos.Im.GroupMemberListGetResponse_pb2 as GroupMemberListGetResponse_pb2
 
 # AES Padding
 # https://blog.csdn.net/qq_39727936/article/details/114494791
+
+# proto-plus
+# https://proto-plus-python.readthedocs.io/en/latest/index.html
+
+
+class ErrorMessage(proto.Message):
+    errorCode = proto.Field(proto.INT32, number=3)
+    errorMessage = proto.Field(proto.STRING, number=5)
+
+
+class ClientConfigGetRequest(proto.Message):
+    version = proto.Field(proto.UINT32, number=1)
 
 
 class AcProtos:
@@ -26,7 +43,10 @@ class AcProtos:
     payload_offset = 16
     command_map = {
         "Basic.Register": 'Basic_Register_Response',
-        "Basic.KeepAlive": 'Keep_Alive_Response'
+        "Basic.KeepAlive": 'Keep_Alive_Response',
+        "Basic.ClientConfigGet": 'Basic_ClientConfigGet_Response',
+        "Message.Session": 'Message_Session_Response',
+        "Group.UserGroupList": 'Group_UserGroupList_Response'
     }
 
     def __init__(self, config):
@@ -87,7 +107,7 @@ class AcProtos:
         # print(keep)
         # print("#" * 40)
 
-    def decode(self, message: bytes):
+    def decode(self, ws, message: bytes):
         # print(f"total length: {len(message)}")
         packet_header_len = int.from_bytes(message[4:8], byteorder='big')
         payload_len = int.from_bytes(message[8:12], byteorder='big')
@@ -102,23 +122,31 @@ class AcProtos:
         self.config.appId = packet_header.appId
         self.config.instanceId = packet_header.instanceId
         payload_data = message[self.header_offset + packet_header_len:]
+        print(f"packet_header.encryptionMode: {packet_header.encryptionMode}")
         if packet_header.encryptionMode == 1:  # kEncryptionServiceToken
             decrypted_data = self._aes_decrypt(self.config.ssecurity, payload_data)
         elif packet_header.encryptionMode == 2:  # kEncryptionSessionKey
             decrypted_data = self._aes_decrypt(self.config.sessKey, payload_data)
         else:  # kEncryptionNone
             decrypted_data = payload_data
-        decrypted_data = decrypted_data[:packet_header.decodedPayloadLen]
-        # print(f"decrypted_data[{len(decrypted_data)}]: ", decrypted_data)
-        upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
-        upstream_payload.ParseFromString(decrypted_data)
+            data_payload = ErrorMessage.deserialize(decrypted_data)
+            print(data_payload)
+            raise BufferError(data_payload.errorMessage)
+        # decrypted_data = decrypted_data[:packet_header.decodedPayloadLen]
+        print(f"decrypted_data[{len(decrypted_data)}]: ", decrypted_data)
+        print(f"decrypted_data[b64]: {base64.standard_b64encode(decrypted_data)}")
+        if self.seqId < 2:
+            data_payload = UpstreamPayload_pb2.UpstreamPayload()
+        else:
+            data_payload = DownstreamPayload_pb2.DownstreamPayload()
+        data_payload.ParseFromString(decrypted_data)
         print("#" * 40)
-        print(f"Command: {upstream_payload.command}")
+        print(f"Command: {data_payload.command}")
         print("#" * 40)
-        command = upstream_payload.command
+        command = data_payload.command
         func_name = self.command_map.get(command)
         assert func_name is not None
-        getattr(self, func_name)(upstream_payload.payloadData)
+        getattr(self, func_name)(ws, data_payload.payloadData)
 
     def encode(self, key_n: int, payload_bytes: bytes):
         token_info = TokenInfo_pb2.TokenInfo()
@@ -149,6 +177,14 @@ class AcProtos:
             header_payload,
             encrypted
         ])
+
+    def upstream(self, command, payload):
+        upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
+        upstream_payload.command = command
+        upstream_payload.seqId = self.seqId
+        upstream_payload.payloadData = payload
+        payload_body = upstream_payload.SerializeToString()
+        return payload_body
 
     def Basic_Register_Request(self):
         self.seqId += 1
@@ -182,13 +218,14 @@ class AcProtos:
         payload_body = upstream_payload.SerializeToString()
         return self.encode(1, payload_body)
 
-    def Basic_Register_Response(self, recv_payload: bytes):
+    def Basic_Register_Response(self, ws, recv_payload: bytes):
         reg_resp = RegisterResponse_pb2.RegisterResponse()
         reg_resp.ParseFromString(recv_payload)
         # print(reg_resp)
         # print("=" * 40)
         self.config.sessKey = base64.standard_b64encode(reg_resp.sessKey)
         print(f"sessKey: {self.config.sessKey}")
+        ws.send(self.Basic_ClientConfigGet())
 
     @property
     def ping_message(self):
@@ -209,21 +246,64 @@ class AcProtos:
         # payload.pushServiceTokenList.CopyFrom(pushST)
         payload.keepaliveIntervalSec = 120
         # payload.ipv6Available = False
-        upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
-        upstream_payload.command = "Basic.KeepAlive"
-        upstream_payload.seqId = self.seqId
-        upstream_payload.payloadData = payload.SerializeToString()
-        payload_body = upstream_payload.SerializeToString()
+        payload_body = self.upstream("Basic.KeepAlive", payload.SerializeToString())
         return self.encode(2, payload_body)
 
-    def Keep_Alive_Response(self, recv_payload: bytes):
+    def Keep_Alive_Response(self, ws, recv_payload: bytes):
         keep_alive_payload = KeepAliveResponse_pb2.KeepAliveResponse()
         keep_alive_payload.ParseFromString(recv_payload)
-        print(keep_alive_payload)
+        # print(keep_alive_payload)
+        # print("=" * 40)
+
+    def Basic_ClientConfigGet(self):
+        self.seqId += 1
+        payload = ClientConfigGetRequest()
+        payload.version = 0
+        payload_body = self.upstream("Basic.ClientConfigGet", ClientConfigGetRequest.serialize(payload))
+        return self.encode(2, payload_body)
+
+    def Basic_ClientConfigGet_Response(self, ws, recv_payload: bytes):
+        client_config_payload = ClientConfigGetResponse_pb2.ClientConfigGetResponse()
+        client_config_payload.ParseFromString(recv_payload)
+        # todo saved configs
+        # print(client_config_payload)
+        # print("=" * 40)
+        ws.send(self.Message_Session())
+
+    def Message_Session(self):
+        """Message.Session"""
+        self.seqId += 1
+        raw = bytes([16, 0])
+        payload_body = self.upstream("Message.Session", raw)
+        return self.encode(2, payload_body)
+
+    def Message_Session_Response(self, ws, recv_payload: bytes):
+        message_session_payload = SessionListResponse_pb2.SessionListResponse()
+        message_session_payload.ParseFromString(recv_payload)
+        print(message_session_payload)
         print("=" * 40)
+        ws.send(self.Group_UserGroupList())
+        # raise Exception('e' * 40)
 
-    def Downstream(self, decrypt_data):
-        payload = DownstreamPayload_pb2.DownstreamPayload()
-        payload.FromString(decrypt_data)
-        return payload
+    def Group_UserGroupList(self):
+        self.seqId += 1
+        payload = GroupMemberListGetRequest_pb2.GroupMemberListGetRequest()
+        payload.groupId = b"0"
+        sync_cookie_payload = GroupMemberListGetRequest_pb2.SyncCookie__pb2.SyncCookie()
+        sync_cookie_payload.syncOffset = -1
+        payload.syncCookie.CopyFrom(sync_cookie_payload)
+        raw = bytes([18, 11, 8, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1])
+        payload_body = self.upstream("Group.UserGroupList", payload.SerializeToString())
+        return self.encode(2, payload_body)
 
+    def Group_UserGroupList_Response(self, ws, recv_payload: bytes):
+        payload = GroupMemberListGetResponse_pb2.GroupMemberListGetResponse()
+        payload.ParseFromString(recv_payload)
+        # todo saved group list
+        print(payload)
+        print("=" * 40)
+        raise Exception('e' * 40)
+
+    def Basic_ping(self):
+        self.seqId += 1
+        return self.encode(2, self.upstream("Basic.Ping", b""))

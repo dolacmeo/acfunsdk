@@ -1,12 +1,15 @@
 # coding=utf-8
 import random
 import sys
+import time
+
 sys.path.append("./acfun/protos/Im")
 import base64
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import proto
+from google.protobuf.json_format import MessageToJson, MessageToDict
 import acfun.protos.Im.TokenInfo_pb2 as TokenInfo_pb2
 import acfun.protos.Im.PacketHeader_pb2 as PacketHeader_pb2
 import acfun.protos.Im.UpstreamPayload_pb2 as UpstreamPayload_pb2
@@ -20,6 +23,10 @@ import acfun.protos.Im.ClientConfigGetResponse_pb2 as ClientConfigGetResponse_pb
 import acfun.protos.Im.SessionListResponse_pb2 as SessionListResponse_pb2
 import acfun.protos.Im.GroupMemberListGetRequest_pb2 as GroupMemberListGetRequest_pb2
 import acfun.protos.Im.GroupMemberListGetResponse_pb2 as GroupMemberListGetResponse_pb2
+import acfun.protos.Im.PullOldRequest_pb2 as PullOldRequest_pb2
+import acfun.protos.Im.PullOldResponse_pb2 as PullOldResponse_pb2
+import acfun.protos.Im.Message_pb2 as Message_pb2
+
 
 # AES Padding
 # https://blog.csdn.net/qq_39727936/article/details/114494791
@@ -37,6 +44,10 @@ class ClientConfigGetRequest(proto.Message):
     version = proto.Field(proto.UINT32, number=1)
 
 
+class MessageContent(proto.Message):
+    content = proto.Field(proto.STRING, number=1)
+
+
 class AcProtos:
     seqId = 0
     header_offset = 12
@@ -46,7 +57,10 @@ class AcProtos:
         "Basic.KeepAlive": 'Keep_Alive_Response',
         "Basic.ClientConfigGet": 'Basic_ClientConfigGet_Response',
         "Message.Session": 'Message_Session_Response',
-        "Group.UserGroupList": 'Group_UserGroupList_Response'
+        "Group.UserGroupList": 'Group_UserGroupList_Response',
+        "Message.PullOld": 'Message_PullOld_Response',
+        "Message.Send": 'Message_Response',
+        "Push.Message": 'Message_Response',
     }
 
     def __init__(self, config):
@@ -122,7 +136,7 @@ class AcProtos:
         self.config.appId = packet_header.appId
         self.config.instanceId = packet_header.instanceId
         payload_data = message[self.header_offset + packet_header_len:]
-        print(f"packet_header.encryptionMode: {packet_header.encryptionMode}")
+        # print(f"packet_header.encryptionMode: {packet_header.encryptionMode}")
         if packet_header.encryptionMode == 1:  # kEncryptionServiceToken
             decrypted_data = self._aes_decrypt(self.config.ssecurity, payload_data)
         elif packet_header.encryptionMode == 2:  # kEncryptionSessionKey
@@ -133,7 +147,7 @@ class AcProtos:
             print(data_payload)
             raise BufferError(data_payload.errorMessage)
         # decrypted_data = decrypted_data[:packet_header.decodedPayloadLen]
-        print(f"decrypted_data[{len(decrypted_data)}]: ", decrypted_data)
+        # print(f"decrypted_data[{len(decrypted_data)}]: ", decrypted_data)
         print(f"decrypted_data[b64]: {base64.standard_b64encode(decrypted_data)}")
         if self.seqId < 2:
             data_payload = UpstreamPayload_pb2.UpstreamPayload()
@@ -143,6 +157,9 @@ class AcProtos:
         print("#" * 40)
         print(f"Command: {data_payload.command}")
         print("#" * 40)
+        if data_payload.errorCode:
+            print(data_payload)
+            raise ValueError(f"[{data_payload.errorCode}] {data_payload.errorMsg}")
         command = data_payload.command
         func_name = self.command_map.get(command)
         assert func_name is not None
@@ -268,7 +285,6 @@ class AcProtos:
         # todo saved configs
         # print(client_config_payload)
         # print("=" * 40)
-        ws.send(self.Message_Session())
 
     def Message_Session(self):
         """Message.Session"""
@@ -280,10 +296,9 @@ class AcProtos:
     def Message_Session_Response(self, ws, recv_payload: bytes):
         message_session_payload = SessionListResponse_pb2.SessionListResponse()
         message_session_payload.ParseFromString(recv_payload)
-        print(message_session_payload)
-        print("=" * 40)
-        ws.send(self.Group_UserGroupList())
-        # raise Exception('e' * 40)
+        # print(message_session_payload)
+        # print("=" * 40)
+        # return MessageToDict(message_session_payload.sessions)
 
     def Group_UserGroupList(self):
         self.seqId += 1
@@ -292,7 +307,6 @@ class AcProtos:
         sync_cookie_payload = GroupMemberListGetRequest_pb2.SyncCookie__pb2.SyncCookie()
         sync_cookie_payload.syncOffset = -1
         payload.syncCookie.CopyFrom(sync_cookie_payload)
-        raw = bytes([18, 11, 8, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1])
         payload_body = self.upstream("Group.UserGroupList", payload.SerializeToString())
         return self.encode(2, payload_body)
 
@@ -300,10 +314,57 @@ class AcProtos:
         payload = GroupMemberListGetResponse_pb2.GroupMemberListGetResponse()
         payload.ParseFromString(recv_payload)
         # todo saved group list
-        print(payload)
-        print("=" * 40)
-        raise Exception('e' * 40)
+        # print(payload)
+        # print("=" * 40)
 
     def Basic_ping(self):
         self.seqId += 1
         return self.encode(2, self.upstream("Basic.Ping", b""))
+
+    def Message_PullOld_Request(self, session, count: int = 10):
+        self.seqId += 1
+        payload = PullOldRequest_pb2.PullOldRequest()
+        payload.target.CopyFrom(session.target)
+        payload.minSeq = session.readSeqId
+        payload.maxSeq = session.maxSeqId
+        payload.count = count
+        # payload.targetId
+        # payload.strTargetId
+        payload_body = self.upstream("Message.PullOld", payload.SerializeToString())
+        return self.encode(2, payload_body)
+
+    def Message_PullOld_Response(self, ws, recv_payload: bytes):
+        payload = PullOldResponse_pb2.PullOldResponse()
+        payload.ParseFromString(recv_payload)
+        # print(payload)
+        # print("=" * 40)
+        # raise Exception('e' * 40)
+
+    def Message_Request(self, target_uid: int, content: str):
+        self.seqId += 1
+        payload = Message_pb2.Message()
+        # payload.seqId = int(f"{time.time():.0f}{1:0>6}")
+        payload.clientSeqId = int(f"{time.time():.0f}{1:0>6}")
+        payload.timestampMs = int(f"{time.time():.0f}{1:0>3}")
+        user_me = Message_pb2.User__pb2.User()
+        user_me.appId = self.config.appId
+        user_me.uid = self.config.userId
+        payload.fromUser.CopyFrom(user_me)
+        payload.targetId = target_uid
+        user_you = Message_pb2.User__pb2.User()
+        user_you.appId = self.config.appId
+        user_you.uid = target_uid
+        payload.toUser.CopyFrom(user_you)
+        msg = MessageContent()
+        msg.content = content.encode()
+        payload.content = MessageContent.serialize(msg)
+        payload.strTargetId = str(target_uid)
+        payload_body = self.upstream("Message.Send", payload.SerializeToString())
+        return self.encode(2, payload_body)
+
+    def Message_Response(self, ws, recv_payload: bytes):
+        payload = Message_pb2.Message()
+        payload.ParseFromString(recv_payload)
+        print(payload)
+        print("=" * 40)
+        # raise Exception('e' * 40)

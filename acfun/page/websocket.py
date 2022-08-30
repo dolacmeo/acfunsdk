@@ -16,6 +16,32 @@ __author__ = 'dolacmeo'
 
 # https://protogen.marcgravell.com/decode
 
+# websocket 异步线程 同步化 + 背景进程
+# https://stackoverflow.com/questions/51197063/python-websockets-in-synchronous-program
+# 构建多线程异步 websocket
+# 在同步返回结果前存留seqId为标识的线程
+# 根据异步返回结果匹配seqId线程，并将结果返回给等待中的线程，异步变为同步
+# 主要进程如下，需要线程守护：
+# 1.背景线程持续接收服务器返回信息
+# 2.keep alive 保持长连接
+# 3.等待接收新的指令
+# 进程初始需要执行初始化：注册
+# 将注册后一系列过程同步，并保持必要信息
+
+
+def uint8_payload_to_base64(data: dict):
+    """
+    用于反解网页中等待encode的payload
+    进入页面: https://message.acfun.cn/im
+    调试js  : https://static.yximgs.com/udata/pkg/acfun-im/ImSdk.b0aeed.js
+    设置断点: 9145 => e.payloadData
+    return: base64encoded ==> https://protogen.marcgravell.com/decode
+    """
+    b_str = b''
+    for x in range(len(data.keys())):
+        b_str += bytes([data[str(x)]])
+    return base64.standard_b64encode(b_str)
+
 
 class AcWsConfig:
     did = None
@@ -70,7 +96,7 @@ class AcWebSocket:
             on_message=self.message,
             on_error=self.error,
             on_close=self.close,
-            # on_ping=self.keep_alive_request,
+            on_ping=self.keep_alive_request,
             on_pong=self.keep_alive_response,
         )
         self.protos = AcProtos(self.config)
@@ -87,21 +113,20 @@ class AcWebSocket:
         basic_register = self.protos.Basic_Register_Request()
         print("send: ", base64.standard_b64encode(basic_register))
         self.ws.send(basic_register)
-        self.protos.seqId += 1
 
     def message(self, ws, message):
         print("recv: ", base64.standard_b64encode(message))
         self.protos.decode(ws, message)
 
-    # def keep_alive_request(self, ws, message):
-    #     pass
+    def keep_alive_request(self, ws, message):
+        ping = self.protos.Basic_ping()
+        print("ping: ", base64.standard_b64encode(ping))
+        self.ws.send(ping)
 
     def keep_alive_response(self, ws, message):
-        # print("pone: ", base64.standard_b64encode(message))
         keep_alive = self.protos.Keep_Alive_Request()
         print("ping: ", base64.standard_b64encode(keep_alive))
         self.ws.send(keep_alive)
-        # self.protos.decode(message)
 
     def close(self, ws):
         pass

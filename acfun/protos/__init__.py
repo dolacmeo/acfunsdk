@@ -25,12 +25,12 @@ class AcProtos:
     header_offset = 12
     payload_offset = 16
     command_map = {
-        "Basic.Register": 'Basic_Register_Response'
+        "Basic.Register": 'Basic_Register_Response',
+        "Basic.KeepAlive": 'Keep_Alive_Response'
     }
 
-    def __init__(self, config, ws):
+    def __init__(self, config):
         self.config = config
-        self.ws = ws
         pass
 
     def _aes_encrypt(self, key, payload):
@@ -187,8 +187,14 @@ class AcProtos:
         reg_resp.ParseFromString(recv_payload)
         # print(reg_resp)
         # print("=" * 40)
-        self.config.sessKey = reg_resp.sessKey
-        self.ws.send(self.Keep_Alive_Request())
+        self.config.sessKey = base64.standard_b64encode(reg_resp.sessKey)
+        print(f"sessKey: {self.config.sessKey}")
+
+    @property
+    def ping_message(self):
+        if self.config.sessKey is None:
+            return ""
+        return self.Keep_Alive_Request()
 
     def Keep_Alive_Request(self):
         self.seqId += 1
@@ -201,7 +207,7 @@ class AcProtos:
         # pushST.isPassThrough = True
         # payload.pushServiceToken.CopyFrom(pushST)
         # payload.pushServiceTokenList.CopyFrom(pushST)
-        # payload.keepaliveIntervalSec = 300
+        payload.keepaliveIntervalSec = 120
         # payload.ipv6Available = False
         upstream_payload = UpstreamPayload_pb2.UpstreamPayload()
         upstream_payload.command = "Basic.KeepAlive"
@@ -209,6 +215,12 @@ class AcProtos:
         upstream_payload.payloadData = payload.SerializeToString()
         payload_body = upstream_payload.SerializeToString()
         return self.encode(2, payload_body)
+
+    def Keep_Alive_Response(self, recv_payload: bytes):
+        keep_alive_payload = KeepAliveResponse_pb2.KeepAliveResponse()
+        keep_alive_payload.ParseFromString(recv_payload)
+        print(keep_alive_payload)
+        print("=" * 40)
 
     def Downstream(self, decrypt_data):
         payload = DownstreamPayload_pb2.DownstreamPayload()

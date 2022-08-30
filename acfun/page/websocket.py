@@ -61,34 +61,50 @@ class AcWebSocket:
 
     def __init__(self, acer):
         self.acer = acer
+        websocket.enableTrace(True)
         self.ws_link = random.choice(websocket_links)
         self.config = AcWsConfig(self.acer)
         self.ws = websocket.WebSocketApp(
             url=self.ws_link,
-            on_open=self._register,
-            on_message=self._message,
-            on_error=self._error,
-            on_close=self._close,
-            # on_ping=self._ping,
-            # on_pong=self._pong,
+            on_open=self.register,
+            on_message=self.message,
+            on_error=self.error,
+            on_close=self.close,
+            # on_ping=self.keep_alive_request,
+            on_pong=self.keep_alive_response,
         )
-        self.protos = AcProtos(self.config, self.ws)
-        self.ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+        self.protos = AcProtos(self.config)
+        self.ws.run_forever(
+            # sslopt={"cert_reqs": ssl.CERT_NONE},
+            ping_interval=30, ping_timeout=10,
+            skip_utf8_validation=True,
+            origin="live.acfun.cn",
+        )
         pass
 
-    def _register(self, ws):
+    def register(self, ws):
         basic_register = self.protos.Basic_Register_Request()
         print("send: ", base64.standard_b64encode(basic_register))
         self.ws.send(basic_register)
         self.protos.seqId += 1
 
-    def _message(self, ws, message):
+    def message(self, ws, message):
         print("recv: ", base64.standard_b64encode(message))
         self.protos.decode(message)
 
-    def _close(self, ws):
+    # def keep_alive_request(self, ws, message):
+    #     pass
+
+    def keep_alive_response(self, ws, message):
+        # print("pone: ", base64.standard_b64encode(message))
+        keep_alive = self.protos.Keep_Alive_Request()
+        print("ping: ", base64.standard_b64encode(keep_alive))
+        self.ws.send(keep_alive)
+        # self.protos.decode(message)
+
+    def close(self, ws):
         pass
 
-    def _error(self, ws, e):
-        print("error", e)
+    def error(self, ws):
+        # print("error", e)
         pass

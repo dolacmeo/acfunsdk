@@ -89,9 +89,9 @@ class AcWebSocket:
     ws_link = None
     config = None
     _main_thread = None
-    _tasks = dict()
-    _commands = dict()
-    _unread = []
+    tasks = dict()
+    commands = dict()
+    unread = []
     is_register_done = False
 
     def __init__(self, acer):
@@ -124,13 +124,12 @@ class AcWebSocket:
         return self
 
     def add_task(self, seqId: int, command, content):
-        if f"{seqId}" not in self._tasks:
-            self._tasks[f"{seqId}"] = dict()
-        self._tasks[f"{seqId}"]["send"] = {"command": command, "content": content, "time": time.time()}
-        if command not in self._commands:
-            self._commands[command] = []
-        self._commands[command].append({"seqId": f"{seqId}", "way": "send", "time": time.time()})
-        # print("send: ", base64.standard_b64encode(content))
+        if f"{seqId}" not in self.tasks:
+            self.tasks[f"{seqId}"] = dict()
+        self.tasks[f"{seqId}"]["send"] = {"command": command, "content": content, "time": time.time()}
+        if command not in self.commands:
+            self.commands[command] = []
+        self.commands[command].append({"seqId": f"{seqId}", "way": "send", "time": time.time()})
         self.ws.send(content)
 
     def task(self, seqId: int, command, content):
@@ -139,21 +138,32 @@ class AcWebSocket:
             self.listenner[f"{seqId}"] = None
 
     def anser_task(self, seqId: int, command, result):
-        if f"{seqId}" not in self._tasks:
-            self._tasks[f"{seqId}"] = {}
-        self._tasks[f"{seqId}"]["recv"] = {"command": command, "content": result, "time": time.time()}
-        if command not in self._commands:
-            self._commands[command] = []
-        self._commands[command].append({"seqId": f"{seqId}", "way": "recv", "time": time.time()})
+        if f"{seqId}" not in self.tasks:
+            self.tasks[f"{seqId}"] = {}
+        self.tasks[f"{seqId}"]["recv"] = {"command": command, "content": result, "time": time.time()}
+        if command not in self.commands:
+            self.commands[command] = []
+        self.commands[command].append({"seqId": f"{seqId}", "way": "recv", "time": time.time()})
         if f"{seqId}" in self.listenner:
             self.listenner[f"{seqId}"] = result
-        self._unread.append(f"{seqId}.recv")
+        self.unread.append(f"{seqId}.recv")
+        if command == 'Basic.Register':
+            self.task(*self.protos.Basic_ClientConfigGet())
+            self.is_register_done = True
+            print(f"did       : {self.config.did}")
+            print(f"userId    : {self.config.userId}")
+            print(f"ssecurity : {self.config.ssecurity}")
+            print(f"sessKey   : {self.config.sessKey.decode()}")
+            print(">>>>>>>> AcWebsocket Registed<<<<<<<<<")
+        elif command == 'Basic.ClientConfigGet':
+            self.task(*self.protos.Keep_Alive_Request())
+            print(">>>>>>>> AcWebsocket  Ready  <<<<<<<<<")
 
     def register(self, ws):
+        print(">>>>>>> AcWebsocket Connecting<<<<<<<<")
         self.task(*self.protos.Basic_Register_Request())
 
     def message(self, ws, message):
-        # print("recv: ", base64.standard_b64encode(message))
         self.anser_task(*self.protos.decode(message))
 
     def keep_alive_request(self, ws, message):
@@ -162,17 +172,31 @@ class AcWebSocket:
     def keep_alive_response(self, ws, message):
         self.add_task(*self.protos.Keep_Alive_Request())
 
-    def on_close(self, ws):
-        if self._main_thread.is_alive():
-            self.ws.close()
-        print(">>>>>>AcWebsocket CLOSED<<<<<<<")
+    def on_close(self, ws, close_status_code, close_msg):
+        # Because on_close was triggered, we know the opcode = 8
+        if close_status_code or close_msg:
+            print("on_close args:")
+            print(f"  close status code: {close_status_code}")
+            print(f"  close message    : {close_msg}")
+        print(">>>>>>>> AcWebsocket  CLOSED <<<<<<<<<")
+
+    def close(self):
+        self.ws.close()
 
     def on_error(self, ws, e):
         print("error: ", e)
-        pass
+        self.ws.close()
 
     def im_session(self):
         return self.task(*self.protos.Message_Session())
+
+    def im_session_start(self, uid: int):
+        payload = self.protos.SessionCreate_Request(uid)
+        return self.task(*payload)
+
+    def im_session_close(self, uid: int):
+        payload = self.protos.SessionRemove_Request(uid)
+        return self.task(*payload)
 
     def im_pull_message(self, uid: int, minSeq: int, maxSeq: int, count: int = 10):
         payload = self.protos.Message_PullOld_Request(uid, minSeq, maxSeq, count)

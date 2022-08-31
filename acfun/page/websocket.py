@@ -1,14 +1,12 @@
 # coding=utf-8
-import json
-import arrow
 import time
 import random
 import base64
 import asyncio
 import threading
-import websocket, ssl
-from acfun.source import routes, apis, websocket_links, header
-from acfun.protos import AcProtos
+import websocket
+from acfun.source import routes, apis, websocket_links
+from acfun.protos.Im import AcImProtos
 
 __author__ = 'dolacmeo'
 
@@ -38,7 +36,10 @@ def uint8_payload_to_base64(data: dict):
     用于反解网页中等待encode的payload
     进入页面: https://message.acfun.cn/im
     调试js  : https://static.yximgs.com/udata/pkg/acfun-im/ImSdk.b0aeed.js
-    设置断点: 9145 => e.payloadData
+    进入页面: https://live.acfun.cn/live/
+    设置断点: 9145  => e.payloadData
+    调试js  : https://ali-imgs.acfun.cn/kos/nlav10360/static/js/3.867c7c46.js
+    设置断点: 40910 => t
     return: base64encoded ==> https://protogen.marcgravell.com/decode
     """
     b_str = b''
@@ -99,22 +100,21 @@ class AcWebSocket:
         # websocket.enableTrace(True)
         self.ws_link = random.choice(websocket_links)
         self.config = AcWsConfig(self.acer)
-        self.protos = AcProtos(self)
+        self.im_protos = AcImProtos(self)
         self.ws = websocket.WebSocketApp(
             url=self.ws_link,
-            on_open=self.register,
-            on_message=self.message,
-            on_error=self.on_error,
-            on_close=self.on_close,
-            on_ping=self.keep_alive_request,
-            on_pong=self.keep_alive_response,
+            on_open=self._register,
+            on_message=self._message,
+            on_error=self._on_error,
+            on_close=self._on_close,
+            on_ping=self._keep_alive_request,
+            on_pong=self._keep_alive_response,
         )
         self.listenner = dict()
 
     def run(self):
         def _run():
             self.ws.run_forever(
-                # sslopt={"cert_reqs": ssl.CERT_NONE},
                 ping_interval=30, ping_timeout=10,
                 skip_utf8_validation=True,
                 origin="live.acfun.cn",
@@ -134,45 +134,47 @@ class AcWebSocket:
 
     def task(self, seqId: int, command, content):
         self.add_task(seqId, command, content)
-        if f"{seqId}" not in self.listenner:
-            self.listenner[f"{seqId}"] = None
+        # if f"{seqId}" not in self.listenner:
+        #     self.listenner[f"{seqId}"] = None
 
-    def anser_task(self, seqId: int, command, result):
+    def ans_task(self, seqId: int, command, result):
         if f"{seqId}" not in self.tasks:
             self.tasks[f"{seqId}"] = {}
         self.tasks[f"{seqId}"]["recv"] = {"command": command, "content": result, "time": time.time()}
         if command not in self.commands:
             self.commands[command] = []
         self.commands[command].append({"seqId": f"{seqId}", "way": "recv", "time": time.time()})
-        if f"{seqId}" in self.listenner:
-            self.listenner[f"{seqId}"] = result
+        # if f"{seqId}" in self.listenner:
+        #     self.listenner[f"{seqId}"] = result
         self.unread.append(f"{seqId}.recv")
         if command == 'Basic.Register':
-            self.task(*self.protos.Basic_ClientConfigGet())
-            self.is_register_done = True
+            self.task(*self.im_protos.ClientConfigGet_Request())
             print(f"did       : {self.config.did}")
             print(f"userId    : {self.config.userId}")
             print(f"ssecurity : {self.config.ssecurity}")
             print(f"sessKey   : {self.config.sessKey.decode()}")
+            self.is_register_done = True
             print(">>>>>>>> AcWebsocket Registed<<<<<<<<<")
         elif command == 'Basic.ClientConfigGet':
-            self.task(*self.protos.Keep_Alive_Request())
+            self.task(*self.im_protos.KeepAlive_Request())
+            self.im_protos.client_config = result
             print(">>>>>>>> AcWebsocket  Ready  <<<<<<<<<")
 
-    def register(self, ws):
+    def _register(self, ws):
         print(">>>>>>> AcWebsocket Connecting<<<<<<<<")
-        self.task(*self.protos.Basic_Register_Request())
+        self.task(*self.im_protos.BasicRegister_Request())
 
-    def message(self, ws, message):
-        self.anser_task(*self.protos.decode(message))
+    def _message(self, ws, message):
+        self.ans_task(*self.im_protos.decode(message))
 
-    def keep_alive_request(self, ws, message):
-        self.add_task(*self.protos.Basic_ping())
+    def _keep_alive_request(self, ws, message):
+        self.add_task(*self.im_protos.BasicPing_Request())
 
-    def keep_alive_response(self, ws, message):
-        self.add_task(*self.protos.Keep_Alive_Request())
+    def _keep_alive_response(self, ws, message):
+        if self.is_register_done:
+            self.add_task(*self.im_protos.KeepAlive_Request())
 
-    def on_close(self, ws, close_status_code, close_msg):
+    def _on_close(self, ws, close_status_code, close_msg):
         # Because on_close was triggered, we know the opcode = 8
         if close_status_code or close_msg:
             print("on_close args:")
@@ -180,32 +182,33 @@ class AcWebSocket:
             print(f"  close message    : {close_msg}")
         print(">>>>>>>> AcWebsocket  CLOSED <<<<<<<<<")
 
+    def _on_error(self, ws, e):
+        print("error: ", e)
+        self.close()
+
     def close(self):
         self.ws.close()
 
-    def on_error(self, ws, e):
-        print("error: ", e)
-        self.ws.close()
-
-    def im_session(self):
-        return self.task(*self.protos.Message_Session())
+    def im_get_sessions(self):
+        message = self.im_protos.MessageSession_Request()
+        return self.task(*message)
 
     def im_session_start(self, uid: int):
-        payload = self.protos.SessionCreate_Request(uid)
-        return self.task(*payload)
+        message = self.im_protos.SessionCreate_Request(uid)
+        return self.task(*message)
 
     def im_session_close(self, uid: int):
-        payload = self.protos.SessionRemove_Request(uid)
-        return self.task(*payload)
+        message = self.im_protos.SessionRemove_Request(uid)
+        return self.task(*message)
 
     def im_pull_message(self, uid: int, minSeq: int, maxSeq: int, count: int = 10):
-        payload = self.protos.Message_PullOld_Request(uid, minSeq, maxSeq, count)
-        return self.task(*payload)
+        message = self.im_protos.MessagePullOld_Request(uid, minSeq, maxSeq, count)
+        return self.task(*message)
 
     def im_send(self, uid: int, content: str):
-        payload = self.protos.Message_Request(uid, content)
-        return self.task(*payload)
+        message = self.im_protos.MessageContent_Request(uid, content)
+        return self.task(*message)
 
     def im_send_image(self, uid: int, image_data: bytes):
-        payload = self.protos.Message_Image_Request(uid, image_data)
-        return self.task(*payload)
+        message = self.im_protos.MessageImage_Request(uid, image_data)
+        return self.task(*message)

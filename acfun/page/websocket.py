@@ -181,3 +181,7 @@ class AcWebSocket:
     def im_send(self, uid: int, content: str):
         payload = self.protos.Message_Request(uid, content)
         return self.task(*payload)
+
+    def im_send_image(self, uid: int, image_data: bytes):
+        payload = self.protos.Message_Image_Request(uid, image_data)
+        return self.task(*payload)

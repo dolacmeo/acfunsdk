@@ -10,6 +10,9 @@ from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import proto
+import filetype
+from hashlib import md5
+from acfun.source import apis
 from google.protobuf.json_format import MessageToJson
 import acfun.protos.Im.TokenInfo_pb2 as TokenInfo_pb2
 import acfun.protos.Im.PacketHeader_pb2 as PacketHeader_pb2
@@ -27,6 +30,7 @@ import acfun.protos.Im.GroupMemberListGetResponse_pb2 as GroupMemberListGetRespo
 import acfun.protos.Im.PullOldRequest_pb2 as PullOldRequest_pb2
 import acfun.protos.Im.PullOldResponse_pb2 as PullOldResponse_pb2
 import acfun.protos.Im.Message_pb2 as Message_pb2
+import acfun.protos.Im.Image_pb2 as Image_pb2
 
 
 # AES Padding
@@ -63,6 +67,20 @@ def proto_user_serialize(uid: int):
     user.appId = 13
     user.uid = uid
     return User.serialize(user)
+
+
+def acim_image_uploader(client, api_st, to_uid: int, image_data: bytes):
+    md5_hex = md5(image_data).digest()
+    head = {
+        "Content-Type": filetype.guess_mime(image_data),
+        "Content-MD5": base64.standard_b64encode(md5_hex),
+        "file-type": filetype.guess_extension(image_data),
+        "target": to_uid,
+        "download-verify-type": "1",
+    }
+    param = {'kpn': "ACFUN_APP", 'acfun.midground.api_st': api_st}
+    post_req = client.post(apis['im_image_upload'], params=param, headers=head, data=image_data)
+    return post_req.json()
 
 
 class AcProtos:
@@ -353,3 +371,33 @@ class AcProtos:
         payload = Message_pb2.Message()
         payload.ParseFromString(stream_payload.payloadData)
         return packet_header.seqId, stream_payload.command, protos_to_dict(payload)
+
+    def Message_Image_Request(self, target_uid: int, image_data: bytes):
+        # EN63ua/J8PkCGMmd2pavMCIGCA0QsLECMgcIDRD6rdEhQAFKQgo2a3M6Ly80Mm04YjN6NGwyM3RrY3l0M3lrNTg1d3JsZ2l6dXYwb3FsMTFuMDdrYXc0LmpwZy8xEKwCGKwCIJ+LJJIBCDcwNTM5MDAy
+        self.seqId += 1
+        payload = Message_pb2.Message()
+        # payload.seqId = int(f"{time.time():.0f}{1:0>6}")
+        payload.clientSeqId = int(f"{time.time():.0f}{1:0>6}")
+        payload.timestampMs = int(f"{time.time():.0f}{1:0>3}")
+        payload.fromUser.ParseFromString(proto_user_serialize(self.config.userId))
+        payload.targetId = target_uid
+        payload.toUser.ParseFromString(proto_user_serialize(target_uid))
+        uploader_resp = acim_image_uploader(
+            client=self.acws.config.acer.client,
+            api_st=self.config.api_st,
+            to_uid=target_uid,
+            image_data=image_data
+        )
+        if uploader_resp.get('url') is None:
+            print(uploader_resp)
+            raise ValueError(uploader_resp['error_msg'])
+        img_payload = Image_pb2.Image()
+        img_payload.url = uploader_resp.get('url')
+        img_payload.width = 300
+        img_payload.height = 300
+        img_payload.contentLength = len(image_data)
+        payload.content = img_payload.SerializeToString()
+        payload.strTargetId = str(target_uid)
+        payload_body = self.upstream("Message.Send", payload.SerializeToString())
+        return self.encode(2, *payload_body)
+

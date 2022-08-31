@@ -132,6 +132,7 @@ apis = {
     'image_upload_fragment': "https://upload.kuaishouzt.com/api/upload/fragment",
     'image_upload_complete': "https://upload.kuaishouzt.com/api/upload/complete",
     'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
+    'im_image_upload': "https://sixinpic.kuaishou.com/rest/v2/app/upload",
 
     'qrcode': "https://ksurl.cn/createqrcode",
 }

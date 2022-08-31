@@ -1,8 +1,12 @@
 # coding=utf-8
+import json
+import arrow
 import time
 import random
-import websocket, ssl
 import base64
+import asyncio
+import threading
+import websocket, ssl
 from acfun.source import routes, apis, websocket_links, header
 from acfun.protos import AcProtos
 
@@ -84,53 +88,96 @@ class AcWsConfig:
 class AcWebSocket:
     ws_link = None
     config = None
+    _main_thread = None
+    _tasks = dict()
+    _commands = dict()
+    _unread = []
+    is_register_done = False
 
     def __init__(self, acer):
         self.acer = acer
-        websocket.enableTrace(True)
+        # websocket.enableTrace(True)
         self.ws_link = random.choice(websocket_links)
         self.config = AcWsConfig(self.acer)
+        self.protos = AcProtos(self)
         self.ws = websocket.WebSocketApp(
             url=self.ws_link,
             on_open=self.register,
             on_message=self.message,
-            on_error=self.error,
-            on_close=self.close,
+            on_error=self.on_error,
+            on_close=self.on_close,
             on_ping=self.keep_alive_request,
             on_pong=self.keep_alive_response,
         )
-        self.protos = AcProtos(self.config)
+        self.listenner = dict()
 
     def run(self):
-        self.ws.run_forever(
-            # sslopt={"cert_reqs": ssl.CERT_NONE},
-            ping_interval=30, ping_timeout=10,
-            skip_utf8_validation=True,
-            origin="live.acfun.cn",
-        )
+        def _run():
+            self.ws.run_forever(
+                # sslopt={"cert_reqs": ssl.CERT_NONE},
+                ping_interval=30, ping_timeout=10,
+                skip_utf8_validation=True,
+                origin="live.acfun.cn",
+            )
+        self._main_thread = threading.Thread(target=_run)
+        self._main_thread.start()
+        return self
+
+    def add_task(self, seqId: int, command, content):
+        if f"{seqId}" not in self._tasks:
+            self._tasks[f"{seqId}"] = dict()
+        self._tasks[f"{seqId}"]["send"] = {"command": command, "content": content, "time": time.time()}
+        if command not in self._commands:
+            self._commands[command] = []
+        self._commands[command].append({"seqId": f"{seqId}", "way": "send", "time": time.time()})
+        # print("send: ", base64.standard_b64encode(content))
+        self.ws.send(content)
+
+    def task(self, seqId: int, command, content):
+        self.add_task(seqId, command, content)
+        if f"{seqId}" not in self.listenner:
+            self.listenner[f"{seqId}"] = None
+
+    def anser_task(self, seqId: int, command, result):
+        if f"{seqId}" not in self._tasks:
+            self._tasks[f"{seqId}"] = {}
+        self._tasks[f"{seqId}"]["recv"] = {"command": command, "content": result, "time": time.time()}
+        if command not in self._commands:
+            self._commands[command] = []
+        self._commands[command].append({"seqId": f"{seqId}", "way": "recv", "time": time.time()})
+        if f"{seqId}" in self.listenner:
+            self.listenner[f"{seqId}"] = result
+        self._unread.append(f"{seqId}.recv")
 
     def register(self, ws):
-        basic_register = self.protos.Basic_Register_Request()
-        print("send: ", base64.standard_b64encode(basic_register))
-        self.ws.send(basic_register)
+        self.task(*self.protos.Basic_Register_Request())
 
     def message(self, ws, message):
-        print("recv: ", base64.standard_b64encode(message))
-        self.protos.decode(ws, message)
+        # print("recv: ", base64.standard_b64encode(message))
+        self.anser_task(*self.protos.decode(message))
 
     def keep_alive_request(self, ws, message):
-        ping = self.protos.Basic_ping()
-        print("ping: ", base64.standard_b64encode(ping))
-        self.ws.send(ping)
+        self.add_task(*self.protos.Basic_ping())
 
     def keep_alive_response(self, ws, message):
-        keep_alive = self.protos.Keep_Alive_Request()
-        print("ping: ", base64.standard_b64encode(keep_alive))
-        self.ws.send(keep_alive)
+        self.add_task(*self.protos.Keep_Alive_Request())
 
-    def close(self, ws):
+    def on_close(self, ws):
+        if self._main_thread.is_alive():
+            self.ws.close()
+        print(">>>>>>AcWebsocket CLOSED<<<<<<<")
+
+    def on_error(self, ws, e):
+        print("error: ", e)
         pass
 
-    def error(self, ws):
-        # print("error", e)
-        pass
+    def im_session(self):
+        return self.task(*self.protos.Message_Session())
+
+    def im_pull_message(self, uid: int, minSeq: int, maxSeq: int, count: int = 10):
+        payload = self.protos.Message_PullOld_Request(uid, minSeq, maxSeq, count)
+        return self.task(*payload)
+
+    def im_send(self, uid: int, content: str):
+        payload = self.protos.Message_Request(uid, content)
+        return self.task(*payload)

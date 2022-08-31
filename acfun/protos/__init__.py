@@ -5,11 +5,12 @@ import time
 
 sys.path.append("./acfun/protos/Im")
 import base64
+import json
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import proto
-from google.protobuf.json_format import MessageToJson, MessageToDict
+from google.protobuf.json_format import MessageToJson
 import acfun.protos.Im.TokenInfo_pb2 as TokenInfo_pb2
 import acfun.protos.Im.PacketHeader_pb2 as PacketHeader_pb2
 import acfun.protos.Im.UpstreamPayload_pb2 as UpstreamPayload_pb2
@@ -35,6 +36,10 @@ import acfun.protos.Im.Message_pb2 as Message_pb2
 # https://proto-plus-python.readthedocs.io/en/latest/index.html
 
 
+def protos_to_dict(p):
+    return json.loads(MessageToJson(p))
+
+
 class ErrorMessage(proto.Message):
     errorCode = proto.Field(proto.INT32, number=3)
     errorMessage = proto.Field(proto.STRING, number=5)
@@ -46,6 +51,18 @@ class ClientConfigGetRequest(proto.Message):
 
 class MessageContent(proto.Message):
     content = proto.Field(proto.STRING, number=1)
+
+
+class User(proto.Message):
+    appId = proto.Field(proto.INT32, number=1)
+    uid = proto.Field(proto.INT64, number=2)
+
+
+def proto_user_serialize(uid: int):
+    user = User()
+    user.appId = 13
+    user.uid = uid
+    return User.serialize(user)
 
 
 class AcProtos:
@@ -63,8 +80,9 @@ class AcProtos:
         "Push.Message": 'Message_Response',
     }
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, acws):
+        self.acws = acws
+        self.config = acws.config
         pass
 
     def _aes_encrypt(self, key, payload):
@@ -114,14 +132,7 @@ class AcProtos:
             print(downstream_payload)
             print("#" * 40)
 
-        # keep = KeepAliveRequest_pb2.KeepAliveRequest()
-        # # keep = KeepAliveResponse_pb2.KeepAliveResponse()
-        # keep.ParseFromString(decrypted_data)
-        # print("#" * 40)
-        # print(keep)
-        # print("#" * 40)
-
-    def decode(self, ws, message: bytes):
+    def decode(self, message: bytes):
         # print(f"total length: {len(message)}")
         packet_header_len = int.from_bytes(message[4:8], byteorder='big')
         payload_len = int.from_bytes(message[8:12], byteorder='big')
@@ -132,9 +143,6 @@ class AcProtos:
         packet_header.ParseFromString(header)
         # print(packet_header)
         # print("=" * 40)
-        self.seqId = packet_header.seqId
-        self.config.appId = packet_header.appId
-        self.config.instanceId = packet_header.instanceId
         payload_data = message[self.header_offset + packet_header_len:]
         # print(f"packet_header.encryptionMode: {packet_header.encryptionMode}")
         if packet_header.encryptionMode == 1:  # kEncryptionServiceToken
@@ -143,29 +151,29 @@ class AcProtos:
             decrypted_data = self._aes_decrypt(self.config.sessKey, payload_data)
         else:  # kEncryptionNone
             decrypted_data = payload_data
-            data_payload = ErrorMessage.deserialize(decrypted_data)
-            print(data_payload)
-            raise BufferError(data_payload.errorMessage)
+            stream_payload = ErrorMessage.deserialize(decrypted_data)
+            print(stream_payload)
+            raise BufferError(stream_payload.errorMessage)
         # decrypted_data = decrypted_data[:packet_header.decodedPayloadLen]
         # print(f"decrypted_data[{len(decrypted_data)}]: ", decrypted_data)
-        print(f"decrypted_data[b64]: {base64.standard_b64encode(decrypted_data)}")
+        # print(f"decrypted_data[b64]: {base64.standard_b64encode(decrypted_data)}")
         if self.seqId < 2:
-            data_payload = UpstreamPayload_pb2.UpstreamPayload()
+            stream_payload = UpstreamPayload_pb2.UpstreamPayload()
         else:
-            data_payload = DownstreamPayload_pb2.DownstreamPayload()
-        data_payload.ParseFromString(decrypted_data)
-        print("#" * 40)
-        print(f"Command: {data_payload.command}")
-        print("#" * 40)
-        if data_payload.errorCode:
-            print(data_payload)
-            raise ValueError(f"[{data_payload.errorCode}] {data_payload.errorMsg}")
-        command = data_payload.command
+            stream_payload = DownstreamPayload_pb2.DownstreamPayload()
+        stream_payload.ParseFromString(decrypted_data)
+        # print("#" * 40)
+        # print(f"Command: {stream_payload.command}")
+        # print("#" * 40)
+        if stream_payload.errorCode:
+            print(stream_payload)
+            raise ValueError(f"[{stream_payload.errorCode}] {stream_payload.errorMsg}")
+        command = stream_payload.command
         func_name = self.command_map.get(command)
         assert func_name is not None
-        getattr(self, func_name)(ws, data_payload.payloadData)
+        return getattr(self, func_name)(packet_header, stream_payload)
 
-    def encode(self, key_n: int, payload_bytes: bytes):
+    def encode(self, key_n: int, command, payload_bytes: bytes):
         token_info = TokenInfo_pb2.TokenInfo()
         token_info.tokenType = 1
         if self.config.acer.is_logined:
@@ -187,7 +195,7 @@ class AcProtos:
         header.seqId = self.seqId
         header.kpn = b"ACFUN_APP"
         header_payload = header.SerializeToString()
-        return b"".join([
+        return self.seqId, command, b"".join([
             bytes.fromhex("abcd0001"),
             len(header_payload).to_bytes(4, "big"),
             len(encrypted).to_bytes(4, "big"),
@@ -201,7 +209,7 @@ class AcProtos:
         upstream_payload.seqId = self.seqId
         upstream_payload.payloadData = payload
         payload_body = upstream_payload.SerializeToString()
-        return payload_body
+        return command, payload_body
 
     def Basic_Register_Request(self):
         self.seqId += 1
@@ -233,72 +241,66 @@ class AcProtos:
         upstream_payload.payloadData = payload.SerializeToString()
         upstream_payload.subBiz = "mainApp"
         payload_body = upstream_payload.SerializeToString()
-        return self.encode(1, payload_body)
+        return self.encode(1, "Basic.Register", payload_body)
 
-    def Basic_Register_Response(self, ws, recv_payload: bytes):
+    def Basic_Register_Response(self, packet_header, stream_payload):
         reg_resp = RegisterResponse_pb2.RegisterResponse()
-        reg_resp.ParseFromString(recv_payload)
-        # print(reg_resp)
-        # print("=" * 40)
+        reg_resp.ParseFromString(stream_payload.payloadData)
+        self.config.appId = packet_header.appId
+        self.config.instanceId = packet_header.instanceId
         self.config.sessKey = base64.standard_b64encode(reg_resp.sessKey)
-        print(f"sessKey: {self.config.sessKey}")
-        ws.send(self.Basic_ClientConfigGet())
-
-    @property
-    def ping_message(self):
-        if self.config.sessKey is None:
-            return ""
-        return self.Keep_Alive_Request()
-
-    def Keep_Alive_Request(self):
-        self.seqId += 1
-        payload = KeepAliveRequest_pb2.KeepAliveRequest()
-        payload.presenceStatus = 1
-        payload.appActiveStatus = 1
-        # pushST = KeepAliveRequest_pb2.PushServiceToken__pb2.PushServiceToken()
-        # pushST.pushType = 0
-        # pushST.token = b""
-        # pushST.isPassThrough = True
-        # payload.pushServiceToken.CopyFrom(pushST)
-        # payload.pushServiceTokenList.CopyFrom(pushST)
-        payload.keepaliveIntervalSec = 120
-        # payload.ipv6Available = False
-        payload_body = self.upstream("Basic.KeepAlive", payload.SerializeToString())
-        return self.encode(2, payload_body)
-
-    def Keep_Alive_Response(self, ws, recv_payload: bytes):
-        keep_alive_payload = KeepAliveResponse_pb2.KeepAliveResponse()
-        keep_alive_payload.ParseFromString(recv_payload)
-        # print(keep_alive_payload)
-        # print("=" * 40)
+        self.acws.task(*self.Basic_ClientConfigGet())
+        self.acws.is_register_done = True
+        print(f"did: {self.config.did}")
+        print(f"userId: {self.config.userId}")
+        print(f"ssecurity: {self.config.ssecurity}")
+        print(f"sessKey: {self.config.sessKey.decode()}")
+        print(">>>>>>>>>AcWebsocket Registed<<<<<<<<<")
+        return packet_header.seqId, stream_payload.command, MessageToJson(reg_resp)
 
     def Basic_ClientConfigGet(self):
         self.seqId += 1
         payload = ClientConfigGetRequest()
         payload.version = 0
         payload_body = self.upstream("Basic.ClientConfigGet", ClientConfigGetRequest.serialize(payload))
-        return self.encode(2, payload_body)
+        return self.encode(2, *payload_body)
 
-    def Basic_ClientConfigGet_Response(self, ws, recv_payload: bytes):
-        client_config_payload = ClientConfigGetResponse_pb2.ClientConfigGetResponse()
-        client_config_payload.ParseFromString(recv_payload)
+    def Basic_ClientConfigGet_Response(self, packet_header, stream_payload):
+        payload = ClientConfigGetResponse_pb2.ClientConfigGetResponse()
+        payload.ParseFromString(stream_payload.payloadData)
         # todo saved configs
-        # print(client_config_payload)
-        # print("=" * 40)
+        self.acws.task(*self.Keep_Alive_Request())
+        return packet_header.seqId, stream_payload.command, protos_to_dict(payload)
+
+    def Keep_Alive_Request(self):
+        self.seqId += 1
+        payload = KeepAliveRequest_pb2.KeepAliveRequest()
+        payload.presenceStatus = 1
+        payload.appActiveStatus = 1
+        payload.keepaliveIntervalSec = 120
+        payload_body = self.upstream("Basic.KeepAlive", payload.SerializeToString())
+        return self.encode(2, *payload_body)
+
+    def Keep_Alive_Response(self, packet_header, stream_payload):
+        payload = KeepAliveResponse_pb2.KeepAliveResponse()
+        payload.ParseFromString(stream_payload.payloadData)
+        return packet_header.seqId, stream_payload.command, protos_to_dict(payload)
+
+    def Basic_ping(self):
+        self.seqId += 1
+        return self.encode(2, *self.upstream("Basic.Ping", b""))
 
     def Message_Session(self):
-        """Message.Session"""
         self.seqId += 1
         raw = bytes([16, 0])
         payload_body = self.upstream("Message.Session", raw)
-        return self.encode(2, payload_body)
+        return self.encode(2, *payload_body)
 
-    def Message_Session_Response(self, ws, recv_payload: bytes):
-        message_session_payload = SessionListResponse_pb2.SessionListResponse()
-        message_session_payload.ParseFromString(recv_payload)
-        # print(message_session_payload)
-        # print("=" * 40)
-        # return MessageToDict(message_session_payload.sessions)
+    def Message_Session_Response(self, packet_header, stream_payload):
+        payload = SessionListResponse_pb2.SessionListResponse()
+        payload.ParseFromString(stream_payload.payloadData)
+        session_data = protos_to_dict(payload)
+        return packet_header.seqId, stream_payload.command, session_data
 
     def Group_UserGroupList(self):
         self.seqId += 1
@@ -308,37 +310,28 @@ class AcProtos:
         sync_cookie_payload.syncOffset = -1
         payload.syncCookie.CopyFrom(sync_cookie_payload)
         payload_body = self.upstream("Group.UserGroupList", payload.SerializeToString())
-        return self.encode(2, payload_body)
+        return self.encode(2, *payload_body)
 
-    def Group_UserGroupList_Response(self, ws, recv_payload: bytes):
+    def Group_UserGroupList_Response(self, packet_header, stream_payload):
         payload = GroupMemberListGetResponse_pb2.GroupMemberListGetResponse()
-        payload.ParseFromString(recv_payload)
-        # todo saved group list
-        # print(payload)
-        # print("=" * 40)
+        payload.ParseFromString(stream_payload.payloadData)
+        return packet_header.seqId, stream_payload.command, protos_to_dict(payload)
 
-    def Basic_ping(self):
-        self.seqId += 1
-        return self.encode(2, self.upstream("Basic.Ping", b""))
-
-    def Message_PullOld_Request(self, session, count: int = 10):
+    def Message_PullOld_Request(self, uid: int, minSeq: int, maxSeq: int, count: int = 10):
         self.seqId += 1
         payload = PullOldRequest_pb2.PullOldRequest()
-        payload.target.CopyFrom(session.target)
-        payload.minSeq = session.readSeqId
-        payload.maxSeq = session.maxSeqId
+        payload.target.ParseFromString(proto_user_serialize(uid))
+        payload.minSeq = minSeq
+        payload.maxSeq = maxSeq
         payload.count = count
-        # payload.targetId
-        # payload.strTargetId
         payload_body = self.upstream("Message.PullOld", payload.SerializeToString())
-        return self.encode(2, payload_body)
+        return self.encode(2, *payload_body)
 
-    def Message_PullOld_Response(self, ws, recv_payload: bytes):
+    def Message_PullOld_Response(self, packet_header, stream_payload):
         payload = PullOldResponse_pb2.PullOldResponse()
-        payload.ParseFromString(recv_payload)
-        # print(payload)
-        # print("=" * 40)
-        # raise Exception('e' * 40)
+        payload.ParseFromString(stream_payload.payloadData)
+        result = protos_to_dict(payload)
+        return packet_header.seqId, stream_payload.command, result
 
     def Message_Request(self, target_uid: int, content: str):
         self.seqId += 1
@@ -346,25 +339,17 @@ class AcProtos:
         # payload.seqId = int(f"{time.time():.0f}{1:0>6}")
         payload.clientSeqId = int(f"{time.time():.0f}{1:0>6}")
         payload.timestampMs = int(f"{time.time():.0f}{1:0>3}")
-        user_me = Message_pb2.User__pb2.User()
-        user_me.appId = self.config.appId
-        user_me.uid = self.config.userId
-        payload.fromUser.CopyFrom(user_me)
+        payload.fromUser.ParseFromString(proto_user_serialize(self.config.userId))
         payload.targetId = target_uid
-        user_you = Message_pb2.User__pb2.User()
-        user_you.appId = self.config.appId
-        user_you.uid = target_uid
-        payload.toUser.CopyFrom(user_you)
+        payload.toUser.ParseFromString(proto_user_serialize(target_uid))
         msg = MessageContent()
         msg.content = content.encode()
         payload.content = MessageContent.serialize(msg)
         payload.strTargetId = str(target_uid)
         payload_body = self.upstream("Message.Send", payload.SerializeToString())
-        return self.encode(2, payload_body)
+        return self.encode(2, *payload_body)
 
-    def Message_Response(self, ws, recv_payload: bytes):
+    def Message_Response(self, packet_header, stream_payload):
         payload = Message_pb2.Message()
-        payload.ParseFromString(recv_payload)
-        print(payload)
-        print("=" * 40)
-        # raise Exception('e' * 40)
+        payload.ParseFromString(stream_payload.payloadData)
+        return packet_header.seqId, stream_payload.command, protos_to_dict(payload)

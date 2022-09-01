@@ -140,7 +140,10 @@ apis = {
 websocket_links = [
     # "wss://klink-newproduct-ws1.kwaizt.com",
     "wss://klink-newproduct-ws2.kwaizt.com",
-    "wss://klink-newproduct-ws3.kwaizt.com"
+    "wss://klink-newproduct-ws3.kwaizt.com",
+    # "wss://klink-newproduct-ws1.kuaishouzt.com",
+    "wss://klink-newproduct-ws2.kuaishouzt.com",
+    "wss://klink-newproduct-ws3.kuaishouzt.com",
 ]
 
 pagelets_from_page = [

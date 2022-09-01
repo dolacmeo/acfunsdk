@@ -135,7 +135,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 # 内容信息
                 user = user_info(fans)
                 content = fans['content']
-                send_time = arrow.get(int(fans['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 users.append(f"{{{send_time}}} \r\n{user} 💬{content} \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalLike":
@@ -149,7 +149,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                     users.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(fans)
-                send_time = arrow.get(int(fans['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 users.append(f"{{{send_time}}}\r\n{user} 点赞了❤ \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalUserEnterRoom":
@@ -163,16 +163,16 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                     new_user.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(newbee)
-                send_time = arrow.get(int(newbee['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(newbee['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 new_user.append(f"{{{send_time}}}\r\n{user} 进入直播间👤 \r\n")
                 words.append("".join(new_user))
         elif signal_name == "CommonActionSignalUserFollowAuthor":
             user = user_info(payload)
-            send_time = arrow.get(int(payload['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+            send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
             words.append(f"{{{send_time}}}\r\n{user} 关注了主播👀 ")
         elif signal_name == "AcfunActionSignalThrowBanana":
             user = user_info(payload)
-            send_time = arrow.get(int(payload['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+            send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
             words.append(f"{{{send_time}}}{user}")
         elif signal_name == "CommonActionSignalGift":
             words = list()
@@ -188,7 +188,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 gift = f"送出{fans['batchSize']}个🎁[{fans['giftId']}]"
                 if fans['comboCount'] > 1:
                     gift += f" 连击{fans['comboCount']}"
-                send_time = arrow.get(int(fans['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 words.append(f"{{{send_time}}}\r\n{user} {gift} \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalRichText":  # 高级弹幕
@@ -204,7 +204,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                     users.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(fans)
-                send_time = arrow.get(int(fans['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 words.append(f"{{{send_time}}} \r\n{user} 加入守护团 \r\n")
                 words.append("".join(users))
         elif signal_name == "AcfunStateSignalDisplayInfo":
@@ -231,7 +231,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 # 内容信息
                 user = user_info(comment)
                 content = comment['content']
-                send_time = arrow.get(int(comment['sendTimeMs'])).format("HH:mm:ss")  # YYYY-MM-DD HH:mm:ssZZ
+                send_time = arrow.get(int(comment['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
                 his_words.append(f"{{{send_time}}}{user} {content}")
                 full_comment = "".join(his_words) + "\r\n"
                 words.append(full_comment)

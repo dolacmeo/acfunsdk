@@ -179,5 +179,6 @@ cython_debug/
 download/
 acfun/assets/
 acfun/src/protos
+acfun/src/protoc.exe
 ffmpeg.exe
 *.cookies

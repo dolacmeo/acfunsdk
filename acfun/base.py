@@ -8,6 +8,7 @@ import datetime
 from acfun import source
 from acfun.page import *
 from acfun.exceptions import *
+from acfun.saver import AcSaver
 
 __author__ = 'dolacmeo'
 
@@ -154,6 +155,9 @@ class Acer:
 
     def AcImage(self, src, url=None, name=None, container=None):
         return AcImage(self, src, url, name, container)
+
+    def AcSaver(self, dest_path: [str, None] = None):
+        return AcSaver(self, None, dest_path)
 
     def get(self, url_str: str):
         for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share']:

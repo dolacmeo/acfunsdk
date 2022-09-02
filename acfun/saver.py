@@ -75,7 +75,7 @@ class AcSaver:
         self.acer = acer
         self.ac_obj = ac_obj
         self.dest_path = dest_path or os.path.join(os.getcwd(), 'download')
-        self.folder_name = self.obj2folder.get(self.ac_obj.__class__.__name__, "else")
+        self.folder_name = "else" if ac_obj is None else self.obj2folder.get(self.ac_obj.__class__.__name__, "else")
         if not os.path.isdir(self.dest_path):
             os.makedirs(self.dest_path, exist_ok=True)
         self.cdns = self.acer.client.post(apis['cdn_domain'], headers={
@@ -125,7 +125,7 @@ class AcSaver:
         if assert_folder_ok is True:
             emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
             if os.path.isfile(emot_map_path) is False:
-                self._save_emot()
+                self.save_emot()
         return assert_folder_ok
 
     def folder_list_update(self):
@@ -193,7 +193,7 @@ class AcSaver:
         save_path = self.dest_path if ex_dir is None else os.path.join(self.dest_path, *ex_dir)
         return downloader(self.acer.client, src_url, fname, save_path, display)
 
-    def _save_emot(self):
+    def save_emot(self):
         emot_req = self.acer.client.post(apis['emot'])
         emot_data = emot_req.json()
         assert emot_data['result'] == 0
@@ -428,7 +428,7 @@ class AcSaver:
             # 正则替换：颜色,表情,图片
             emot_map_path = os.path.join(self.dest_path, 'assets', 'emot', 'emotion_map.json')
             if os.path.isfile(emot_map_path) is False:
-                self._save_emot()
+                self.save_emot()
             emot_map = json.load(open(emot_map_path, 'r'))
             for n, rex_rule in self.ubb_tag_rex.items():
                 for tag in re.compile(rex_rule).findall(comment_json_string):

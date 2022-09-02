@@ -197,3 +197,5 @@ cython_debug/
 download/
 
 acfun/assets/
+
+ffmpeg.exe

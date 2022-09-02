@@ -141,27 +141,27 @@ demo_video.saver(saver_path).save_all()
 
 依赖: 包含在 `requirements.txt` 中
 
-+ [`rich`](https://pypi.org/project/httpx/)
-+ [`arrow`](https://pypi.org/project/httpx/)
-+ [`pycryptodome`](https://pypi.org/project/httpx/)
-+ [`jinja2`](https://pypi.org/project/httpx/)
++ [`rich`](https://pypi.org/project/rich/)
++ [`arrow`](https://pypi.org/project/arrow/)
++ [`pycryptodome`](https://pypi.org/project/pycryptodome/)
++ [`jinja2`](https://pypi.org/project/jinja2/)
 
-+ [`psutil`](https://pypi.org/project/httpx/)
-+ [`filetype`](https://pypi.org/project/httpx/)
-+ [`pyperclip`](https://pypi.org/project/httpx/)
-+ [`alive-progress`](https://pypi.org/project/httpx/)
-+ [`m3u8`](https://pypi.org/project/httpx/)
++ [`psutil`](https://pypi.org/project/psutil/)
++ [`filetype`](https://pypi.org/project/filetype/)
++ [`pyperclip`](https://pypi.org/project/pyperclip/)
++ [`alive-progress`](https://pypi.org/project/alive-progress/)
++ [`m3u8`](https://pypi.org/project/m3u8/)
 + [`httpx`](https://pypi.org/project/httpx/)
-+ [`websocket-client`](https://pypi.org/project/httpx/)
++ [`websocket-client`](https://pypi.org/project/websocket-client/)
 
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
 + [`cssutils`](https://pypi.org/project/cssutils/)
 + [`lxml`](https://pypi.org/project/lxml/)
 + [`js2py`](https://pypi.org/project/js2py/)
 
-+ [`protobuf`](https://pypi.org/project/httpx/)
-+ [`proto-plus`](https://pypi.org/project/httpx/)
-+ [`blackboxprotobuf`](https://pypi.org/project/httpx/)
++ [`protobuf`](https://pypi.org/project/protobuf/)
++ [`proto-plus`](https://pypi.org/project/proto-plus/)
++ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
 </details>
 
 - - - 

@@ -1,0 +1,3 @@
+[submodule "AcFunDanmu/protos"]
+	path = AcFunDanmu/protos
+	url = https://github.com/wpscott/AcFunDanmaku

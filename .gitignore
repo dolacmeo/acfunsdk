@@ -201,3 +201,5 @@ acfun/assets/
 ffmpeg.exe
 
 acfun/src/protos
+
+*.cookies

@@ -168,9 +168,19 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                 new_user.append(f"{{{send_time}}} \r\n{user} 进入直播间👤 \r\n")
                 words.append("".join(new_user))
         elif signal_name == "CommonActionSignalUserFollowAuthor":
-            user = user_info(payload)
-            send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-            words.append(f"{{{send_time}}} \r\n{user} 关注了主播👀 ")
+            words = list()
+            for newbee in payload:
+                new_user = list()
+                # 消息类型
+                new_user.append(message_types.get(msg_type, "(????????)"))
+                # 信号类型
+                if signal_name:
+                    new_user.append(signal_types.get(signal_name, "[????????]"))
+                # 内容信息
+                user = user_info(newbee)
+                send_time = arrow.get(int(newbee['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                words.append(f"{{{send_time}}} \r\n{user} 关注了主播👀 \r\n")
+                words.append("".join(new_user))
         elif signal_name == "AcfunActionSignalThrowBanana":
             user = user_info(payload)
             send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
@@ -439,8 +449,8 @@ class AcWebSocket:
             print(f"  close message    : {close_msg}")
         print(">>>>>>>> AcWebsocket  CLOSED <<<<<<<<<")
 
-    def _on_error(self, ws, e):
-        print("error: ", e)
+    def _on_error(self, ws):
+        # print("error: ", e)
         self.close()
 
     def close(self):

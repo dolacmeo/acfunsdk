@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Message;
-
-message CsPickQuestionMessageContent {
-	int64 questionId = 1;
-	string text = 2;
-	bytes bizContent = 3;
-}

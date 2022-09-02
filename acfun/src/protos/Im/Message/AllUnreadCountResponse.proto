@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message AllUnreadCountResponse {
-	int32 allUnreadCount = 1;
-}

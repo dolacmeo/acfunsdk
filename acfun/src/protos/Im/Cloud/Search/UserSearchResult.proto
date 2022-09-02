@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Search;
-
-import "User.proto";
-
-message UserSearchResult {
-	Im.Basic.User target = 1;
-}

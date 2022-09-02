@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Message;
-
-import "UserGroupInfo.proto";
-
-message UserGroupGetResponse {
-	repeated UserGroupInfo userGroupInfo = 1;
-}

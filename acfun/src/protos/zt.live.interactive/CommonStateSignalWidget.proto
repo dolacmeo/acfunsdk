@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-import "WidgetItem.proto";
-
-message CommonStateSignalWidget {
-    repeated WidgetItem a = 1;
-}

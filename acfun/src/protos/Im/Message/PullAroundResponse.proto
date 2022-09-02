@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-import "Message.proto";
-
-message PullAroundResponse {
-	repeated Message messages = 2;
-}

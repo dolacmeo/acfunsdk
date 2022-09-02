@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Voice.Call;
-
-enum ChatMode {
-	CM_UNKNOWN = 0;
-	CHAT = 1;
-	MEETING = 2;
-}

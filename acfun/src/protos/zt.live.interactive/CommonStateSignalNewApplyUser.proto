@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message CommonStateSignalNewApplyUser {
-    int64 a = 1;
-}

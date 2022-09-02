@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-import "Attachment.proto";
-
-message Attachments {
-	repeated Attachment attachments = 1;
-}

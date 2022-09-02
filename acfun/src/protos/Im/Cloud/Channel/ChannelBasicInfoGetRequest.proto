@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Channel;
-
-message ChannelBasicInfoGetRequest {
-	repeated string channelId = 1;
-}

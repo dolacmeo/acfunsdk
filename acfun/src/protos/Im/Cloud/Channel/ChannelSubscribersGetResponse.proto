@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Channel;
-
-import "User.proto";
-
-message ChannelSubscribersGetResponse {
-	repeated Im.Basic.User subscriber = 1;
-}

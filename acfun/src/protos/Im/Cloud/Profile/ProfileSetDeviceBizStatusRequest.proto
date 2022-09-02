@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Profile;
-
-message ProfileSetDeviceBizStatusRequest {
-	int32 bizStatus = 1;
-}

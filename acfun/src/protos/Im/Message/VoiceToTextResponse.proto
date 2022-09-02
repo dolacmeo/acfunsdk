@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message VoiceToTextResponse {
-	string text = 1;
-}

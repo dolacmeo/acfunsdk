@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Config;
-
-message ClientConfigGetRequest {
-	uint32 version = 1;
-}

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Search;
-
-import "GroupSearchResult.proto";
-
-message GroupSearchResponse {
-	repeated GroupSearchResult groupResult = 1;
-}

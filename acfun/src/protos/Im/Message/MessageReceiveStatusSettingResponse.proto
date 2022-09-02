@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-import "ChatSession.proto";
-
-message MessageReceiveStatusSettingResponse {
-	ChatSession session = 1;
-}

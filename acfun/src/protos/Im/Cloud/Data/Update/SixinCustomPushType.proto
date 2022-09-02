@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Data.Update;
-
-enum SixinCustomPushType {
-	INVALID_PUSH_TYPE = 0;
-	RELATION_EVENT = 1;
-}

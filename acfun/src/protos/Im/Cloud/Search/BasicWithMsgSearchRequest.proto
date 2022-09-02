@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Search;
-
-message BasicWithMsgSearchRequest {
-	string query = 1;
-	int32 msgCountPerSession = 2;
-}

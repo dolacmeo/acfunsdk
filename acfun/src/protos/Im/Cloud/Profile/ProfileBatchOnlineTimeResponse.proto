@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Profile;
-
-import "UserOnlineStatus.proto";
-
-message ProfileBatchOnlineTimeResponse {
-	repeated UserOnlineStatus userOnlineStatus = 1;
-}

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.SessionFolder;
-
-import "SessionFolderBasic.proto";
-
-message SessionFolderSortResponse {
-	repeated SessionFolderBasic sessionFolder = 1;
-}

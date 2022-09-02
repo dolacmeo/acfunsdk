@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Voice.Call;
-
-import "VoiceCallDetail.proto";
-
-message VoiceCallDetailUpdateEvent {
-	VoiceCallDetail voiceCallDetail = 1;
-}

@@ -496,6 +496,34 @@ class AcProtos:
         self.live_ticket = random.choice(self.live_room.get("availableTickets"))
         return self.live_room is not None
 
+    def get_live_gift_data(self):
+        if self.live_room is None:
+            return None
+        param = {
+            "subBiz": "mainApp",
+            "kpn": "ACFUN_APP",
+            "kpf": "PC_WEB",
+            "userId": self.config.userId,
+            "did": self.config.did
+        }
+        param = self.update_token(param)
+        form_data = {
+            "visitorId": self.config.userId,
+            "liveId": self.live_room.get("liveId"),
+        }
+        api_req = self.acer.client.post(apis['live_gift_list'], params=param, data=form_data,
+                                        headers={'referer': "https://live.acfun.cn/"})
+        api_data = api_req.json()
+        gifts = dict()
+        for gift in api_data.get('data', {}).get('giftList', []):
+            gifts.update({f"{gift['giftId']}": gift})
+        ext_gift = api_data.get('data', {}).get('externalDisplayGift', {}).get('giftList', [])
+        if len(ext_gift):
+            ext_gift = ext_gift[0]
+            ext_gift.update({"tipsDelayTime": api_data.get('data', {}).get('externalDisplayGiftTipsDelayTime', 0)})
+            gifts.update({f"{ext_gift['giftId']}": ext_gift})
+        return gifts
+
     def ZtLiveCsEnterRoom_Request(self, uid: int):
         self.get_aclive_room_info(uid)
         enter_room_payload = ZtLiveCsEnterRoom_pb2.ZtLiveCsEnterRoom()

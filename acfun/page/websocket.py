@@ -5,6 +5,7 @@ import time
 import arrow
 import random
 import base64
+import psutil
 import asyncio
 import threading
 import websocket
@@ -55,7 +56,7 @@ def uint8_payload_to_base64(data: dict):
     return base64.standard_b64encode(b_str)
 
 
-def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
+def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [list, None] = None):
     message_types = {
         "ZtLiveScActionSignal": "(粉丝互动)",
         "ZtLiveScStateSignal": "(数据更新)",
@@ -150,7 +151,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 # 内容信息
                 user = user_info(fans)
                 send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-                users.append(f"{{{send_time}}}\r\n{user} 点赞了❤ \r\n")
+                users.append(f"{{{send_time}}} \r\n{user} 点赞了❤ \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalUserEnterRoom":
             words = list()
@@ -164,12 +165,12 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 # 内容信息
                 user = user_info(newbee)
                 send_time = arrow.get(int(newbee['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-                new_user.append(f"{{{send_time}}}\r\n{user} 进入直播间👤 \r\n")
+                new_user.append(f"{{{send_time}}} \r\n{user} 进入直播间👤 \r\n")
                 words.append("".join(new_user))
         elif signal_name == "CommonActionSignalUserFollowAuthor":
             user = user_info(payload)
             send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-            words.append(f"{{{send_time}}}\r\n{user} 关注了主播👀 ")
+            words.append(f"{{{send_time}}} \r\n{user} 关注了主播👀 ")
         elif signal_name == "AcfunActionSignalThrowBanana":
             user = user_info(payload)
             send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
@@ -185,11 +186,14 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                     users.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(fans)
-                gift = f"送出{fans['batchSize']}个🎁[{fans['giftId']}]"
+                if gift_data is None:
+                    gift = f"送出{fans['batchSize']}个🎁[{fans['giftId']}]"
+                else:
+                    gift = f"送出{fans['batchSize']}个🎁[{gift_data[str(fans['giftId'])]['giftName']}]"
                 if fans['comboCount'] > 1:
                     gift += f" 连击{fans['comboCount']}"
                 send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-                words.append(f"{{{send_time}}}\r\n{user} {gift} \r\n")
+                words.append(f"{{{send_time}}} \r\n{user} {gift} \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalRichText":  # 高级弹幕
             pass
@@ -232,7 +236,7 @@ def ac_live_room_reader(data: list, msg_bans: [list, None] = None):
                 user = user_info(comment)
                 content = comment['content']
                 send_time = arrow.get(int(comment['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
-                his_words.append(f"{{{send_time}}}{user} {content}")
+                his_words.append(f"{{{send_time}}} \r\n{user} 💬{content}")
                 full_comment = "".join(his_words) + "\r\n"
                 words.append(full_comment)
         elif signal_name == "CommonNotifySignalKickedOut":
@@ -304,6 +308,9 @@ class AcWebSocket:
     player_config = None
     _console = console.Console(width=100)
     live_room_msg_bans = []
+    live_room_gift = None
+    live_obj = None
+    _live_player = None
     is_close = True
 
     def __init__(self, acer):
@@ -382,6 +389,7 @@ class AcWebSocket:
             print(">>>>>>>> AcWebsocket  Ready  <<<<<<<<<")
         elif command == 'LiveCmd.ZtLiveCsEnterRoomAck':
             self.live_room = self.protos.live_room
+            self.live_room_gift = self.live_obj.gift_list()
             self.task(*self.protos.ZtLiveCsHeartbeat_Request())
             self.task(*self.protos.ZtLiveInteractiveMessage_Request())
             print(">>>>>>>> AcWebsocket EnterRoom <<<<<<<<")
@@ -393,13 +401,19 @@ class AcWebSocket:
             else:
                 create_time = self.live_room.get('liveStartTime', 0) // 1000
                 start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))
-                live_title = " ".join([self.live_room['caption'], f"🎬 {start_time}"])
+                live_up_name = self.live_obj.username
+                live_type = self.live_obj.raw.get("type", {})
+                live_title = " ".join([
+                    f"AcLive(#{self.live_obj.uid} @{live_up_name}| {live_type['categoryName']}>>{live_type['name']})",
+                    self.live_room['caption'], f"🎬 {start_time}"
+                ])
                 potplayer = self.player_config['player_path']
-                print(f"[{potplayer}] 开始播放...... {live_title}")
+                print(f"[{potplayer}] 开始播放......\r\n {live_title}")
                 live_obs_stream = live_adapt[self.player_config['quality']]['url']
-                subprocess.Popen([potplayer, live_obs_stream, "/title", f'"{live_title}"'], stdout=subprocess.PIPE)
+                cmd_list = [potplayer, live_obs_stream, "/title", f'"{live_title}"']
+                self._live_player = subprocess.Popen(cmd_list, creationflags=subprocess.CREATE_NO_WINDOW)
         if command.startswith("LivePush.") and result:
-            msg = ac_live_room_reader(result, self.live_room_msg_bans)
+            msg = ac_live_room_reader(result, self.live_room_gift, self.live_room_msg_bans)
             for n in msg:
                 self._console.print(n)
 
@@ -432,6 +446,11 @@ class AcWebSocket:
     def close(self):
         self.add_task(*self.protos.Unregister_Request())
         self.is_close = True
+        if self._live_player is not None:
+            parent_proc = psutil.Process(self._live_player.pid)
+            for child_proc in parent_proc.children(recursive=True):
+                child_proc.kill()
+            parent_proc.kill()
         self.ws.close()
 
     def restart(self):
@@ -468,6 +487,7 @@ class AcWebSocket:
         if isinstance(potplayer, str) and os.path.isfile(potplayer):
             self.player_config = {"player_path": potplayer, "quality": quality}
         self.live_room_msg_bans = [] if room_bans is None else room_bans
+        self.live_obj = self.acer.AcLive().get(uid)
         cmd = self.protos.ZtLiveCsEnterRoom_Request(uid)
         return self.task(*cmd)
 

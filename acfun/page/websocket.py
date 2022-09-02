@@ -449,8 +449,8 @@ class AcWebSocket:
             print(f"  close message    : {close_msg}")
         print(">>>>>>>> AcWebsocket  CLOSED <<<<<<<<<")
 
-    def _on_error(self, ws):
-        # print("error: ", e)
+    def _on_error(self, ws, e):
+        print("error: ", e)
         self.close()
 
     def close(self):

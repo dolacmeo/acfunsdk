@@ -113,9 +113,6 @@ class AcArticle:
         show_text.append("=" * 80)
         return "\n".join(show_text)
 
-    def save(self, b64images: bool = False):
-        pass
-
     def up(self):
         if len(self.article_data.keys()) == 0:
             self.loading()

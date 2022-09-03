@@ -50,6 +50,8 @@ class AcLiveUp:
     uid = None
     raw = None
     acws = None
+    is_open = False
+    media_data = None
 
     def __init__(self, acer, uid: [int, str], raw: [dict, None] = None):
         self.acer = acer
@@ -58,6 +60,7 @@ class AcLiveUp:
         if self.raw is None:
             self.infos()
         self.AcUp = self.acer.AcUp({"userId": self.uid})
+        self.media_data = self.media_list()
 
     @property
     def title(self):
@@ -107,12 +110,15 @@ class AcLiveUp:
         api_data = self._api_action('live_play', form_data)
         if api_data.get('result') != 1:
             return False
+        self.is_open = True
         api_data = api_data.get('data', {}).get('videoPlayRes', "")
         live_data = json.loads(api_data).get('liveAdaptiveManifest', [])[0]
         live_adapt = live_data.get('adaptationSet', {}).get('representation', {})
         return live_adapt
 
     def push_danmaku(self, content: str):
+        if self.is_open is False:
+            return False
         form_data = {
             "visitorId": self.uid,
             "liveId": self.raw.get("liveId"),
@@ -122,6 +128,8 @@ class AcLiveUp:
         return api_data.get('result') == 1
 
     def like(self, times: int, max_retry: int = 10):
+        if self.is_open is False:
+            return False
         form_data = {
             "visitorId": self.uid,
             "liveId": self.raw.get("liveId"),
@@ -139,6 +147,8 @@ class AcLiveUp:
         return True
 
     def gift_list(self):
+        if self.is_open is False:
+            return False
         form_data = {
             "visitorId": self.uid,
             "liveId": self.raw.get("liveId"),
@@ -155,6 +165,8 @@ class AcLiveUp:
         return gifts
 
     def send_gift(self, gift_id: int, size: int, times: int = 1, max_retry: int = 10):
+        if self.is_open is False:
+            return False
         gift_data = self.gift_list()
         # 判断礼物类型是否存在
         if f"{gift_id}" not in gift_data:
@@ -209,16 +221,9 @@ class AcLiveUp:
         return live_obs_stream
 
     def watching_danmaku(self, room_bans: [list, None] = None, potplayer: [str, None] = None, quality: int = 1):
-        # 传参举例
-        # bans = [
-        #     # "ZtLiveScActionSignal",
-        #     "ZtLiveScStateSignal",
-        #     "ZtLiveScNotifySignal",
-        #     "ZtLiveScStatusChanged",
-        #     "ZtLiveScTicketInvalid",
-        # ]
-        # player = [r"C:\Program Files\PotPlayer64\PotPlayerMini64.exe", 2]
-        # self.watching_danmaku(bans, *player)
+        live_adapt = self.media_list()
+        if live_adapt is False:
+            return False
         self.acws = AcWebSocket(self.acer)
         self.acws.run()
         self.acws.wait4ready()

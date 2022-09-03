@@ -16,6 +16,7 @@ class AcBangumi:
     vid = None
     item_id = None
     resourceType = 6
+    is_404 = False
 
     def __init__(self, acer, aa_num: [str, int]):
         if isinstance(aa_num, str) and aa_num.startswith('aa'):
@@ -23,17 +24,26 @@ class AcBangumi:
         self.aa_num = str(aa_num)
         self.acer = acer
         self.loading()
-        self.set_video()
-        self.page_url = f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
+        if self.is_404 is False:
+            self.set_video()
+            self.page_url = f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
 
     def __repr__(self):
+        if self.is_404:
+            return f"AcBangumi([ac{self.aa_num}]咦？世界线变动了。看看其他内容吧~)"
         title = self.bangumi_data.get('showTitle', self.bangumi_data.get('bangumiTitle', ""))
         return f"AcBangumi([ac{self.aa_num}_{self.item_id}]{title})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(routes['bangumi'] + self.aa_num)
+        self.is_404 = req.status_code == 404
+        if self.is_404:
+            return False
         self.page_obj = Bs(req.text, 'lxml')
-        js_data = self.page_obj.select_one("#pagelet_newheader").find_next_sibling("script").text.strip().split('\n')
+        newheader = self.page_obj.select_one("#pagelet_newheader")
+        if newheader is None:
+            print(routes['bangumi'] + self.aa_num)
+        js_data = newheader.find_next_sibling("script").text.strip().split('\n')
         bangumi_data = js_data[0]
         self.bangumi_data = js2py.eval_js(bangumi_data).to_dict()
         bangumi_list = js_data[2]

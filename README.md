@@ -42,18 +42,19 @@ from acfun import Acer
 # 实例化一个Acer
 acer = Acer(debug=True)
 # 登录用户(成功登录后会自动保存 '<用户名>.cookies')
+# 请注意保存，防止被盗
 acer.login(username='you@email.com', password='balalabalala')
 # 读取用户(读取成功登录后保存的 '<用户名>.cookies')
 acer.loading(username='13800138000')
 # 每日签到，领香蕉🍌
 acer.signin()
-# 通过连接直接获取内容对象
+# 通过链接直接获取内容对象
 # 目前支持 9种类型：
 # 视  频: https://www.acfun.cn/v/ac4741185
 demo_video = acer.get("https://www.acfun.cn/v/ac4741185")
 print(demo_video)
 # 文  章: https://www.acfun.cn/a/ac16695813
-demo_article = acer.get("https://www.acfun.cn/v/ac4741185")
+demo_article = acer.get("https://www.acfun.cn/a/ac16695813")
 print(demo_article)
 # 合  集: https://www.acfun.cn/a/aa6001205
 demo_album = acer.get("https://www.acfun.cn/a/aa6001205")

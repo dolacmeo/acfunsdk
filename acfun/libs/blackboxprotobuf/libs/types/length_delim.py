@@ -4,8 +4,8 @@ import sys
 
 from google.protobuf.internal import wire_format, encoder, decoder
 
-import blackboxprotobuf.lib.types
-from blackboxprotobuf.lib.types import varint
+import acfun.libs.blackboxprotobuf.libs.types
+from acfun.libs.blackboxprotobuf.libs.types import varint
 
 def decode_guess(buf, pos):
     """Try to decode as an empty message first, then just do as bytes

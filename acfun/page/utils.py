@@ -312,12 +312,21 @@ def get_page_pagelets(page_obj):
     return data
 
 
+def url_complete(url):
+    if isinstance(url, str):
+        if url.startswith('//'):
+            url = f"https:{url}"
+        elif not url.startswith('http'):
+            url = f"{routes['index']}{url}"
+    return url
+
+
 class AcLink:
 
     def __init__(self, acer, url, title, container=None):
         self.acer = acer
         self.title = title
-        self.url = url
+        self.url = url_complete(url)
         self.container = container
 
     def loading(self):
@@ -332,12 +341,10 @@ class AcImage:
 
     def __init__(self, acer, src, url=None, name=None, container=None):
         self.acer = acer
-        self.src = src
+        self.src = url_complete(src)
         self.name = name
-        self.url = url
+        self.url = url_complete(url)
         self.container = container
-        if not self.url.startswith("http"):
-            self.url = f"{routes['index']}{self.url}"
 
     def loading(self):
         pass
@@ -411,11 +418,8 @@ class AcPagelet:
         if obj is True:
             return dict(
                 slider=[AcImage(
-                    self.acer,
-                    s['image'],
-                    s['link'] if s['link'].startswith("http") else f"{routes['index']}{s['link']}",
-                    s['title'],
-                    self.acer.get(s['link'] if s['link'].startswith("http") else f"{routes['index']}{s['link']}")
+                    self.acer, s['image'], s['link'], s['title'],
+                    self.acer.get(f"{routes['index']}{s['link']}")
                 ) for s in data['slider']],
                 items=[self.acer.AcVideo(v['mediaid'], dict(title=v['title'])) for v in data['items']]
             )
@@ -444,8 +448,7 @@ class AcPagelet:
         }
         if obj is True:
             return dict(
-                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}",
-                           data['ad']['title']),
+                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
                 items=[
                     self.acer.AcVideo(v['mediaid'], dict(title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))
                     for v in videos
@@ -453,7 +456,7 @@ class AcPagelet:
             )
         return data
 
-    def _index_live(self, obj=False):  # todo 未完成直播对象
+    def _index_live(self, obj=False):
         if self.pagelet_id != "pagelet_live":
             return None
         videos = list()
@@ -474,6 +477,11 @@ class AcPagelet:
             'url': ad_img.attrs['href'],
             'image': ad_img.img.attrs['src']
         }
+        if obj is True:
+            return dict(
+                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
+                items=[self.acer.AcLiveUp(v['liveid']) for v in videos]
+            )
         return data
 
     def _index_spring_festival(self, obj=False):
@@ -540,13 +548,18 @@ class AcPagelet:
             return obj_data
         return data
 
-    def _index_bangumi_list(self, obj=False):  # todo 未完成番剧对象
+    def _index_bangumi_list(self, obj=False):
         if self.pagelet_id != "pagelet_bangumi_list":
             return None
         data = dict(schedule=list(), recommend=list(), anli=list())
         data['title'] = self.pagelet_obj.select_one('.area-header span.header-title').text
         data['icon'] = self.pagelet_obj.select_one('.area-header img.header-icon').attrs['src']
         data['url'] = routes['index'] + self.pagelet_obj.select_one('.header-right-more').attrs['href']
+        if obj is True:
+            data.update({
+                'channel': self.acer.get(data['url']),
+                'icon': AcImage(self.acer, data['icon'], data['url'], f"{data['title']}_icon")
+            })
         for i, day in enumerate(self.pagelet_obj.select('.area-left .column-list .time-block')):
             day_list = list()
             for bangumi in day.select('.time-block .list-item'):
@@ -554,7 +567,7 @@ class AcPagelet:
                     media_data = {
                         'mediaid': bangumi.attrs['data-mediaid'],
                         'albumid': bangumi.attrs['data-albumid'],
-                        'url': routes['anime'] + bangumi.attrs['data-albumid'],
+                        'url': routes['bangumi'] + bangumi.attrs['data-albumid'],
                         'cover': bangumi.a.img.attrs['src'],
                         'name': bangumi.select_one('a:nth-child(2) > b').text,
                         'recently': bangumi.p.text
@@ -563,7 +576,7 @@ class AcPagelet:
                     media_data = {
                         'mediaid': bangumi.attrs['data-mediaid'],
                         'albumid': bangumi.attrs['data-albumid'],
-                        'url': routes['anime'] + bangumi.attrs['data-albumid'],
+                        'url': routes['bangumi'] + bangumi.attrs['data-albumid'],
                         'name': bangumi.a.b.text,
                         'recently': bangumi.a.p.text
                     }
@@ -576,7 +589,7 @@ class AcPagelet:
             media_data = {
                 'mediaid': goood.attrs['data-mediaid'],
                 'albumid': goood.attrs['data-albumid'],
-                'url': routes['anime'] + goood.attrs['data-albumid'],
+                'url': routes['bangumi'] + goood.attrs['data-albumid'],
                 'cover': goood.select_one('.block-img img').attrs['src'],
                 'name': goood.select_one('.block-list-title > b > a').text,
                 'follow': goood.select_one('.block-list-title > p > i.fr').text
@@ -589,7 +602,7 @@ class AcPagelet:
             media_data = {
                 'mediaid': block.attrs['data-mediaid'],
                 'albumid': block.attrs['data-albumid'],
-                'url': routes['anime'] + block.attrs['data-albumid'],
+                'url': routes['bangumi'] + block.attrs['data-albumid'],
                 'cover': block.img.attrs['src']
             }
             if obj is True:
@@ -598,20 +611,19 @@ class AcPagelet:
                 data['anli'].append(media_data)
         return data
 
-    def _index_pagelet_left_info(self, obj=False):  # todo 未完成栏目对象
+    def _index_pagelet_left_info(self, obj=False):
         data = dict(title=None, icon=None, links=list(), url=None)
         data['title'] = self.pagelet_obj.select_one('.module-left-header span.header-title').text
         data['icon'] = self.pagelet_obj.select_one('.module-left-header img.header-icon').attrs['src']
-        for link in self.pagelet_obj.select('.link-container > a'):
-            data['links'].append({
-                'url': routes['index'] + link.attrs['href'],
-                'title': link.text
-            })
+        for link in self.pagelet_obj.select('.link-container a'):
+            href = ("" if link.attrs['href'].startswith('http') else routes['index']) + link.attrs['href']
+            data['links'].append({'url': href, 'title': link.text})
         data['url'] = routes['index'] + self.pagelet_obj.select_one('.header-right-more').attrs['href']
         if obj is True:
             return {
                 'channel': self.acer.get(data['url']),
-                'links': [self.acer.get(x['url']) for x in data['links']]
+                'links': [self.acer.get(x['url']) for x in data['links']],
+                'icon': AcImage(self.acer, data['icon'], data['url'], f"{data['title']}_icon")
             }
         return data
 
@@ -652,14 +664,8 @@ class AcPagelet:
         return data
 
     def _index_pagelet_big(self, obj=False):
-        data = dict(items=list(), links=list())
+        data = dict(items=list())
         data['url'] = routes['index'] + self.pagelet_obj.select_one('.header-right-more').attrs['href']
-        for link in self.pagelet_obj.select('.link-container > a'):
-            this_link = {'url': routes['index'] + link.attrs['href'], 'title': link.text}
-            if obj is True:
-                data['links'].append(AcLink(self.acer, this_link['url'], this_link['title']))
-            else:
-                data['links'].append(this_link)
         for video in self.pagelet_obj.select(".module-left > div:nth-child(2) > div"):
             if 'big-image' in video['class']:
                 v_data = {

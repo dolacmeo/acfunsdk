@@ -336,6 +336,8 @@ class AcImage:
         self.name = name
         self.url = url
         self.container = container
+        if not self.url.startswith("http"):
+            self.url = f"{routes['index']}{self.url}"
 
     def loading(self):
         pass
@@ -442,7 +444,7 @@ class AcPagelet:
         }
         if obj is True:
             return dict(
-                ad=AcImage(self.acer, data['ad']['image'], f"{routes['index']}{data['ad']['url']}",
+                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}",
                            data['ad']['title']),
                 items=[
                     self.acer.AcVideo(v['mediaid'], dict(title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))

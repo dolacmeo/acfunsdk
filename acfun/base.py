@@ -71,6 +71,7 @@ class Acer:
     personal = dict()
     token = dict()
     nav_data = dict()
+    channel_data = source.ChannelList
 
     message = None
     moment = None

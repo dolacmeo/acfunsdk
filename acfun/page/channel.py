@@ -17,7 +17,8 @@ class BlockContent:
 
     def __repr__(self):
         if self.name:
-            return f"AcContent({self.name}[{self.keyname}])"
+            key = f"[{self.keyname}]" if self.keyname else ""
+            return f"AcContent({self.name}{key})"
         return f"AcContent(#{self.blockId} Σ{self.contentCount})"
 
     @property
@@ -76,35 +77,55 @@ class AcChannel:
     nav_data = dict()
     channel_obj = None
     channel_data = None
+    is_main = False
+    parent_data = None
+    sub_data = None
 
     def __init__(self, acer, cid, nav_info: dict):
         self.acer = acer
         self.cid = str(cid)
         self.info = nav_info
         self.link = f"/v/list{self.cid}/index.htm"
+        self._get_channel_info()
+
+    @property
+    def _main_channels(self):
+        return {x["channelId"]: x for x in self.acer.channel_data}
+
+    def _get_channel_info(self):
+        for channel in self.acer.channel_data:
+            if self.cid == channel['channelId']:
+                self.is_main = True
+                self.parent_data = channel
+                break
+            for sub in channel['children']:
+                if self.cid == sub['channelId']:
+                    self.is_main = False
+                    self.parent_data = channel
+                    self.sub_data = sub
+                    break
 
     def __repr__(self):
         return f"AcChannel(#{self.cid} {self.info['navName']})"
 
-    @property
-    def parent(self):
-        return self.info.get('parent')
-
     def loading(self):
+        if not self.is_main:
+            print("Is sub channels, just use videos.")
+            return False
         req = self.acer.client.get(f"{routes['index']}{self.link}")
         self.channel_obj = Bs(req.text, 'lxml')
         inner_data = self.channel_obj.select_one('#app').find_next_sibling("script").text.strip()
         self.channel_data = js2py.eval_js(inner_data[:-121]).to_dict()
 
     def hot_words(self):
-        if self.parent != 0:
+        if not self.is_main:
             return None
         if self.channel_data is None:
             self.loading()
         return self.channel_data['channel']['hotWordList']
 
     def blocks(self):
-        if self.parent != 0:
+        if not self.is_main:
             return None
         if self.channel_data is None:
             self.loading()
@@ -112,12 +133,21 @@ class AcChannel:
             return [ChannelBlock(self.acer, data) for data in self.channel_data['article']['blockList']]
         return [ChannelBlock(self.acer, data) for data in self.channel_data['channel']['blockList']]
 
+    def ranks(self, limit: int = 50, date_range: str = None):
+        if self.is_main:
+            cid = int(self.cid)
+            sub_cid = None
+        else:
+            cid = int(self.parent_data['channelId'])
+            sub_cid = int(self.cid)
+        return self.acer.AcRank(cid, sub_cid, limit, date_range=date_range)
+
     def videos(self,
                page: int = 1,
                sortby: [str, None] = None,
                duration: [str, None] = None,
                datein: [str, None] = None):
-        if self.parent == 0 or self.cid == '63':
+        if self.is_main or self.cid == '63':
             return None
         sortby_list = {
             "rankScore": "综合",

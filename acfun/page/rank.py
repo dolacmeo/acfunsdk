@@ -1,4 +1,5 @@
 # coding=utf-8
+from typing import Literal
 from acfun.source import apis
 
 __author__ = 'dolacmeo'
@@ -12,7 +13,7 @@ class AcRank:
                  cid: [int, None] = None,
                  sub_cid: [int, None] = None,
                  limit: int = 50,
-                 date_range: [str, None] = None):
+                 date_range: (Literal['DAY', 'THREE_DAYS', 'WEEK'], None) = None):
         self.acer = acer
         self.cid = cid if isinstance(cid, int) else ""
         self.sub_cid = sub_cid if isinstance(sub_cid, int) else ""
@@ -39,7 +40,6 @@ class AcRank:
             if content['contentType'] == 2:
                 data_list.append(self.acer.AcVideo(content['dougaId'], content))
             elif content['contentType'] == 3:
-
                 data_list.append(self.acer.AcArticle(content['resourceId'], content))
         return data_list
 

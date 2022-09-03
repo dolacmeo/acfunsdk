@@ -23,8 +23,8 @@ class AcSearch:
     }
 
     def __init__(self, acer, keyword: [str, None] = None, s_type: [str, None] = None):
-        self._get_keywords()
         self.acer = acer
+        self._get_keywords()
         if keyword is None and 'searchKeywords' in self.hot_keywords:
             self.keyword = self.hot_keywords['searchKeywords'][0].get('keyword')
         else:

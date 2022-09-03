@@ -491,6 +491,7 @@ class AcProtos:
                                         headers={'referer': "https://live.acfun.cn/"})
         api_data = api_req.json()
         if api_data.get('result') != 1:
+            self.acws.close()
             raise ValueError(f"{api_data['result']}: {api_data['error_msg']}")
         self.live_room = api_data.get('data')
         self.live_ticket = random.choice(self.live_room.get("availableTickets"))

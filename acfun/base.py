@@ -132,6 +132,9 @@ class Acer:
     def AcUp(self, updata):
         return AcUp(self, updata)
 
+    def AcLiveUp(self, uid: int, raw=None):
+        return AcLiveUp(self, uid, raw)
+
     def AcArticle(self, ac_num, data=None):
         return AcArticle(self, ac_num, data)
 
@@ -170,11 +173,10 @@ class Acer:
                 elif link_name == 'share':
                     return self.AcVideo(ends)
                 elif link_name == 'live':
-                    return self.AcLive().get(ends)
+                    return self.AcLiveUp(int(ends))
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
         channel_rex = re.compile(f"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
         if channel_rex:
-            print(url_str, channel_rex)
             return self.AcChannel(channel_rex[0])
         return None
 

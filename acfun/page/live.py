@@ -39,14 +39,14 @@ class AcLive:
         self._get_list()
         lives = list()
         for x in self.raw_data.get('liveList', []):
-            lives.append(LiveUp(self.acer, x.get('authorId'), x))
+            lives.append(AcLiveUp(self.acer, x.get('authorId'), x))
         return lives
 
     def get(self, uid: [int, str]):
-        return LiveUp(self.acer, uid)
+        return AcLiveUp(self.acer, uid)
 
 
-class LiveUp:
+class AcLiveUp:
     uid = None
     raw = None
     acws = None

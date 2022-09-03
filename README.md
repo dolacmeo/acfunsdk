@@ -203,15 +203,10 @@ demo_video.saver(saver_path).save_all()
 
 ## About Me
 
-<div style="position: relative;height: 160px">
-
 [![ac彩娘-阿部高和](https://tx-free-imgs2.acfun.cn/kimg/bs2/zt-image-host/ChQwODliOGVhYzRjMTBmOGM0ZWY1ZRCIzNcv.gif)][dolacfun]
-
 ♂ 整点大香蕉🍌
 
-<img alt="AcFunCard" style="position: absolute;right:0;top:0;" src="https://discovery.sunness.dev/39088">
-
-</div>
+<img alt="AcFunCard" align="right" src="https://discovery.sunness.dev/39088">
 
 - - - 
 

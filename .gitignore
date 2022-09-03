@@ -182,3 +182,4 @@ acfun/src/protos
 acfun/src/protoc.exe
 ffmpeg.exe
 *.cookies
+scratch.py

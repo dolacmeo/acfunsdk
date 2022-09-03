@@ -8,7 +8,7 @@ import base64
 import random
 import filetype
 import threading
-import blackboxprotobuf
+from acfun.libs.blackboxprotobuf import protobuf_to_json
 from hashlib import md5
 from Crypto import Random
 from Crypto.Cipher import AES
@@ -294,7 +294,7 @@ class AcProtos:
         return packet_header.seqId, stream_payload.command, json.loads(MessageToJson(payload))
 
     def unknown_response(self, packet_header, stream_payload):
-        message, typedef = blackboxprotobuf.protobuf_to_json(stream_payload.payloadData)
+        message, typedef = protobuf_to_json(stream_payload.payloadData)
         if stream_payload.command not in self.command_rules:
             print(f"[seqId:{packet_header.seqId}] {stream_payload.command}")
             print(typedef)

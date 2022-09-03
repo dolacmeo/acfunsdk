@@ -15,4 +15,4 @@ cssutils==2.6.0
 js2py==0.71
 protobuf==3.20.1
 proto-plus==1.22.1
-blackboxprotobuf==1.0.1
+poetry-core==1.1.0

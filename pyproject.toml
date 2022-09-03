@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "acfunSDK"
+homepage = "https://github.com/dolaCmeo/acfunSDK"
+repository = "https://github.com/dolaCmeo/acfunSDK"
+version = "0.8.0"
+description = "acfunSDK - UNOFFICEICAL"
+authors = ["dolacmeo <dolacmeo@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "acfun"}]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/dolaCmeo/acfunSDK/issues"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+rich = "^12.5"
+arrow = "^1.2"
+pycryptodome = "^3.15"
+jinja2 = "^3.1"
+psutil = "^5.9"
+filetype = "^1.1"
+pyperclip = "^1.8"
+alive-progress = "^2.4"
+m3u8 = "^3.3"
+httpx = "^0.23"
+websocket-client = "^1.4"
+lxml = "^4.9"
+beautifulsoup4 = "^4.11"
+cssutils = "^2.6"
+js2py = "^0.71"
+protobuf = "==3.20.1"
+proto-plus = "==1.22.1"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = 'aliyun.mirrors'
+url = "https://mirrors.aliyun.com/pypi/simple/"

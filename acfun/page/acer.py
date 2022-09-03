@@ -50,6 +50,9 @@ class AcUp:
         self.followed_count = self.up_page.select_one(
             '.tab-list > li[data-index=followed] > span').text
 
+    def AcLive(self):
+        return self.acer.AcLiveUp(self.uid)
+
     def follow_add(self, attention: [bool, None] = None):
         return self.acer.follow_add(self.uid, attention)
 

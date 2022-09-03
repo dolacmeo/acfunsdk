@@ -23,6 +23,14 @@ ps: _只要项目还没有弃坑，如发现未知接口，或现有功能失效
 ```sh
 pip install -r requirements.txt
 ```
+
+**需要ffmpeg**
+> `ffmpeg` 主要用于下载视频。
+> 
+> 建议去官网下载 https://ffmpeg.org/download.html
+>
+> 可执行文件 `ffmpeg` 需要加入到环境变量，或复制到运行根目录。
+
 - - -
 
 ## 使用方法
@@ -82,13 +90,6 @@ print(demo_share)
 > 
 > 主要用于离线收藏保存A站的各种资源。
 > 保存后，可使用浏览器打开对应页面。
-
-**需要ffmpeg**
-> `ffmpeg` 主要用于下载视频。
-> 
-> 建议去官网下载 https://ffmpeg.org/download.html
->
-> 可执行文件 `ffmpeg` 需要加入到环境变量，或复制到运行根目录。
 
 
 初始化本地路径

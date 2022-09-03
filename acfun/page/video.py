@@ -18,6 +18,7 @@ class AcVideo:
     video_data = dict()
     vid = None
     resourceType = 9
+    is_404 = False
 
     def __init__(self, acer, ac_num: [str, int], video_data: [dict, None] = None):
         if isinstance(ac_num, str) and ac_num.startswith('ac'):
@@ -46,6 +47,8 @@ class AcVideo:
         return f"https://scan.acfun.cn/vd/{self.ac_num}"
 
     def __repr__(self):
+        if self.is_404:
+            return f"AcVideo([ac{self.ac_num}]咦？世界线变动了。看看其他内容吧~)"
         title = self.video_data.get('title', "")
         user_name = self.video_data.get('user', {}).get('name', "") or self.video_data.get('user', {}).get('id', "")
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
@@ -55,8 +58,12 @@ class AcVideo:
 
     def loading(self):
         req = self.acer.client.get(self.referer)
+        self.is_404 = req.status_code == 404
+        if self.is_404:
+            return False
         self.page_obj = Bs(req.text, 'lxml')
         js_code = self.page_obj.select_one("#pagelet_newheader").find_next_sibling("script").text.strip().split('\n')[0]
+        js_code = "".join(js_code.split())
         self.video_data = js2py.eval_js(js_code).to_dict()
         self.video_data.update(get_channel_info(req.text))
         self.vid = self.video_data.get("currentVideoId")

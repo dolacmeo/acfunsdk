@@ -2,7 +2,7 @@
 name = "acfunSDK"
 homepage = "https://pypi.org/project/acfunsdk/"
 repository = "https://github.com/dolaCmeo/acfunSDK"
-version = "0.8.2"
+version = "0.8.3"
 description = "acfunSDK - UNOFFICEICAL"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
 license = "MIT"

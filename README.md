@@ -1,7 +1,16 @@
 # acfunSDK - **UNOFFICEICAL**
 
-_Developing..._
-- - -
+<br />
+
+<p align="center">
+
+<img height="100" src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg" alt="">
+
+<img height="100" src="https://ali-imgs.acfun.cn/kos/nlav10360/static/common/widget/header/img/acfunlogo.11a9841251f31e1a3316.svg" alt="">
+
+</p>
+
+<br />
 
 acfunSDK是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 

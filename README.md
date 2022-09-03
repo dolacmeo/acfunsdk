@@ -80,7 +80,32 @@ print(demo_share)
 
 <details>
 <summary>DEMOs</summary>
-待补充
+
+**以下DEMO列举了主要的使用方法，具体请自行研究。**
+
+## 👤 主要对象
+
++ 主对象acer示例 [acer_demo.py][acer] 
+
+## 📖 综合页面对象
+
++ 首页对象示例 [index_reader.py][index] 
++ 频道对象示例 [channel_reader.py][channel] 
++ 搜索对象示例 [search_reader.py][search] 
+
+## 🔗 内容页面对象
+
++ 番剧对象 [bangumi_demo.py][bangumi]
++ 视频对象 [video_demo.py][video]
++ 文章对象 [article_demo.py][article]
++ 合集对象 [album_demo.py][album]
++ UP主对象 [member_demo.py][member]
++ 动态对象 [moment_demo.py][moment]
++ 直播对象 [live_demo.py][live]
+
+## 🎁 附赠: AcSaver
+
++ 离线保存 [AcSaver_demo.py][saver] 
 
 </details>
 
@@ -111,7 +136,7 @@ acsaver.save_emot()
 
 保存文章
 ```python
-demo_article = acer.get("https://www.acfun.cn/v/ac4741185")
+demo_article = acer.get("https://www.acfun.cn/a/ac32633020")
 demo_article.saver(saver_path).save_all()
 ```
 
@@ -186,3 +211,18 @@ demo_video.saver(saver_path).save_all()
 [Issue]: https://github.com/dolaCmeo/acfunSDK/issues
 [python]: https://www.python.org/downloads/
 [venv]: https://docs.python.org/zh-cn/3.8/library/venv.html
+
+[acer]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/acer_demo.py
+[index]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/index_reader.py
+[channel]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/channel_reader.py
+[search]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/seach_reader.py
+
+[bangumi]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/bangumi_demo.py
+[video]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/video_demo.py
+[article]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/article_demo.py
+[album]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/album_demo.py
+[member]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/member_demo.py
+[moment]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/moment_demo.py
+[live]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/live_demo.py
+
+[saver]: https://github.com/dolaCmeo/acfunSDK/blob/main/demo/AcSaver_demo.py

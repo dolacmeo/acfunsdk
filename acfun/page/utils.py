@@ -1230,6 +1230,16 @@ class AcMessage:
     def __init__(self, acer):
         self.acer = acer
 
+    @property
+    def unread(self):
+        if self.acer.is_logined is False:
+            return None
+        api_req = self.acer.client.get(apis['unread'])
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        return api_data.get("unReadCount")
+
     def _get_msg_api(self, vid: str = '', page: int = 1):
         vids = ['', 'like', 'atmine', 'gift', 'sysmsg', 'resmsg']
         assert vid in vids

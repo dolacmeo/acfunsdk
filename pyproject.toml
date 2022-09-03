@@ -2,7 +2,7 @@
 name = "acfunSDK"
 homepage = "https://github.com/dolaCmeo/acfunSDK"
 repository = "https://github.com/dolaCmeo/acfunSDK"
-version = "0.8.0"
+version = "0.8.2"
 description = "acfunSDK - UNOFFICEICAL"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
 license = "MIT"
@@ -16,8 +16,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
 ]
 
 [tool.poetry.urls]

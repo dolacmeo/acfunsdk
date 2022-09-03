@@ -19,18 +19,26 @@ ps: _只要项目还没有弃坑，如发现未知接口，或现有功能失效
 
 - - -
 
-## 环境依赖
-
 **Python** : 开发环境为 `Python 3.8.10` & `Python 3.9.6`
 
 理论向上任意兼容，向下兼容情况不明。
 `Python`本体请自行[下载安装][python]。
 
+## 从PyPI安装
+
+```shell
+python -m pip install acfunsdk
+```
+
+<details>
+<summary>手动安装或复制到项目内</summary>
 
 **安装依赖** : _建议使用[虚拟环境][venv]_
 ```sh
 pip install -r requirements.txt
 ```
+
+</details>
 
 **需要ffmpeg**
 > `ffmpeg` 主要用于下载视频。

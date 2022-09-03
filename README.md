@@ -24,7 +24,7 @@ ps: _只要项目还没有弃坑，如发现未知接口，或现有功能失效
 理论向上任意兼容，向下兼容情况不明。
 `Python`本体请自行[下载安装][python]。
 
-## 从PyPI安装
+## [从PyPI安装](https://pypi.org/project/acfunsdk/)
 
 ```shell
 python -m pip install acfunsdk
@@ -214,6 +214,7 @@ demo_video.saver(saver_path).save_all()
 + [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku) 是用C# 和 .Net 6编写的AcFun直播弹幕工具。
 + [实现自己的AcFun直播弹幕姬](https://www.acfun.cn/a/ac16695813) [@財布士醬](https://www.acfun.cn/u/311509)
 + QQ频道“AcFun开源⑨课”
++ 使用 [Poetry](https://python-poetry.org/) 构建
 
 - - - 
 

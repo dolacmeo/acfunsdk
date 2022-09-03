@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acfunSDK"
-homepage = "https://github.com/dolaCmeo/acfunSDK"
+homepage = "https://pypi.org/project/acfunsdk/"
 repository = "https://github.com/dolaCmeo/acfunSDK"
 version = "0.8.2"
 description = "acfunSDK - UNOFFICEICAL"

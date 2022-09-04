@@ -6,9 +6,11 @@ import acfun.libs.blackboxprotobuf.libs.types.type_maps
 
 known_messages = {}
 
+
 def bytes_to_string(obj):
     return obj.decode('utf8', 'backslashreplace')
-    
+
+
 def _get_json_writeable_obj(in_obj, out_obj, bytes_as_hex=False):
     """Converts non-string values (like bytes) to strings
     in lists/dictionaries recursively.
@@ -30,7 +32,7 @@ def _get_json_writeable_obj(in_obj, out_obj, bytes_as_hex=False):
                     out_obj.append(bytes_to_string(item))
             else:
                 out_obj.append(str(item))
-    else: #dict
+    else:  # dict
         for k, v in in_obj.items():
             if isinstance(v, list):
                 i = []
@@ -48,6 +50,7 @@ def _get_json_writeable_obj(in_obj, out_obj, bytes_as_hex=False):
             else:
                 out_obj[k] = str(v)
 
+
 def decode_message(buf, message_type=None):
     """Decode a message to a Python dictionary.
     Returns tuple of (values, types)
@@ -59,15 +62,17 @@ def decode_message(buf, message_type=None):
         else:
             message_type = known_messages[message_type]
 
-    value, typedef, _ = blackboxprotobuf.lib.types.length_delim.decode_message(buf, message_type)
+    value, typedef, _ = acfun.libs.blackboxprotobuf.libs.types.length_delim.decode_message(buf, message_type)
     return value, typedef
 
-#TODO add explicit validation of values to message type
+
+# TODO add explicit validation of values to message type
 def encode_message(value, message_type):
     """Encodes a python dictionary to a message.
     Returns a bytearray
     """
-    return blackboxprotobuf.lib.types.length_delim.encode_message(value, message_type)
+    return acfun.libs.blackboxprotobuf.libs.types.length_delim.encode_message(value, message_type)
+
 
 def protobuf_to_json(buf, message_type=None, bytes_as_hex=False):
     """Encode to python dictionary and dump to JSON.
@@ -77,17 +82,19 @@ def protobuf_to_json(buf, message_type=None, bytes_as_hex=False):
     _get_json_writeable_obj(value, value_cleaned, bytes_as_hex)
     return json.dumps(value_cleaned, indent=2, ensure_ascii=False), message_type
 
+
 def protobuf_from_json(value, *args, **kwargs):
     """Decode JSON string to JSON and then to protobuf.
     Takes same arguments as encode_message
     """
     return encode_message(json.loads(value), *args, **kwargs)
 
+
 def validate_typedef(typedef, old_typedef=None):
     """Validate the typedef format. Optionally validate wiretype of a field
        number has not been changed
     """
-    #TODO record "path" and print out context for errors
+    # TODO record "path" and print out context for errors
     int_keys = set()
     for field_number, field_typedef in typedef.items():
         alt_field_number = None
@@ -129,7 +136,7 @@ def validate_typedef(typedef, old_typedef=None):
 
             # Validate type value
             if key == "type":
-                if value not in blackboxprotobuf.lib.types.type_maps.wiretypes:
+                if value not in acfun.libs.blackboxprotobuf.libs.types.type_maps.wiretypes:
                     raise ValueError("Invalid type %s for field number %s" % (value, field_number))
             # Check for duplicate names
             if key == "name":
@@ -149,21 +156,20 @@ def validate_typedef(typedef, old_typedef=None):
                 if old_typedef is None:
                     validate_typedef(value)
                 else:
-                    #print(old_typedef.keys())
+                    # print(old_typedef.keys())
                     validate_typedef(value, old_typedef[field_number][key])
             if key == "alt_typedefs":
                 for alt_fieldnumber, alt_typedef in value.items():
-                    #TODO validate alt_typedefs against old typedefs?
+                    # TODO validate alt_typedefs against old typedefs?
                     validate_typedef(alt_typedef)
-
 
     if old_typedef is not None:
         wiretype_map = {}
         for field_number, value in old_typedef.items():
-            wiretype_map[int(field_number)] = blackboxprotobuf.lib.types.type_maps.wiretypes[value['type']]
+            wiretype_map[int(field_number)] = acfun.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value['type']]
         for field_number, value in typedef.items():
             if int(field_number) in wiretype_map:
                 old_wiretype = wiretype_map[int(field_number)]
-                if old_wiretype != blackboxprotobuf.lib.types.type_maps.wiretypes[value["type"]]:
+                if old_wiretype != acfun.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value["type"]]:
                     raise ValueError("Wiretype for field number %s does not match old type definition"
                                      % field_number)

@@ -7,6 +7,7 @@ from google.protobuf.internal import wire_format, encoder, decoder
 import acfun.libs.blackboxprotobuf.libs.types
 from acfun.libs.blackboxprotobuf.libs.types import varint
 
+
 def decode_guess(buf, pos):
     """Try to decode as an empty message first, then just do as bytes
        Returns the value + the type"""
@@ -25,16 +26,18 @@ def encode_bytes(value):
     encoded_length = varint.encode_varint(len(value))
     return encoded_length + value
 
+
 def decode_bytes(value, pos):
     """Decode varint for length and then the bytes"""
     length, pos = varint.decode_varint(value, pos)
-    end = pos+length
+    end = pos + length
     return value[pos:end], end
+
 
 def decode_str(value, pos):
     """Decode varint for length and then the string"""
     length, pos = varint.decode_varint(value, pos)
-    end = pos+length
+    end = pos + length
     return value[pos:end].decode('utf-8', 'backslashreplace'), end
 
 
@@ -89,7 +92,7 @@ def encode_message(data, typedef, group=False):
                                      % field_number)
                 innertypedef = field_typedef['message_typedef']
             else:
-                if field_typedef['message_type_name'] not in blackboxprotobuf.lib.known_messages:
+                if field_typedef['message_type_name'] not in acfun.libs.blackboxprotobuf.libs.known_messages:
                     raise ValueError('Message type (%s) has not been defined'
                                      % field_typedef['message_type_name'])
                 innertypedef = field_typedef['message_type_name']
@@ -105,20 +108,19 @@ def encode_message(data, typedef, group=False):
 
             field_encoder = lambda data: encode_group(data, innertypedef, field_number)
         else:
-            if field_type not in blackboxprotobuf.lib.types.encoders:
+            if field_type not in acfun.libs.blackboxprotobuf.libs.types.encoders:
                 raise ValueError('Unknown type: %s' % field_type)
-            field_encoder = blackboxprotobuf.lib.types.encoders[field_type]
+            field_encoder = acfun.libs.blackboxprotobuf.libs.types.encoders[field_type]
             if field_encoder is None:
                 raise ValueError('Encoder not implemented: %s' % field_type)
 
-
         # Encode the tag
-        tag = encoder.TagBytes(int(field_number), blackboxprotobuf.lib.types.wiretypes[field_type])
+        tag = encoder.TagBytes(int(field_number), acfun.libs.blackboxprotobuf.libs.types.wiretypes[field_type])
 
         try:
             # Handle repeated values
             if isinstance(value, list) and not field_type.startswith('packed_'):
-                for repeated in  value:
+                for repeated in value:
                     output += tag
                     output += field_encoder(repeated)
             else:
@@ -126,10 +128,11 @@ def encode_message(data, typedef, group=False):
                 output += field_encoder(value)
         except Exception as exc:
             raise ValueError(
-                   'Error attempting to encode "%s" as %s: %s'
-                   % (value, field_type, exc), sys.exc_info()[2])
+                'Error attempting to encode "%s" as %s: %s'
+                % (value, field_type, exc), sys.exc_info()[2])
 
     return output
+
 
 def decode_message(buf, typedef=None, pos=0, end=None, group=False):
     """Decode a protobuf message with no length delimiter"""
@@ -152,7 +155,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
         except Exception as exc:
             raise (ValueError,
                    'Could not read valid tag at pos %d. Ensure it is a valid protobuf message: %s'
-                   % (pos-len(tag), exc), sys.exc_info()[2])
+                   % (pos - len(tag), exc), sys.exc_info()[2])
 
         # Convert to str
         field_number = str(field_number)
@@ -163,7 +166,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
             field_typedef = typedef[field_number]
         else:
             field_typedef = {}
-            field_typedef['type'] = blackboxprotobuf.lib.types.wire_type_defaults[wire_type]
+            field_typedef['type'] = acfun.libs.blackboxprotobuf.libs.types.wire_type_defaults[wire_type]
 
         field_type = field_typedef['type']
 
@@ -178,7 +181,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                     field_typedef['message_typedef'] = message_typedef
                 else:
                     field_out, pos = out
-            elif  wire_type == wire_format.WIRETYPE_END_GROUP:
+            elif wire_type == wire_format.WIRETYPE_END_GROUP:
                 # TODO Should probably match the field_number to START_GROUP
                 if not group:
                     raise ValueError("Found END_GROUP before START_GROUP")
@@ -188,14 +191,14 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                 raise ValueError("Could not find default type for wiretype: %d" % wire_type)
         else:
             if field_type == 'message':
-                #TODO probably big enough to factor out
+                # TODO probably big enough to factor out
                 message_typedef = None
                 # Check for a anonymous type
                 if 'message_typedef' in field_typedef:
                     message_typedef = field_typedef['message_typedef']
                 # Check for type defined by message type name
                 elif 'message_type_name' in field_typedef:
-                    message_typedef = blackboxprotobuf.lib.types.messages[
+                    message_typedef = acfun.libs.blackboxprotobuf.libs.types.messages[
                         field_typedef['message_type_name']]
 
                 try:
@@ -229,7 +232,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                     if 'alt_typedefs' in field_typedef:
                         # get the next higher alt field number
                         alt_field_number = str(
-                            max(map(int, field_tyepdef['alt_typedefs'].keys()))
+                            max(map(int, field_typedef['alt_typedefs'].keys()))
                             + 1)
                     else:
                         field_typedef['alt_typedefs'] = {}
@@ -247,18 +250,18 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                 field_typedef['group_typedef'] = group_typedef
             else:
                 # Verify wiretype matches
-                if blackboxprotobuf.lib.types.wiretypes[field_type] != wire_type:
+                if acfun.libs.blackboxprotobuf.libs.types.wiretypes[field_type] != wire_type:
                     raise ValueError("Invalid wiretype for field number %s. %s is not wiretype %s"
                                      % (field_number, field_type, wire_type))
 
                 # Simple type, just look up the decoder
-                field_out, pos = blackboxprotobuf.lib.types.decoders[field_type](buf, pos)
+                field_out, pos = acfun.libs.blackboxprotobuf.libs.types.decoders[field_type](buf, pos)
         field_typedef['type'] = field_type
         if 'name' not in field_typedef:
             field_typedef['name'] = ''
 
         field_key = field_number
-        if '-' not in field_number  and 'name' in field_typedef and field_typedef['name'] != '':
+        if '-' not in field_number and 'name' in field_typedef and field_typedef['name'] != '':
             field_key = field_typedef['name']
         # Deal with repeats
         if field_key in output:
@@ -282,17 +285,20 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
         raise ValueError("Got START_GROUP with no END_GROUP.")
     return output, typedef, pos
 
+
 def encode_lendelim_message(data, typedef):
     """Encode the length before the message"""
     message_out = encode_message(data, typedef)
     length = varint.encode_varint(len(message_out))
     return length + message_out
 
+
 def decode_lendelim_message(buf, typedef=None, pos=0):
     """Read in the length and use it as the end"""
     length, pos = varint.decode_varint(buf, pos)
-    ret = decode_message(buf, typedef, pos, pos+length)
+    ret = decode_message(buf, typedef, pos, pos + length)
     return ret
+
 
 # Not actually length delim, but we're hijacking the methods anyway
 def encode_group(value, typedef, field_number):
@@ -304,12 +310,15 @@ def encode_group(value, typedef, field_number):
     output.append(end_tag)
     return output
 
+
 def decode_group(buf, typedef=None, pos=0, end=None):
     """Decode a protobuf group type"""
     return decode_message(buf, typedef, pos, end, group=True)
 
+
 def generate_packed_encoder(wrapped_encoder):
     """Generate an encoder for a packed type from the base type encoder"""
+
     def length_wrapper(values):
         """Encode repeat values and prefix with the length"""
         output = bytearray()
@@ -317,14 +326,17 @@ def generate_packed_encoder(wrapped_encoder):
             output += wrapped_encoder(value)
         length = varint.encode_varint(len(output))
         return length + output
+
     return length_wrapper
+
 
 def generate_packed_decoder(wrapped_decoder):
     """Generate an decoder for a packer type from a base type decoder"""
+
     def length_wrapper(buf, pos):
         """Decode repeat values prefixed with the length"""
         length, pos = varint.decode_varint(buf, pos)
-        end = pos+length
+        end = pos + length
         output = []
         while pos < end:
             value, pos = wrapped_decoder(buf, pos)
@@ -332,4 +344,5 @@ def generate_packed_decoder(wrapped_decoder):
         if pos > end:
             raise decoder._DecodeError("Invalid Packed Field Length")
         return output, pos
+
     return length_wrapper

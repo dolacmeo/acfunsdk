@@ -269,47 +269,9 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
     return messages
 
 
-class AcWsConfig:
-    did = None
-    userId = None
-    ssecurity = None
-    sessKey = None
-    visitor_st = None
-    api_st = None
-    api_at = None
+class AcWebSocket:
     appId = 0
     instanceId = 0
-    ready = False
-
-    def __init__(self, acer):
-        self.acer = acer
-        self._get_token()
-
-    def _get_did(self):
-        live_page_req = self.acer.client.get(routes['live_index'])
-        assert live_page_req.status_code // 100 == 2
-        self.did = live_page_req.cookies.get('_did')
-
-    def _get_token(self):
-        self._get_did()
-        if self.acer.is_logined:
-            api_req = self.acer.client.post(apis['token'], data={"sid": "acfun.midground.api"})
-            api_data = api_req.json()
-            assert api_data.get('result') == 0
-            self.ssecurity = api_data.get("ssecurity", '')
-            self.api_st = api_data.get("acfun.midground.api_st", '').encode()
-            self.api_at = api_data.get("acfun.midground.api.at", '').encode()
-        else:
-            api_req = self.acer.client.post(apis['token_visitor'], data={"sid": "acfun.api.visitor"})
-            api_data = api_req.json()
-            assert api_data.get('result') == 0
-            self.ssecurity = api_data.get("acSecurity", '')
-            self.visitor_st = api_data.get("acfun.api.visitor_st", '').encode()
-        self.userId = api_data.get("userId")
-        self.ready = True
-
-
-class AcWebSocket:
     ws_link = None
     config = None
     _main_thread = None
@@ -330,7 +292,6 @@ class AcWebSocket:
         self.acer = acer
         # websocket.enableTrace(True)
         self.ws_link = random.choice(websocket_links)
-        self.config = AcWsConfig(self.acer)
         self.protos = AcProtos(self)
         self.ws = websocket.WebSocketApp(
             url=self.ws_link,
@@ -384,10 +345,10 @@ class AcWebSocket:
         self.unread.append(f"{seqId}.recv")
         if command == 'Basic.Register':
             self.task(*self.protos.ClientConfigGet_Request())
-            print(f"did       : {self.config.did}")
-            print(f"userId    : {self.config.userId}")
-            print(f"ssecurity : {self.config.ssecurity}")
-            print(f"sessKey   : {self.config.sessKey.decode()}")
+            print(f"did       : {self.acer.did}")
+            print(f"userId    : {self.acer.uid}")
+            print(f"ssecurity : {self.acer.tokens['ssecurity']}")
+            print(f"sessKey   : {self.acer.tokens['sessKey']}")
             self.is_register_done = True
             print(">>>>>>>> AcWebsocket Registed<<<<<<<<<")
         elif command == 'Basic.ClientConfigGet':

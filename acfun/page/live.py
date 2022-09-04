@@ -93,8 +93,8 @@ class AcLiveUp:
             "kpf": "PC_WEB",
             "userId": self.acer.uid,
             "did": self.acer.client.cookies.get('_did'),
-            "acfun.midground.api_st": self.acer.token.get('acfun.midground.api_st', "")
         }
+        param = self.acer.update_token(param)
         api_req = self.acer.client.post(apis[api_name], params=param, data=form_data,
                                         headers={'referer': f"{scheme}://{domains['live']}/"})
         return api_req.json()

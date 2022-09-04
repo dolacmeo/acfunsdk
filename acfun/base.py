@@ -63,12 +63,13 @@ class Acer:
     BASE_PATH = os.getcwd()
     DOWNLOAD_PATH = None
 
+    did = None
     uid = None
     username = None
     is_logined = False
     cookie = None
     personal = dict()
-    token = dict()
+    tokens = dict()
     nav_data = dict()
     channel_data = source.ChannelList
 
@@ -97,6 +98,7 @@ class Acer:
         self._get_nav()
         if self.check_online() is False:
             raise AcExploded("阿禅爆炸 (今天A站挂了吗？)")
+        self._get_personal()
 
     def __repr__(self):
         show_name = self.username or ''
@@ -194,21 +196,42 @@ class Acer:
                     self.nav_data.update({j['cid']: {y: j[y] for y in j if y != 'children'}})
 
     def _get_personal(self):
-        if self.is_logined is False:
-            return None
-        req = self.client.get(source.apis['personalInfo'])
-        data = req.json()
-        if data.get('result') != 0:
-            return None
-        self.personal = data.get('info', {})
-        self.uid = self.personal.get('userId')
-        self.username = self.personal.get('userName')
-        api_req = self.client.post(source.apis['token'], data={'sid': 'acfun.midground.api'})
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            self.token = api_data
+        live_page_req = self.client.get(source.routes['live_index'])
+        assert live_page_req.status_code // 100 == 2
+        self.did = live_page_req.cookies.get('_did')
+        if self.is_logined:
+            api_req = self.client.post(source.apis['token'], data={"sid": "acfun.midground.api"})
+            api_data = api_req.json()
+            assert api_data.get('result') == 0
+            self.tokens = {
+                "ssecurity": api_data.get("ssecurity", ''),
+                "api_st": api_data.get("acfun.midground.api_st", ''),
+                "api_at": api_data.get("acfun.midground.api.at", ''),
+            }
+            info_req = self.client.get(source.apis['personalInfo'])
+            info_data = info_req.json()
+            assert info_data.get('result') == 0
+            self.personal = info_data.get('info', {})
+            self.uid = self.personal.get('userId')
+            self.username = self.personal.get('userName')
             self.message = AcMessage(self)
             self.favourite = MyFavourite(self)
+        else:
+            api_req = self.client.post(source.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
+            api_data = api_req.json()
+            assert api_data.get('result') == 0
+            self.tokens = {
+                "ssecurity": api_data.get("acSecurity", ''),
+                "visitor_st": api_data.get("acfun.api.visitor_st", ''),
+            }
+            self.uid = api_data.get("userId")
+
+    def update_token(self, data: dict):
+        if self.is_logined:
+            data.update({"acfun.midground.api_st": self.tokens['api_st']})
+        else:
+            data.update({"acfun.api.visitor_st": self.tokens['visitor_st']})
+        return data
 
     def keys(self):
         return self.personal.keys()
@@ -280,8 +303,8 @@ class Acer:
             "objectType": objectType,
             "objectId": obj_id,
             "userId": self.uid,
-            "acfun.midground.api_st": self.token.get('acfun.midground.api_st', "")
         }
+        form_data = self.update_token(form_data)
         req = self.client.post(source.apis['like_add'], data=form_data)
         return req.json().get('result') == 1
 
@@ -295,8 +318,8 @@ class Acer:
             "objectType": objectType,
             "objectId": obj_id,
             "userId": self.uid,
-            "acfun.midground.api_st": self.token.get('acfun.midground.api_st', "")
         }
+        form_data = self.update_token(form_data)
         req = self.client.post(source.apis['like_delete'], data=form_data)
         return req.json().get('result') == 1
 
@@ -470,9 +493,9 @@ class Acer:
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "userId": self.uid,
-            "subBiz": "mainApp",
-            "acfun.midground.api_st": self.token.get('acfun.midground.api_st', "")
+            "subBiz": "mainApp"
         }
+        param = self.update_token(param)
         api_req = self.client.post(source.apis['live_obs_config'], params=param,
                                    headers={'referer': f"{source.scheme}://{source.domains['user']}"})
         return api_req.json()

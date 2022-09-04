@@ -150,19 +150,7 @@ class AcProtos:
 
     def __init__(self, acws):
         self.acws = acws
-        self.config = self.acws.config
-        self.acer = self.config.acer
-
-    @property
-    def token(self):
-        return self.config.api_st or self.config.visitor_st
-
-    def update_token(self, data: dict):
-        if self.acer.is_logined:
-            data.update({"acfun.midground.api_st": self.config.api_st.decode()})
-        else:
-            data.update({"acfun.api.visitor_st": self.config.visitor_st.decode()})
-        return data
+        self.acer = self.acws.acer
 
     def _aes_encrypt(self, key, payload):
         key = base64.standard_b64decode(key)
@@ -194,9 +182,9 @@ class AcProtos:
         payload_data = message[self.header_offset + packet_header_len:]
         # print(f"packet_header.encryptionMode: {packet_header.encryptionMode}")
         if packet_header.encryptionMode == 1:  # kEncryptionServiceToken
-            decrypted_data = self._aes_decrypt(self.config.ssecurity, payload_data)
+            decrypted_data = self._aes_decrypt(self.acer.tokens['ssecurity'], payload_data)
         elif packet_header.encryptionMode == 2:  # kEncryptionSessionKey
-            decrypted_data = self._aes_decrypt(self.config.sessKey, payload_data)
+            decrypted_data = self._aes_decrypt(self.acer.tokens['sessKey'], payload_data)
         else:  # kEncryptionNone
             decrypted_data = payload_data
             stream_payload = ErrorMessage.deserialize(decrypted_data)
@@ -247,9 +235,9 @@ class AcProtos:
     def BasicRegister_Response(self, packet_header, stream_payload):
         reg_resp = RegisterResponse_pb2.RegisterResponse()
         reg_resp.ParseFromString(stream_payload.payloadData)
-        self.config.appId = packet_header.appId
-        self.config.instanceId = packet_header.instanceId
-        self.config.sessKey = base64.standard_b64encode(reg_resp.sessKey)
+        self.acws.appId = packet_header.appId
+        self.acws.instanceId = packet_header.instanceId
+        self.acer.tokens['sessKey'] = base64.standard_b64encode(reg_resp.sessKey)
         return packet_header.seqId, stream_payload.command, MessageToJson(reg_resp)
 
     def ZtLiveCsCmdAck_Response(self, ack_type, packet_header, ack_payload):
@@ -319,15 +307,16 @@ class AcProtos:
         # ####################      Encoding        ################# #
         token_info = PacketHeader_pb2.TokenInfo__pb2.TokenInfo()
         token_info.tokenType = 1
-        token_info.token = self.config.api_st if self.acer.is_logined else self.config.visitor_st
+        token_info.token = self.acer.tokens['api_st'].encode() \
+            if self.acer.is_logined else self.acer.tokens['visitor_st'].encode()
         header = PacketHeader_pb2.PacketHeader()
-        header.appId = self.config.appId
-        header.uid = self.config.userId
-        header.instanceId = self.config.instanceId
+        header.appId = self.acws.appId
+        header.uid = self.acer.uid
+        header.instanceId = self.acws.instanceId
         payload_len = len(payload_body)
         encrypted = payload_body
         if key_n in [1, 2]:
-            key = self.config.ssecurity if key_n == 1 else self.config.sessKey
+            key = self.acer.tokens['ssecurity'] if key_n == 1 else self.acer.tokens['sessKey']
             encrypted = self._aes_encrypt(key, payload_body)
         header.decodedPayloadLen = payload_len
         header.encryptionMode = key_n
@@ -353,17 +342,17 @@ class AcProtos:
         device_info.platformType = 9
         device_info.deviceModel = "h5"
         if self.acer.is_logined:
-            device_info.deviceId = self.config.did
+            device_info.deviceId = self.acer.did
         payload.deviceInfo.CopyFrom(device_info)
         payload.presenceStatus = 1
         payload.appActiveStatus = 1
         ztcommon_info = RegisterRequest_pb2.ZtCommonInfo__pb2.ZtCommonInfo()
         ztcommon_info.kpn = "ACFUN_APP"
         ztcommon_info.kpf = "PC_WEB"
-        ztcommon_info.uid = int(self.config.userId)
+        ztcommon_info.uid = int(self.acer.uid)
         if self.acer.is_logined:
-            ztcommon_info.did = self.config.did
-        payload.instanceId = self.config.instanceId
+            ztcommon_info.did = self.acer.did
+        payload.instanceId = self.acws.instanceId
         payload.ztCommonInfo.CopyFrom(ztcommon_info)
         return self.encode(1, "Basic.Register", payload, "mainApp")
 
@@ -423,7 +412,7 @@ class AcProtos:
         # payload.seqId = int(f"{time.time():.0f}{1:0>6}")
         payload.clientSeqId = int(f"{time.time():.0f}{1:0>6}")
         payload.timestampMs = int(f"{time.time():.0f}{1:0>3}")
-        payload.fromUser.ParseFromString(proto_user_serialize(self.config.userId))
+        payload.fromUser.ParseFromString(proto_user_serialize(self.acer.uid))
         payload.targetId = target_uid
         payload.toUser.ParseFromString(proto_user_serialize(target_uid))
         payload.contentType = content_type
@@ -445,7 +434,7 @@ class AcProtos:
             "download-verify-type": "1",
         }
         param = {'kpn': "ACFUN_APP"}
-        param = self.update_token(param)
+        param = self.acer.update_token(param)
         post_req = self.acer.client.post(apis['im_image_upload'], params=param, headers=head, data=image_data)
         return post_req.json()
 
@@ -478,10 +467,10 @@ class AcProtos:
             "subBiz": "mainApp",
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
-            "userId": self.config.userId,
-            "did": self.config.did
+            "userId": self.acer.uid,
+            "did": self.acer.did
         }
-        param = self.update_token(param)
+        param = self.acer.update_token(param)
         form_data = {"authorId": uid, "pullStreamType": "FLV"}
         api_req = self.acer.client.post(apis['live_play'], params=param, data=form_data,
                                         headers={'referer': "https://live.acfun.cn/"})
@@ -500,12 +489,12 @@ class AcProtos:
             "subBiz": "mainApp",
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
-            "userId": self.config.userId,
-            "did": self.config.did
+            "userId": self.acer.uid,
+            "did": self.acer.did
         }
-        param = self.update_token(param)
+        param = self.acer.update_token(param)
         form_data = {
-            "visitorId": self.config.userId,
+            "visitorId": self.acer.uid,
             "liveId": self.live_room.get("liveId"),
         }
         api_req = self.acer.client.post(apis['live_gift_list'], params=param, data=form_data,
@@ -524,7 +513,7 @@ class AcProtos:
     def ZtLiveCsEnterRoom_Request(self, uid: int):
         self.get_aclive_room_info(uid)
         enter_room_payload = ZtLiveCsEnterRoom_pb2.ZtLiveCsEnterRoom()
-        enter_room_payload.isAuthor = self.config.userId == uid
+        enter_room_payload.isAuthor = self.acer.uid == uid
         # enter_room_payload.reconnectCount = 0
         # enter_room_payload.lastErrorCode = 0
         enter_room_payload.enterRoomAttach = self.live_room.get("enterRoomAttach")

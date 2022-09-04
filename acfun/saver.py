@@ -4,7 +4,6 @@ import os
 import re
 import time
 import json
-import arrow
 import shutil
 import zipfile
 from uuid import uuid4
@@ -19,8 +18,8 @@ from acfun.libs.you_get.extractors.acfun import download as you_get_download
 __author__ = 'dolacmeo'
 
 
-def unix2datestr(t):
-    return arrow.get(t, tzinfo="Asia/Shanghai").format('YYYY-MM-DD HH:mm:ss')
+def unix2datestr(t: (int, float), f: str = "%Y-%m-%d %H:%M:%S"):
+    return time.strftime(f, time.localtime(t))
 
 
 class AcSaver:
@@ -600,7 +599,7 @@ class ArticleSaver(AcSaver):
         up_data = self.get_user(self.ac_obj.article_data['user']['id'])
         article_template = self.templates.get_template('article.html')
         article_html = article_template.render(
-            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"),
+            up_reg_date=unix2datestr(up_data['registerTime']),
             v_num=self.v_num, up_data=up_data, RAW=self.ac_obj.article_data)
         html_obj = Bs(article_html, 'lxml')
         html_img_path = [self.folder_name, f"ac{self.ac_obj.ac_num}", 'img']
@@ -691,7 +690,7 @@ class VideoSaver(AcSaver):
         up_data = self.get_user(self.ac_obj.video_data['user']['id'])
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(
-            up_reg_date=arrow.get(up_data['registerTime']).format("YYYY-MM-DD HH:mm:ss"), partNum=num,
+            up_reg_date=unix2datestr(up_data['registerTime']), partNum=num,
             v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
         html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")
         with open(html_path, 'wb') as html_file:

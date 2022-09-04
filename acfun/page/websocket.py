@@ -2,14 +2,11 @@
 import os
 import json
 import time
-import arrow
 import random
 import base64
 import psutil
-import asyncio
 import threading
 import websocket
-import pyperclip
 import subprocess
 from acfun.source import routes, apis, websocket_links
 from acfun.protos import AcProtos
@@ -54,6 +51,12 @@ def uint8_payload_to_base64(data: dict):
     for x in range(len(data.keys())):
         b_str += bytes([data[str(x)]])
     return base64.standard_b64encode(b_str)
+
+
+def unix2string(t: (int, float, str), f: str = "%H:%M:%S"):
+    if len(str(t)) > 10:
+        t = int(str(t)[:10])
+    return time.strftime(f, time.localtime(t))
 
 
 def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [list, None] = None):
@@ -136,7 +139,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                 # 内容信息
                 user = user_info(fans)
                 content = fans['content']
-                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(fans['sendTimeMs'])
                 users.append(f"{{{send_time}}} \r\n{user} 💬{content} \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalLike":
@@ -150,7 +153,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                     users.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(fans)
-                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(fans['sendTimeMs'])
                 users.append(f"{{{send_time}}} \r\n{user} 点赞了❤ \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalUserEnterRoom":
@@ -164,7 +167,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                     new_user.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(newbee)
-                send_time = arrow.get(int(newbee['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(int(newbee['sendTimeMs']))
                 new_user.append(f"{{{send_time}}} \r\n{user} 进入直播间👤 \r\n")
                 words.append("".join(new_user))
         elif signal_name == "CommonActionSignalUserFollowAuthor":
@@ -178,12 +181,12 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                     new_user.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(newbee)
-                send_time = arrow.get(int(newbee['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(int(newbee['sendTimeMs']))
                 words.append(f"{{{send_time}}} \r\n{user} 关注了主播👀 \r\n")
                 words.append("".join(new_user))
         elif signal_name == "AcfunActionSignalThrowBanana":
             user = user_info(payload)
-            send_time = arrow.get(int(payload['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+            send_time = unix2string(int(payload['sendTimeMs']))
             words.append(f"{{{send_time}}}{user}")
         elif signal_name == "CommonActionSignalGift":
             words = list()
@@ -202,7 +205,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                     gift = f"送出{fans['batchSize']}个🎁[{gift_data[str(fans['giftId'])]['giftName']}]"
                 if fans['comboCount'] > 1:
                     gift += f" 连击{fans['comboCount']}"
-                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(fans['sendTimeMs'])
                 words.append(f"{{{send_time}}} \r\n{user} {gift} \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalRichText":  # 高级弹幕
@@ -218,7 +221,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                     users.append(signal_types.get(signal_name, "[????????]"))
                 # 内容信息
                 user = user_info(fans)
-                send_time = arrow.get(int(fans['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(fans['sendTimeMs'])
                 words.append(f"{{{send_time}}} \r\n{user} 加入守护团 \r\n")
                 words.append("".join(users))
         elif signal_name == "AcfunStateSignalDisplayInfo":
@@ -245,7 +248,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                 # 内容信息
                 user = user_info(comment)
                 content = comment['content']
-                send_time = arrow.get(int(comment['sendTimeMs']), tzinfo="Asia/Shanghai").format("HH:mm:ss")
+                send_time = unix2string(int(comment['sendTimeMs']))
                 his_words.append(f"{{{send_time}}} \r\n{user} 💬{content}")
                 full_comment = "".join(his_words) + "\r\n"
                 words.append(full_comment)
@@ -352,12 +355,6 @@ class AcWebSocket:
         self.is_close = False
         return self
 
-    def wait4ready(self):
-        while self.config.ready is False:
-            print('wait...')
-            time.sleep(1)
-        return True
-
     def add_task(self, seqId: int, command, content):
         if self.is_close is True:
             return False
@@ -406,8 +403,7 @@ class AcWebSocket:
             live_data = json.loads(self.live_room.get('videoPlayRes', "")).get('liveAdaptiveManifest', [])[0]
             live_adapt = live_data.get('adaptationSet', {}).get('representation', {})
             if self.player_config is None:
-                pyperclip.copy(live_adapt[2]['url'])
-                print(f"未设置PotPlayer 已复制串流地址 请自行播放")
+                print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_adapt[2]['url']}")
             else:
                 create_time = self.live_room.get('liveStartTime', 0) // 1000
                 start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))

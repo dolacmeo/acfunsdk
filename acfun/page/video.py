@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import json
-import js2py
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
 from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
@@ -64,7 +63,10 @@ class AcVideo:
         self.page_obj = Bs(req.text, 'lxml')
         js_code = self.page_obj.select_one("#pagelet_newheader").find_next_sibling("script").text.strip().split('\n')[0]
         js_code = "".join(js_code.split())
-        self.video_data = js2py.eval_js(js_code).to_dict()
+        js_head = "window.pageInfo=window.videoInfo="
+        js_end = ";"
+        assert js_code.startswith(js_head) and js_code.endswith(js_end)
+        self.video_data = json.loads(js_code[len(js_head):-len(js_end)])
         self.video_data.update(get_channel_info(req.text))
         self.vid = self.video_data.get("currentVideoId")
         self.page_pagelets = get_page_pagelets(self.page_obj)

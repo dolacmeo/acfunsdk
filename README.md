@@ -15,13 +15,12 @@ acfunSDK是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
 几乎搜集了所有与 [AcFun弹幕视频网][acfun.cn] 相关的接口与数据。
 
-ps: _只要项目还没有弃坑，如发现未知接口，或现有功能失效，请随时提交 [Issue]_
+ps: _如发现未知接口，或现有功能失效，请随时提交 [Issue]_
 
 - - -
 
 **Python** : 开发环境为 `Python 3.8.10` & `Python 3.9.6`
 
-理论向上任意兼容，向下兼容情况不明。
 `Python`本体请自行[下载安装][python]。
 
 ## [从PyPI安装](https://pypi.org/project/acfunsdk/)
@@ -30,19 +29,7 @@ ps: _只要项目还没有弃坑，如发现未知接口，或现有功能失效
 python -m pip install acfunsdk
 ```
 
-<details>
-<summary>手动安装或复制到项目内</summary>
-
-**安装依赖** : _建议使用[虚拟环境][venv]_
-```sh
-pip install -r requirements.txt
-```
-
-</details>
-
-**需要ffmpeg**
-> `ffmpeg` 主要用于下载视频。
-> 
+**需要`ffmpeg`**  主要用于下载视频。
 > 建议去官网下载 https://ffmpeg.org/download.html
 >
 > 可执行文件 `ffmpeg` 需要加入到环境变量，或复制到运行根目录。
@@ -177,34 +164,33 @@ demo_video.saver(saver_path).save_all()
 <details>
 <summary>依赖库</summary>
 
-内置+修改: 位于 `libs` 文件夹内
+>内置+修改: 位于 `libs` 文件夹内
+>
+>+ [`you-get`](https://github.com/soimort/you-get)
+>+ [`ffmpeg_progress_yield`](https://github.com/slhck/ffmpeg-progress-yield)
+>+ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
 
-+ [`you-get`](https://github.com/soimort/you-get)
-+ [`ffmpeg_progress_yield`](https://github.com/slhck/ffmpeg-progress-yield)
-+ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
+**依赖: 包含在 `requirements.txt` 中**
 
-依赖: 包含在 `requirements.txt` 中
-
-+ [`rich`](https://pypi.org/project/rich/)
-+ [`arrow`](https://pypi.org/project/arrow/)
-+ [`pycryptodome`](https://pypi.org/project/pycryptodome/)
-+ [`jinja2`](https://pypi.org/project/jinja2/)
-
-+ [`psutil`](https://pypi.org/project/psutil/)
-+ [`filetype`](https://pypi.org/project/filetype/)
-+ [`pyperclip`](https://pypi.org/project/pyperclip/)
-+ [`alive-progress`](https://pypi.org/project/alive-progress/)
-+ [`m3u8`](https://pypi.org/project/m3u8/)
+基础网络请求及页面解析:
 + [`httpx`](https://pypi.org/project/httpx/)
-+ [`websocket-client`](https://pypi.org/project/websocket-client/)
-
++ [`lxml`](https://pypi.org/project/lxml/)
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
 + [`cssutils`](https://pypi.org/project/cssutils/)
-+ [`lxml`](https://pypi.org/project/lxml/)
-+ [`js2py`](https://pypi.org/project/js2py/)
 
+下载及html页面渲染:
++ [`alive-progress`](https://pypi.org/project/alive-progress/)
++ [`filetype`](https://pypi.org/project/filetype/)
++ [`jinja2`](https://pypi.org/project/jinja2/)
+
+WebSocket通信及数据处理:
++ [`websocket-client`](https://pypi.org/project/websocket-client/)
++ [`pycryptodome`](https://pypi.org/project/pycryptodome/)
 + [`protobuf`](https://pypi.org/project/protobuf/)
 + [`proto-plus`](https://pypi.org/project/proto-plus/)
++ [`rich`](https://pypi.org/project/rich/)
++ [`psutil`](https://pypi.org/project/psutil/)
+
 </details>
 
 - - - 

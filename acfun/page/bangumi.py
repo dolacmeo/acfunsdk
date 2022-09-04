@@ -1,5 +1,5 @@
 # coding=utf-8
-import js2py
+import json
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
 from acfun.page.utils import get_channel_info, get_page_pagelets, AcDanmaku
@@ -44,10 +44,16 @@ class AcBangumi:
         if newheader is None:
             print(routes['bangumi'] + self.aa_num)
         js_data = newheader.find_next_sibling("script").text.strip().split('\n')
-        bangumi_data = js_data[0]
-        self.bangumi_data = js2py.eval_js(bangumi_data).to_dict()
-        bangumi_list = js_data[2]
-        self.bangumi_list = js2py.eval_js(bangumi_list).to_dict()
+        bangumi_data = "".join(js_data[0].split())
+        bangumi_data_js_head = "window.pageInfo=window.bangumiData="
+        bangumi_data_js_end = ";"
+        assert bangumi_data.startswith(bangumi_data_js_head) and bangumi_data.endswith(bangumi_data_js_end)
+        self.bangumi_data = json.loads(bangumi_data[len(bangumi_data_js_head):-len(bangumi_data_js_end)])
+        bangumi_list = "".join(js_data[2].split())
+        bangumi_list_js_head = "window.bangumiList="
+        bangumi_list_js_end = ";"
+        assert bangumi_list.startswith(bangumi_list_js_head) and bangumi_list.endswith(bangumi_list_js_end)
+        self.bangumi_list = json.loads(bangumi_list[len(bangumi_list_js_head):-len(bangumi_list_js_end)])
         self.bangumi_data.update(get_channel_info(req.text))
         self.item_id = self.bangumi_data.get("itemId")
         self.vid = self.bangumi_data.get("videoId")

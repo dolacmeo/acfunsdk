@@ -2,7 +2,7 @@
 name = "acfunSDK"
 homepage = "https://pypi.org/project/acfunsdk/"
 repository = "https://github.com/dolaCmeo/acfunSDK"
-version = "0.8.3"
+version = "0.8.4"
 description = "acfunSDK - UNOFFICEICAL"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
 license = "MIT"
@@ -23,23 +23,19 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-rich = "^12.5"
-arrow = "^1.2"
-pycryptodome = "^3.15"
-jinja2 = "^3.1"
-psutil = "^5.9"
-filetype = "^1.1"
-pyperclip = "^1.8"
-alive-progress = "^2.4"
-m3u8 = "^3.3"
 httpx = "^0.23"
-websocket-client = "^1.4"
 lxml = "^4.9"
 beautifulsoup4 = "^4.11"
 cssutils = "^2.6"
-js2py = "^0.71"
+alive-progress = "^2.4"
+filetype = "^1.1"
+jinja2 = "^3.1"
+websocket-client = "^1.4"
+pycryptodome = "^3.15"
 protobuf = "==3.20.1"
 proto-plus = "==1.22.1"
+psutil = "^5.9"
+rich = "^12.5"
 
 
 [tool.poetry.dev-dependencies]

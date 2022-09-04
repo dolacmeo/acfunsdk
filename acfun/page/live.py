@@ -2,7 +2,6 @@
 import os
 import time
 import json
-import pyperclip
 import subprocess
 from acfun.source import scheme, domains, routes, apis
 from acfun.page.websocket import AcWebSocket
@@ -194,7 +193,6 @@ class AcLiveUp:
         retry = 0
         while times > 0 and retry <= max_retry:
             api_data = self._api_action('live_send_gift', form_data)
-            print(api_data)
             if api_data.get('result') == 1:
                 times -= 1
             else:
@@ -216,8 +214,7 @@ class AcLiveUp:
             print(f"[{potplayer}] 开始播放......\r\n {live_title}")
             subprocess.Popen([potplayer, live_obs_stream, "/title", f'"{live_title}"'], stdout=subprocess.PIPE)
         else:
-            print(f"未设置PotPlayer 已复制串流地址 请自行播放")
-            pyperclip.copy(live_obs_stream)
+            print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
         return live_obs_stream
 
     def watching_danmaku(self, room_bans: [list, None] = None, potplayer: [str, None] = None, quality: int = 1):
@@ -226,7 +223,6 @@ class AcLiveUp:
             return False
         self.acws = AcWebSocket(self.acer)
         self.acws.run()
-        self.acws.wait4ready()
         self.acws.live_enter_room(self.uid, room_bans, potplayer, quality)
         try:
             count = 0

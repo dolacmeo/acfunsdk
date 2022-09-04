@@ -1,7 +1,7 @@
 # coding=utf-8
 import re
 import html
-import js2py
+import json
 import textwrap
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
@@ -48,7 +48,10 @@ class AcArticle:
             self.is_404 = True
             return
         js_code = self.page_obj.select_one("#main > script").text.strip().split('\n')[0]
-        self.article_data = js2py.eval_js(js_code).to_dict()
+        js_head = "window.articleInfo = "
+        js_end = ";"
+        assert js_code.startswith(js_head) and js_code.endswith(js_end)
+        self.article_data = json.loads(js_code[len(js_head):-len(js_end)])
         self.page_pagelets = get_page_pagelets(self.page_obj)
 
     def saver(self, dest_path=None):

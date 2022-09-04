@@ -1,25 +1,33 @@
 [tool.poetry]
 name = "acfunSDK"
-homepage = "https://pypi.org/project/acfunsdk/"
-repository = "https://github.com/dolaCmeo/acfunSDK"
 version = "0.8.4"
 description = "acfunSDK - UNOFFICEICAL"
-authors = ["dolacmeo <dolacmeo@gmail.com>"]
 license = "MIT"
+authors = ["dolacmeo <dolacmeo@gmail.com>"]
+maintainers = []
 readme = "README.md"
-packages = [{include = "acfun"}]
+homepage = "https://pypi.org/project/acfunsdk/"
+repository = "https://github.com/dolaCmeo/acfunSDK"
+documentation = "https://github.com/dolaCmeo/acfunSDK"
+keywords = ["acfun", "sdk", "unofficeical"]
 classifiers = [
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Natural Language :: Chinese (Simplified)",
     "Operating System :: Microsoft :: Windows",
-    "Operating System :: MacOS",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: JavaScript",
+    "Topic :: Education",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Software Development :: Libraries",
 ]
-
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/dolaCmeo/acfunSDK/issues"
+packages = [{include = "acfun"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -37,7 +45,6 @@ proto-plus = "==1.22.1"
 psutil = "^5.9"
 rich = "^12.5"
 
-
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 
@@ -48,3 +55,6 @@ build-backend = "poetry.core.masonry.api"
 [[tool.poetry.source]]
 name = 'aliyun.mirrors'
 url = "https://mirrors.aliyun.com/pypi/simple/"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/dolaCmeo/acfunSDK/issues"

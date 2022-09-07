@@ -218,6 +218,12 @@ class AcLiveUp:
         return live_obs_stream
 
     def watching_danmaku(self, room_bans: [list, None] = None, potplayer: [str, None] = None, quality: int = 1):
+        if room_bans is None:
+            room_bans = [
+                # "ZtLiveScActionSignal",
+                "ZtLiveScStateSignal",
+                "ZtLiveScNotifySignal",
+            ]
         live_adapt = self.media_list()
         if live_adapt is False:
             return False

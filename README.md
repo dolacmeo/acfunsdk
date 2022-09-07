@@ -41,7 +41,7 @@ python -m pip install acfunsdk
 
 ### 实例化获取对象
 ```python
-from acfun import Acer
+from acfunsdk import Acer
 # 实例化一个Acer
 acer = Acer(debug=True)
 # 登录用户(成功登录后会自动保存 '<用户名>.cookies')

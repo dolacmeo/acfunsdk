@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package AcFunDanmu;
+
+message CommonNotifySignalKickedOut {
+	string reason = 1;
+	string b = 2;
+}

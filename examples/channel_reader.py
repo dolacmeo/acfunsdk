@@ -1,5 +1,5 @@
 # coding=utf-8
-from acfun import Acer
+from acfunsdk import Acer
 
 # 实例化一个Acer
 acer = Acer(debug=True)

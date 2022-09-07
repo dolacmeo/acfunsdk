@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package AcFunDanmu.Im.Basic;
+
+message PushServiceToken {
+	PushType pushType = 1;
+	bytes token = 2;
+	bool isPassThrough = 3;
+
+	enum PushType {
+		kPushTypeInvalid = 0;
+		kPushTypeAPNS = 1;
+		kPushTypeXmPush = 2;
+		kPushTypeJgPush = 3;
+		kPushTypeGtPush = 4;
+		kPushTypeOpPush = 5;
+		kPushTypeVvPush = 6;
+		kPushTypeHwPush = 7;
+		kPushTypeFcm = 8;
+	}
+}

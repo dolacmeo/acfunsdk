@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package AcFunDanmu.Im.Message;
+
+import "AudioAttachment.proto";
+import "ImageAttachment.proto";
+
+message Attachment {
+	oneof attachment {
+		ImageAttachment imageAttachment = 1;
+		AudioAttachment audioAttachment = 2;
+	}
+}

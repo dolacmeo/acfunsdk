@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="12px" viewBox="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 56.2 (81672) - https://sketch.com -->
+    <title>icon_ipad</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icon_ipad" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g>
+            <g>
+                <g id="图标规范38px" opacity="0">
+                    <g id="图标规范24px-copy-47">
+                        <g id="栅格" transform="translate(0.693333, 0.693333)" opacity="0.8" stroke="#9B9B9B" stroke-width="0.5">
+                            <circle id="正圆" cx="5.38666667" cy="5.38666667" r="4.87"></circle>
+                            <rect id="正方形" x="0.996666667" y="0.996666667" width="8.78" height="8.78" rx="0.323286339"></rect>
+                            <rect id="竖矩形" x="1.63666667" y="0.516666667" width="7.5" height="9.74" rx="0.323286339"></rect>
+                            <circle id="中心圆" cx="5.38666667" cy="5.38666667" r="2.28333333"></circle>
+                            <rect id="横矩形" x="0.516666667" y="1.63666667" width="9.74" height="7.5" rx="0.323286339"></rect>
+                        </g>
+                        <rect id="Rectangle" stroke-opacity="0.8" stroke="#979797" stroke-width="0.5" x="0.25" y="0.25" width="11.66" height="11.66"></rect>
+                    </g>
+                </g>
+                <rect id="Rectangle" stroke="#CCCCCC" stroke-width="1.4" x="1.8" y="1.3" width="8.4" height="9.4" rx="0.8"></rect>
+                <rect id="Rectangle" fill="#CCCCCC" x="5.2" y="7.6" width="1.6" height="1.6" rx="0.8"></rect>
+                <rect id="矩形" x="0" y="0" width="12" height="12"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

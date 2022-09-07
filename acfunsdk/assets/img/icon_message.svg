@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="14px" viewBox="0 0 14 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59 (86127) - https://sketch.com -->
+    <title>icon_评论</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icon_评论" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="none" x="0" y="0" width="14" height="14"></rect>
+        <g id="icon_card_comment">
+            <g id="icon_评论">
+                <rect id="Rectangle-10" fill="none" opacity="0" x="0" y="0" width="14" height="14"></rect>
+                <g id="Group-9" transform="translate(1.166667, 1.166667)" fill-rule="nonzero">
+                    <g id="Group" transform="translate(0.000000, 0.116667)">
+                        <path d="M11.5208333,2.1875 L11.5208333,7.8731581 C11.5208333,8.82396897 10.7206445,9.625 9.77083333,9.625 L3.64583333,9.625 L0.145833333,10.9375 L0.145833333,2.1779221 C0.145833333,1.22711123 0.946022154,0.4375 1.89583333,0.4375 L8.89583333,0.4375 L9.77083333,0.4375 C10.7373316,0.4375 11.5208333,1.22100169 11.5208333,2.1875 Z" id="路径" stroke="#FFFFFF" stroke-width="1.16666667" opacity="0" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M3.0625,0.758333333 L8.60416667,0.758333333 C10.2149972,0.758333333 11.5208333,2.06416948 11.5208333,3.675 L11.5208333,6.59166667 C11.5208333,8.20249719 10.2149972,9.50833333 8.60416667,9.50833333 L3.5,9.50833333 L3.5,9.50833333 L0.145833333,10.675 L0.145833333,3.675 C0.145833333,2.06416948 1.45166948,0.758333333 3.0625,0.758333333 Z" id="矩形" stroke="#FFFFFF" stroke-width="1.16666667" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <rect id="矩形" fill="#FFFFFF" x="2.33333333" y="3.38333333" width="7" height="1.16666667" rx="0.583333333"></rect>
+                        <rect id="矩形-copy" fill="#FFFFFF" x="2.33333333" y="6.00833333" width="4.08333333" height="1.16666667" rx="0.583333333"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

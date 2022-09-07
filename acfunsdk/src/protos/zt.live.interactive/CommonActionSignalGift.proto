@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package AcFunDanmu;
+
+import "ZtLiveUserInfo.proto";
+import "ZtDrawGiftInfo.proto";
+
+message CommonActionSignalGift {
+	ZtLiveUserInfo userInfo = 1;
+	int64 sendTimeMs = 2;
+	int64 giftId = 3;
+	int32 batchSize = 4;
+	int32 comboCount = 5;
+	int64 rank = 6;
+	string comboKey = 7;
+	int64 slotDisplayDurationMs = 8;
+	int64 expireDurationMs = 9;
+	ZtDrawGiftInfo drawGiftInfo = 10;
+}

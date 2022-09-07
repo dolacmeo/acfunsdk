@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="12px" viewBox="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>icon_computer</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icon_computer" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g>
+            <g id="图标规范38px" opacity="0">
+                <g id="图标规范24px-copy-47">
+                    <g id="栅格" transform="translate(0.674074, 0.674074)" opacity="0.8" stroke="#9B9B9B" stroke-width="0.5">
+                        <circle id="正圆" cx="5.23703704" cy="5.23703704" r="4.72777778"></circle>
+                        <rect id="正方形" x="0.975925926" y="0.975925926" width="8.52222222" height="8.52222222" rx="0.377167396"></rect>
+                        <rect id="竖矩形" x="1.59814815" y="0.509259259" width="7.27777778" height="9.45555556" rx="0.377167396"></rect>
+                        <circle id="中心圆" cx="5.23703704" cy="5.23703704" r="2.21296296"></circle>
+                        <rect id="横矩形" x="0.509259259" y="1.59814815" width="9.45555556" height="7.27777778" rx="0.377167396"></rect>
+                    </g>
+                    <rect id="Rectangle" stroke-opacity="0.8" stroke="#979797" stroke-width="0.5" x="0.25" y="0.25" width="11.3222222" height="11.3222222"></rect>
+                </g>
+            </g>
+            <path d="M2.26666667,0.633333333 L9.73333333,0.633333333 C10.8931313,0.633333333 11.8333333,1.57353536 11.8333333,2.73333333 L11.8333333,7.4 C11.8333333,8.55979797 10.8931313,9.5 9.73333333,9.5 L2.26666667,9.5 C1.10686869,9.5 0.166666667,8.55979797 0.166666667,7.4 L0.166666667,2.73333333 C0.166666667,1.57353536 1.10686869,0.633333333 2.26666667,0.633333333 Z M2.26666667,2.03333333 C1.88006734,2.03333333 1.56666667,2.34673401 1.56666667,2.73333333 L1.56666667,7.4 C1.56666667,7.78659932 1.88006734,8.1 2.26666667,8.1 L9.73333333,8.1 C10.1199327,8.1 10.4333333,7.78659932 10.4333333,7.4 L10.4333333,2.73333333 C10.4333333,2.34673401 10.1199327,2.03333333 9.73333333,2.03333333 L2.26666667,2.03333333 Z" id="Rectangle-Copy" fill="#CCCCCC" fill-rule="nonzero"></path>
+            <rect id="Rectangle" fill="#CCCCCC" x="2.73333333" y="10.2" width="6.53333333" height="1.4" rx="0.7"></rect>
+            <rect id="矩形" x="0" y="0" width="12" height="12"></rect>
+        </g>
+    </g>
+</svg>

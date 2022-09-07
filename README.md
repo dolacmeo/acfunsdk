@@ -166,30 +166,29 @@ demo_video.saver(saver_path).save_all()
 
 >内置+修改: 位于 `libs` 文件夹内
 >
->+ [`you-get`](https://github.com/soimort/you-get)
 >+ [`ffmpeg_progress_yield`](https://github.com/slhck/ffmpeg-progress-yield)
 >+ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
 
 **依赖: 包含在 `requirements.txt` 中**
 
 基础网络请求及页面解析:
-+ [`httpx`](https://pypi.org/project/httpx/)
-+ [`lxml`](https://pypi.org/project/lxml/)
-+ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
-+ [`cssutils`](https://pypi.org/project/cssutils/)
++ [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
++ [`lxml`](https://pypi.org/project/lxml/)`>=4.9`
++ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
++ [`cssutils`](https://pypi.org/project/cssutils/)`>=2.6`
 
 下载及html页面渲染:
-+ [`alive-progress`](https://pypi.org/project/alive-progress/)
-+ [`filetype`](https://pypi.org/project/filetype/)
-+ [`jinja2`](https://pypi.org/project/jinja2/)
++ [`alive-progress`](https://pypi.org/project/alive-progress/)`>=2.4`
++ [`filetype`](https://pypi.org/project/filetype/)`>=1.1`
++ [`jinja2`](https://pypi.org/project/jinja2/)`>=3.1`
 
 WebSocket通信及数据处理:
-+ [`websocket-client`](https://pypi.org/project/websocket-client/)
-+ [`pycryptodome`](https://pypi.org/project/pycryptodome/)
-+ [`protobuf`](https://pypi.org/project/protobuf/)
-+ [`proto-plus`](https://pypi.org/project/proto-plus/)
-+ [`rich`](https://pypi.org/project/rich/)
-+ [`psutil`](https://pypi.org/project/psutil/)
++ [`websocket-client`](https://pypi.org/project/websocket-client/)`>=1.4`
++ [`pycryptodome`](https://pypi.org/project/pycryptodome/)`>=3.15`
++ [`protobuf`](https://pypi.org/project/protobuf/)`==3.20.1`
++ [`proto-plus`](https://pypi.org/project/proto-plus/)`==1.22.1`
++ [`rich`](https://pypi.org/project/rich/)`>=12.5`
++ [`psutil`](https://pypi.org/project/psutil/)`>=5.9`
 
 </details>
 

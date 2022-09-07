@@ -341,7 +341,9 @@ def acfun_video_downloader(client, data: dict,
             if progress > 0:
                 bar(progress/100)
         bar(1)
-    return os.path.isfile(video_save_path)
+    if os.path.isfile(video_save_path):
+        return video_save_path
+    return False
 
 
 def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None, display: bool = True):

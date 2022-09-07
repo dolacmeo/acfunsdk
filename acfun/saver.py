@@ -718,7 +718,9 @@ class VideoSaver(AcSaver):
         video_path = os.path.join(self.folder_path, f"ac{v_num}.mp4")
         video_saved = os.path.isfile(video_path)
         if video_saved is False:
-            video_saved = acfun_video_downloader(self.acer.client, self.ac_obj.video_data, self.folder_path)
+            video_saved_path = acfun_video_downloader(self.acer.client, self.ac_obj.video_data, self.folder_path, 0)
+            if video_saved_path is not False:
+                shutil.move(video_saved_path, video_path)
         print("SAVED:", video_saved, video_path)
         # 保存评论
         comment_saved = self._save_comment() if num == 1 else True

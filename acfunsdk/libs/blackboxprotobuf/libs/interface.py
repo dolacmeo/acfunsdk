@@ -1,8 +1,8 @@
 """Methods for easy encoding and decoding of messages"""
 
 import json
-import acfun.libs.blackboxprotobuf.libs.types.length_delim
-import acfun.libs.blackboxprotobuf.libs.types.type_maps
+import acfunsdk.libs.blackboxprotobuf.libs.types.length_delim
+import acfunsdk.libs.blackboxprotobuf.libs.types.type_maps
 
 known_messages = {}
 
@@ -62,7 +62,7 @@ def decode_message(buf, message_type=None):
         else:
             message_type = known_messages[message_type]
 
-    value, typedef, _ = acfun.libs.blackboxprotobuf.libs.types.length_delim.decode_message(buf, message_type)
+    value, typedef, _ = acfunsdk.libs.blackboxprotobuf.libs.types.length_delim.decode_message(buf, message_type)
     return value, typedef
 
 
@@ -71,7 +71,7 @@ def encode_message(value, message_type):
     """Encodes a python dictionary to a message.
     Returns a bytearray
     """
-    return acfun.libs.blackboxprotobuf.libs.types.length_delim.encode_message(value, message_type)
+    return acfunsdk.libs.blackboxprotobuf.libs.types.length_delim.encode_message(value, message_type)
 
 
 def protobuf_to_json(buf, message_type=None, bytes_as_hex=False):
@@ -166,10 +166,10 @@ def validate_typedef(typedef, old_typedef=None):
     if old_typedef is not None:
         wiretype_map = {}
         for field_number, value in old_typedef.items():
-            wiretype_map[int(field_number)] = acfun.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value['type']]
+            wiretype_map[int(field_number)] = acfunsdk.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value['type']]
         for field_number, value in typedef.items():
             if int(field_number) in wiretype_map:
                 old_wiretype = wiretype_map[int(field_number)]
-                if old_wiretype != acfun.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value["type"]]:
+                if old_wiretype != acfunsdk.libs.blackboxprotobuf.libs.types.type_maps.wiretypes[value["type"]]:
                     raise ValueError("Wiretype for field number %s does not match old type definition"
                                      % field_number)

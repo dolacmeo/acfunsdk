@@ -22,7 +22,7 @@ def unix2datestr(t: (int, float), f: str = "%Y-%m-%d %H:%M:%S"):
 
 
 class AcSaver:
-    templates = Environment(loader=PackageLoader('acfun', 'templates'))
+    templates = Environment(loader=PackageLoader('acfunsdk', 'templates'))
     templates.filters['unix2datestr'] = unix2datestr
     templates.filters['math_ceil'] = math.ceil
     folder_names = ['article', 'video', 'bangumi', 'live', 'moment']

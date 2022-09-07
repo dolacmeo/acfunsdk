@@ -92,7 +92,7 @@ def encode_message(data, typedef, group=False):
                                      % field_number)
                 innertypedef = field_typedef['message_typedef']
             else:
-                if field_typedef['message_type_name'] not in acfun.libs.blackboxprotobuf.libs.known_messages:
+                if field_typedef['message_type_name'] not in acfunsdk.libs.blackboxprotobuf.libs.known_messages:
                     raise ValueError('Message type (%s) has not been defined'
                                      % field_typedef['message_type_name'])
                 innertypedef = field_typedef['message_type_name']
@@ -108,14 +108,14 @@ def encode_message(data, typedef, group=False):
 
             field_encoder = lambda data: encode_group(data, innertypedef, field_number)
         else:
-            if field_type not in acfun.libs.blackboxprotobuf.libs.types.encoders:
+            if field_type not in acfunsdk.libs.blackboxprotobuf.libs.types.encoders:
                 raise ValueError('Unknown type: %s' % field_type)
-            field_encoder = acfun.libs.blackboxprotobuf.libs.types.encoders[field_type]
+            field_encoder = acfunsdk.libs.blackboxprotobuf.libs.types.encoders[field_type]
             if field_encoder is None:
                 raise ValueError('Encoder not implemented: %s' % field_type)
 
         # Encode the tag
-        tag = encoder.TagBytes(int(field_number), acfun.libs.blackboxprotobuf.libs.types.wiretypes[field_type])
+        tag = encoder.TagBytes(int(field_number), acfunsdk.libs.blackboxprotobuf.libs.types.wiretypes[field_type])
 
         try:
             # Handle repeated values
@@ -166,7 +166,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
             field_typedef = typedef[field_number]
         else:
             field_typedef = {}
-            field_typedef['type'] = acfun.libs.blackboxprotobuf.libs.types.wire_type_defaults[wire_type]
+            field_typedef['type'] = acfunsdk.libs.blackboxprotobuf.libs.types.wire_type_defaults[wire_type]
 
         field_type = field_typedef['type']
 
@@ -198,7 +198,7 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                     message_typedef = field_typedef['message_typedef']
                 # Check for type defined by message type name
                 elif 'message_type_name' in field_typedef:
-                    message_typedef = acfun.libs.blackboxprotobuf.libs.types.messages[
+                    message_typedef = acfunsdk.libs.blackboxprotobuf.libs.types.messages[
                         field_typedef['message_type_name']]
 
                 try:
@@ -250,12 +250,12 @@ def decode_message(buf, typedef=None, pos=0, end=None, group=False):
                 field_typedef['group_typedef'] = group_typedef
             else:
                 # Verify wiretype matches
-                if acfun.libs.blackboxprotobuf.libs.types.wiretypes[field_type] != wire_type:
+                if acfunsdk.libs.blackboxprotobuf.libs.types.wiretypes[field_type] != wire_type:
                     raise ValueError("Invalid wiretype for field number %s. %s is not wiretype %s"
                                      % (field_number, field_type, wire_type))
 
                 # Simple type, just look up the decoder
-                field_out, pos = acfun.libs.blackboxprotobuf.libs.types.decoders[field_type](buf, pos)
+                field_out, pos = acfunsdk.libs.blackboxprotobuf.libs.types.decoders[field_type](buf, pos)
         field_typedef['type'] = field_type
         if 'name' not in field_typedef:
             field_typedef['name'] = ''

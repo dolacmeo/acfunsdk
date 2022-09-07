@@ -190,6 +190,12 @@ WebSocket通信及数据处理:
 + [`rich`](https://pypi.org/project/rich/)`>=12.5`
 + [`psutil`](https://pypi.org/project/psutil/)`>=5.9`
 
+图形化命令行:
++ [`click`](https://pypi.org/project/click/)`>=8.1`
++ [`emoji`](https://pypi.org/project/emoji/)`>=2`
++ [`keyboard`](https://pypi.org/project/keyboard/)`>=0.1.3`
++ [`climage`](https://pypi.org/project/climage/)`>=0.13`
+
 </details>
 
 - - - 

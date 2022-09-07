@@ -12,3 +12,7 @@ proto-plus==1.22.1
 rich>=12.5
 psutil>=5.9
 poetry-core>=1.1
+click>=8.1
+emoji>=2
+climage>=0.1.3
+keyboard>=0.13

@@ -3,7 +3,7 @@ import json
 import re
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
-from acfun.page.utils import thin_string
+from acfun.page.utils import thin_string, match1
 from acfun.exceptions import *
 
 __author__ = 'dolacmeo'
@@ -116,10 +116,7 @@ class AcMoment:
 
     def get(self, am_num: [str, int]):
         page_req = self.acer.client.get(f"{routes['moment']}{am_num}")
-        page_obj = Bs(page_req.text, 'lxml')
-        js_code = page_obj.select_one("#app").find_next_sibling("script").text.strip()
-        js_code = re.sub("\;\(function\(\)\{var s\;\(s=document\.currentScript\|\|document\.scripts\[document\.scripts\.length\-1\]\)\.parentNode\.removeChild\(s\)\;\}\(\)\)\;$", '', js_code)
-        js_code = re.sub("window\.__INITIAL_STATE__\=", '', js_code)
-        page_data = json.loads(js_code).get('moment', {}).get('moment')
+        json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
+        page_data = json.loads(json_text).get('moment', {}).get('moment')
         return Moment(self.acer, page_data)
 

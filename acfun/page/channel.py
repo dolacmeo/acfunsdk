@@ -30,7 +30,7 @@ class BlockContent:
 
     @property
     def keyname(self):
-        return self.content_data.get('interfaceParameter')
+        return self.content_data.get('interfaceParameter', '').strip()
 
     @property
     def contentCount(self):
@@ -62,7 +62,7 @@ class ChannelBlock:
 
     @property
     def name(self):
-        return self.block_data.get('name')
+        return self.block_data.get('name', '').strip()
 
     @property
     def blockType(self):
@@ -94,18 +94,19 @@ class AcChannel:
     def _get_channel_info(self):
         for channel in self.acer.channel_data:
             if self.cid == channel['channelId']:
-                self.is_main = True
                 self.parent_data = channel
+                self.info = self.parent_data
                 break
             for sub in channel['children']:
                 if self.cid == sub['channelId']:
-                    self.is_main = False
                     self.parent_data = channel
                     self.sub_data = sub
+                    self.info = self.sub_data
                     break
+        self.is_main = self.sub_data is None
 
     def __repr__(self):
-        return f"AcChannel(#{self.cid} {self.info['navName']})"
+        return f"AcChannel(#{self.cid} {self.info['name']})"
 
     def loading(self):
         if not self.is_main:
@@ -149,7 +150,8 @@ class AcChannel:
                page: int = 1,
                sortby: [str, None] = None,
                duration: [str, None] = None,
-               datein: [str, None] = None):
+               datein: [str, None] = None,
+               obj: bool = True):
         if self.is_main or self.cid == '63':
             return None
         sortby_list = {
@@ -199,12 +201,19 @@ class AcChannel:
             item_data = {
                 'ac_num': item.select_one('.list-content-top').attrs['href'][5:],
                 'title': item.select_one('.list-content-title').a.attrs['title'],
+                'duration': item.select_one('.danmaku-mask .video-time').text,
+                'commentCountShow': item.select_one('.list-content-data .commentCount').text,
+                'viewCountShow': item.select_one('.list-content-data .viewCount').text,
+                'coverUrl': item.select_one('.list-content-cover').attrs['src'],
                 'user': {
                     'id': item.select_one('.list-content-uplink').attrs['data-uid'],
                     'name': item.select_one('.list-content-uplink').attrs['title'],
                 }
             }
-            v_datas.append(self.acer.AcVideo(item_data['ac_num'], item_data))
+            if obj is True:
+                v_datas.append(self.acer.AcVideo(item_data['ac_num'], item_data))
+            else:
+                v_datas.append(item_data)
         return v_datas
 
 

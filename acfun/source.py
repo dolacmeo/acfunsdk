@@ -217,6 +217,30 @@ pagelets = [
     'footer',  # 页脚
 ]
 
+pagelets_name = {
+    "pagelet_header": "顶栏",
+    "pagelet_banner": "Banner",
+    "pagelet_navigation": "导航栏",
+    'pagelet_top_area': "置顶",
+    'pagelet_monkey_recommend': "猴子推荐",
+    'pagelet_live': "直播",
+    'pagelet_spring_festival': "春季节日活动",
+    'pagelet_list_banana': "香蕉榜",
+    "pagelet_douga": "动画",
+    "pagelet_game": "游戏",
+    "pagelet_amusement": "娱乐",
+    "pagelet_bangumi_list": "番剧",
+    "pagelet_life": "生活",
+    "pagelet_tech": "科技",
+    "pagelet_dance": "舞蹈·偶像",
+    "pagelet_music": "音乐",
+    "pagelet_film": "影视",
+    "pagelet_fishpond": "鱼塘",
+    "pagelet_sport": "体育",
+    "pagelet_footer": "页脚",
+    "footer": "页脚",
+}
+
 ChannelList = [
     {
         "children": [

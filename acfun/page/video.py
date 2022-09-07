@@ -3,7 +3,7 @@ import os
 import json
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
-from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku
+from acfun.page.utils import ms2time, get_channel_info, get_page_pagelets, AcDanmaku, match1
 from acfun.libs.you_get.extractors.acfun import download as you_get_download
 from acfun.saver import VideoSaver
 
@@ -49,6 +49,7 @@ class AcVideo:
         if self.is_404:
             return f"AcVideo([ac{self.ac_num}]咦？世界线变动了。看看其他内容吧~)"
         title = self.video_data.get('title', "")
+        title = title if len(title) < 28 else title[:27] + ".."
         user_name = self.video_data.get('user', {}).get('name', "") or self.video_data.get('user', {}).get('id', "")
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
         duration = self.video_data.get('durationMillis', 0)
@@ -61,12 +62,8 @@ class AcVideo:
         if self.is_404:
             return False
         self.page_obj = Bs(req.text, 'lxml')
-        js_code = self.page_obj.select_one("#pagelet_newheader").find_next_sibling("script").text.strip().split('\n')[0]
-        js_code = "".join(js_code.split())
-        js_head = "window.pageInfo=window.videoInfo="
-        js_end = ";"
-        assert js_code.startswith(js_head) and js_code.endswith(js_end)
-        self.video_data = json.loads(js_code[len(js_head):-len(js_end)])
+        json_text = match1(req.text, r"(?s)videoInfo\s*=\s*(\{.*?\});")
+        self.video_data = json.loads(json_text)
         self.video_data.update(get_channel_info(req.text))
         self.vid = self.video_data.get("currentVideoId")
         self.page_pagelets = get_page_pagelets(self.page_obj)

@@ -2,7 +2,7 @@
 import json
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
-from acfun.page.utils import get_channel_info, get_page_pagelets, AcDanmaku
+from acfun.page.utils import get_channel_info, get_page_pagelets, AcDanmaku, match1
 
 __author__ = 'dolacmeo'
 
@@ -40,20 +40,10 @@ class AcBangumi:
         if self.is_404:
             return False
         self.page_obj = Bs(req.text, 'lxml')
-        newheader = self.page_obj.select_one("#pagelet_newheader")
-        if newheader is None:
-            print(routes['bangumi'] + self.aa_num)
-        js_data = newheader.find_next_sibling("script").text.strip().split('\n')
-        bangumi_data = "".join(js_data[0].split())
-        bangumi_data_js_head = "window.pageInfo=window.bangumiData="
-        bangumi_data_js_end = ";"
-        assert bangumi_data.startswith(bangumi_data_js_head) and bangumi_data.endswith(bangumi_data_js_end)
-        self.bangumi_data = json.loads(bangumi_data[len(bangumi_data_js_head):-len(bangumi_data_js_end)])
-        bangumi_list = "".join(js_data[2].split())
-        bangumi_list_js_head = "window.bangumiList="
-        bangumi_list_js_end = ";"
-        assert bangumi_list.startswith(bangumi_list_js_head) and bangumi_list.endswith(bangumi_list_js_end)
-        self.bangumi_list = json.loads(bangumi_list[len(bangumi_list_js_head):-len(bangumi_list_js_end)])
+        script_pageinfo = match1(req.text, r"(?s)bangumiData\s*=\s*(\{.*?\});")
+        self.bangumi_data = json.loads(script_pageinfo)
+        script_bangumilist = match1(req.text, r"(?s)bangumiList\s*=\s*(\{.*?\});")
+        self.bangumi_list = json.loads(script_bangumilist)
         self.bangumi_data.update(get_channel_info(req.text))
         self.item_id = self.bangumi_data.get("itemId")
         self.vid = self.bangumi_data.get("videoId")

@@ -5,7 +5,7 @@ import json
 import textwrap
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
-from acfun.page.utils import warp_mix_chars, get_page_pagelets
+from acfun.page.utils import warp_mix_chars, get_page_pagelets, match1
 from acfun.saver import ArticleSaver
 
 __author__ = 'dolacmeo'
@@ -47,11 +47,8 @@ class AcArticle:
         if self.page_obj.select_one("#main > script") is None:
             self.is_404 = True
             return
-        js_code = self.page_obj.select_one("#main > script").text.strip().split('\n')[0]
-        js_head = "window.articleInfo = "
-        js_end = ";"
-        assert js_code.startswith(js_head) and js_code.endswith(js_end)
-        self.article_data = json.loads(js_code[len(js_head):-len(js_end)])
+        json_text = match1(req.text, r"(?s)articleInfo\s*=\s*(\{.*?\});")
+        self.article_data = json.loads(json_text)
         self.page_pagelets = get_page_pagelets(self.page_obj)
 
     def saver(self, dest_path=None):

@@ -2,6 +2,7 @@
 import json
 from bs4 import BeautifulSoup as Bs
 from acfun.source import routes, apis
+from acfun.page.utils import match1
 
 __author__ = 'dolacmeo'
 
@@ -25,12 +26,8 @@ class AcAlbum:
     def loading(self):
         req = self.acer.client.get(f"{routes['album']}{self.aa_num}")
         self.page_obj = Bs(req.text, 'lxml')
-        inner_data = self.page_obj.select_one('#app').find_next_sibling("script").text.strip()
-        js_head = "window.__INITIAL_STATE__="
-        js_end = ";(function(){var s;(s=document.currentScript||" \
-                 "document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());"
-        assert inner_data.startswith(js_head) and inner_data.endswith(js_end)
-        self.page_data = json.loads(inner_data[len(js_head):-len(js_end)])
+        json_text = match1(req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
+        self.page_data = json.loads(json_text)
         self._get_all_content()
 
     @property

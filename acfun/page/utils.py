@@ -23,6 +23,53 @@ from acfun.exceptions import *
 __author__ = 'dolacmeo'
 
 
+def match1(text, *patterns):
+    """Scans through a string for substrings matched some patterns (first-subgroups only).
+
+    Args:
+        text: A string to be scanned.
+        patterns: Arbitrary number of regex patterns.
+
+    Returns:
+        When only one pattern is given, returns a string (None if no match found).
+        When more than one pattern are given, returns a list of strings ([] if no match found).
+    """
+
+    if len(patterns) == 1:
+        pattern = patterns[0]
+        match = re.search(pattern, text)
+        if match:
+            return match.group(1)
+        else:
+            return None
+    else:
+        ret = []
+        for pattern in patterns:
+            match = re.search(pattern, text)
+            if match:
+                ret.append(match.group(1))
+        return ret
+
+
+def matchall(text, patterns):
+    """Scans through a string for substrings matched some patterns.
+
+    Args:
+        text: A string to be scanned.
+        patterns: a list of regex pattern.
+
+    Returns:
+        a list if matched. empty if not.
+    """
+
+    ret = []
+    for pattern in patterns:
+        match = re.findall(pattern, text)
+        ret += match
+
+    return ret
+
+
 class B64s:
     STANDARD = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
     EN_TRANS = STANDARD
@@ -309,6 +356,8 @@ def get_page_pagelets(page_obj):
     data = list()
     for item in page_obj.select("[id^=pagelet_]"):
         data.append(item.attrs['id'])
+    if len(data):
+        data.append('footer')
     return data
 
 
@@ -622,7 +671,7 @@ class AcPagelet:
         if obj is True:
             return {
                 'channel': self.acer.get(data['url']),
-                'links': [self.acer.get(x['url']) for x in data['links']],
+                'links': [self.acer.get(x['url'], x['title']) for x in data['links']],
                 'icon': AcImage(self.acer, data['icon'], data['url'], f"{data['title']}_icon")
             }
         return data

@@ -4,6 +4,7 @@ import re
 import json
 import httpx
 import datetime
+from urllib import parse
 from acfun import source
 from acfun.page import *
 from acfun.exceptions import *
@@ -96,6 +97,8 @@ class Acer:
         self.client = AcClient() if debug else httpx.Client(headers=source.header)
         self.moment = AcMoment(self)
         self._get_nav()
+        self.cdn_domain = self.client.post(source.apis['cdn_domain'], headers={
+            "referer": source.routes['index']}).json().get('domain')
         if self.check_online() is False:
             raise AcExploded("阿禅爆炸 (今天A站挂了吗？)")
         self._get_personal()
@@ -164,7 +167,7 @@ class Acer:
     def AcSaver(self, dest_path: [str, None] = None):
         return AcSaver(self, None, dest_path)
 
-    def get(self, url_str: str):
+    def get(self, url_str: str, title=None):
         for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
@@ -180,6 +183,10 @@ class Acer:
         channel_rex = re.compile(f"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
         if channel_rex:
             return self.AcChannel(channel_rex[0])
+        if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
+            if parse.urlsplit(url_str).netloc in self.cdn_domain:
+                return self.AcImage(url_str)
+            return self.AcLink(url_str, title)
         return None
 
     def check_online(self):
@@ -190,10 +197,10 @@ class Acer:
         data = self.client.get(source.apis['nav']).json().get("data", [])
         for i in data:
             if i['cid'] != 0:
-                self.nav_data.update({i['cid']: {x: i[x] for x in i if x != 'children'}})
+                self.nav_data.update({str(i['cid']): {x: i[x] for x in i if x != 'children'}})
             for j in i['children']:
                 if j['cid'] != 0:
-                    self.nav_data.update({j['cid']: {y: j[y] for y in j if y != 'children'}})
+                    self.nav_data.update({str(j['cid']): {y: j[y] for y in j if y != 'children'}})
 
     def _get_personal(self):
         live_page_req = self.client.get(source.routes['live_index'])

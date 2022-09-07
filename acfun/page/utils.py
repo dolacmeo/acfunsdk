@@ -10,13 +10,15 @@ import base64
 import shutil
 import cssutils
 import filetype
+import subprocess
 from uuid import uuid4
+from urllib import parse
 from urllib.parse import urlparse
-from urllib.parse import urlencode
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from datetime import timedelta
 from alive_progress import alive_bar
+from acfun.libs.ffmpeg_progress_yield import FfmpegProgress
 from acfun.source import scheme, domains, routes, apis, pagelets, pagelets_big, pagelets_normal, videoQualitiesRefer
 from acfun.exceptions import *
 
@@ -249,6 +251,97 @@ def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
     result_data = result_req.json()
     assert result_data.get('result') == 0
     return result_data.get('url')
+
+
+def get_usable_ffmpeg(cmd: [str, None] = None):
+    cmds = ['ffmpeg', os.path.join(os.getcwd(), 'ffmpeg.exe')]
+    if cmd is not None and os.path.isfile(cmd):
+        cmds.append(cmd)
+    for x in cmds:
+        try:
+            p = subprocess.Popen([x, '-version'], stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            vers = str(out, 'utf-8').split('\n')[0].split()
+            assert vers[0] == 'ffmpeg' and vers[2][0] > '0'
+            return x
+        except FileNotFoundError:
+            continue
+    return None
+
+
+def acfun_video_downloader(client, data: dict,
+                           save_path: [str, os.PathLike, None] = None, quality: [str, int, None] = 0):
+    save_path = os.getcwd() if save_path is None else save_path
+    quality = 0 if quality is None else quality
+    quality_index, quality_text, filesize_bytes = -1, None, 0
+    video_type, ac_num, part_num, ac_name, acfun_url = None, None, None, None, None
+    # 获取视频编号名称等信息
+    if "dougaId" in data:  # 视频类型
+        video_type = "video"
+        ac_num = data.get("dougaId")
+        part_num = data.get("priority") + 1
+        ac_name = f"ac{ac_num}"
+        if part_num > 1:
+            ac_name += f"_{part_num}"
+        acfun_url = f"{routes['video']}{ac_name[2:]}"
+    elif "bangumiId" in data:  # 番剧类型
+        video_type = "bangumi"
+        ac_num = data.get("bangumiId")
+        part_num = data.get("priority") // 10
+        item_id = data.get('itemId')
+        ac_name = f"aa{ac_num}"
+        if part_num > 1:
+            ac_name += f"_36188_{item_id}"
+        acfun_url = f"{routes['bangumi']}{ac_name[2:]}"
+    else:
+        raise Exception("error: video type not support")
+    # 编码信息，视频尺寸
+    video_quality = data['currentVideoInfo']['transcodeInfos']
+    if isinstance(quality, int):
+        if quality not in range(len(video_quality)):
+            raise Exception('error: out of the quality length')
+        quality_index = quality
+        quality_text = video_quality[quality]['qualityType']
+        filesize_bytes = video_quality[quality]['sizeInBytes']
+    elif isinstance(quality, str):
+        for i, q in enumerate(video_quality):
+            if q['qualityType'] == quality:
+                quality_index = i
+                quality_text = q['qualityType']
+                filesize_bytes = q['sizeInBytes']
+    if quality_index == -1 or filesize_bytes == 0:
+        raise Exception('error: selected quality not found')
+    player_json = json.loads(data['currentVideoInfo']['ksPlayJson'])
+    quality_data = player_json['adaptationSet'][0]['representation'][quality_index]
+    m3u8_url = quality_data['url']
+    url_parse = parse.urlsplit(m3u8_url)
+    video_path = "/".join(url_parse.path.split('/')[:-1])
+    video_base_path = f"{url_parse.scheme}://{url_parse.netloc}{video_path}/"
+    m3u8_req = client.get(m3u8_url)
+    # 保存m3u8文件
+    os.makedirs(save_path, exist_ok=True)
+    with open(os.path.join(save_path, f"{ac_name}[{quality_text}].m3u8"), 'w') as m3u8_file:
+        for line in m3u8_req.text.split('\n'):
+            if line.startswith('#EXT'):
+                m3u8_file.write(line + "\n")
+                continue
+            m3u8_file.write(f"{video_base_path}{line}\n")
+    # ffmpeg 下载
+    video_save_path = os.path.join(save_path, f"{ac_name}[{quality_text}].mp4")
+    ffmpeg_cmd = get_usable_ffmpeg()
+    ffmpeg_params = [
+        ffmpeg_cmd, '-y', '-i', m3u8_url,
+        '-c', 'copy', '-bsf:a', 'aac_adtstoasc',
+        '--', video_save_path
+    ]
+    ff = FfmpegProgress(ffmpeg_params)
+    with alive_bar(100, title=f"{ac_name}", manual=True, force_tty=True) as bar:
+        for progress in ff.run_command_with_progress():
+            if progress > 0:
+                bar(progress/100)
+        bar(1)
+    return os.path.isfile(video_save_path)
 
 
 def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None] = None, display: bool = True):

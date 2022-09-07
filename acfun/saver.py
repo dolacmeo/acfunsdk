@@ -9,11 +9,10 @@ import zipfile
 from uuid import uuid4
 from urllib.parse import urlparse, urlencode
 from .source import routes, apis
-from .page.utils import downloader, danmaku2ass
+from .page.utils import downloader, danmaku2ass, acfun_video_downloader
 from bs4 import BeautifulSoup as Bs
 from alive_progress import alive_bar
 from jinja2 import PackageLoader, Environment
-from acfun.libs.you_get.extractors.acfun import download as you_get_download
 
 __author__ = 'dolacmeo'
 
@@ -719,8 +718,7 @@ class VideoSaver(AcSaver):
         video_path = os.path.join(self.folder_path, f"ac{v_num}.mp4")
         video_saved = os.path.isfile(video_path)
         if video_saved is False:
-            you_get_download(acfun_url, output_dir=self.folder_path, merge=True)
-            video_saved = os.path.isfile(video_path)
+            video_saved = acfun_video_downloader(self.acer.client, self.ac_obj.video_data, self.folder_path)
         print("SAVED:", video_saved, video_path)
         # 保存评论
         comment_saved = self._save_comment() if num == 1 else True

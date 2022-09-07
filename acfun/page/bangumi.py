@@ -40,8 +40,8 @@ class AcBangumi:
         if self.is_404:
             return False
         self.page_obj = Bs(req.text, 'lxml')
-        script_pageinfo = match1(req.text, r"(?s)bangumiData\s*=\s*(\{.*?\});")
-        self.bangumi_data = json.loads(script_pageinfo)
+        script_bangumidata = match1(req.text, r"(?s)bangumiData\s*=\s*(\{.*?\});")
+        self.bangumi_data = json.loads(script_bangumidata)
         script_bangumilist = match1(req.text, r"(?s)bangumiList\s*=\s*(\{.*?\});")
         self.bangumi_list = json.loads(script_bangumilist)
         self.bangumi_data.update(get_channel_info(req.text))

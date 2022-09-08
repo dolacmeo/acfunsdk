@@ -107,7 +107,10 @@ class AcLiveUp:
     def media_list(self):
         form_data = {"authorId": self.uid, "pullStreamType": "FLV"}
         api_data = self._api_action('live_play', form_data)
-        if api_data.get('result') != 1:
+        if api_data.get('result') == 129004:
+            self.is_open = False
+            return False
+        elif api_data.get('result') != 1:
             return False
         self.is_open = True
         api_data = api_data.get('data', {}).get('videoPlayRes', "")

@@ -1,14 +1,12 @@
 # coding=utf-8
 import os
 import re
-import sys
 import time
 import click
 import httpx
-import keyboard
 import subprocess
 from html import unescape
-from datetime import datetime, timedelta
+from datetime import timedelta
 from climage.climage import _toAnsi
 from climage.climage import _color_types
 from io import BytesIO
@@ -16,12 +14,9 @@ from PIL import Image
 from urllib import parse
 from rich.console import Console
 from rich.console import Group
-from rich.columns import Columns
 from rich.panel import Panel
 from rich.prompt import Prompt
-from rich.prompt import Confirm
 from rich.text import Text
-from rich.tree import Tree
 from rich.layout import Layout
 import emoji
 
@@ -310,6 +305,10 @@ def cli_acup(ac_obj, act=None, ext=None):
 
 
 def cli_live(ac_obj, act=None, ext=None):
+    ac_obj.media_list()
+    if ac_obj.is_open is False:
+        console.print("[bold red]直播已关播[/bold red]")
+        return None
     is_out = False
     login_string = ""
     cmd_log = []
@@ -383,7 +382,7 @@ def cli_live(ac_obj, act=None, ext=None):
         live_layout['log'].update(Panel(live_log, title='命令日志', title_align='right'))
         return Panel(live_layout, height=32, title=live_title, title_align='center', border_style="#e95c5e")
 
-    while is_out is False:
+    while is_out is False and ac_obj.media_list() is not False:
         console.clear()
         console.print(live_panel())
         user_cmd = Prompt.ask("命令").strip()
@@ -438,7 +437,13 @@ def cli_live(ac_obj, act=None, ext=None):
             continue
         elif user_cmd[0] == 'like' and user_cmd[1].isdigit():
             if int(user_cmd[1]) <= 600:
-                ac_obj.like(int(user_cmd[1]))
+                cmds = [
+                    "start", "cmd", "/c",
+                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "like",
+                    "--ext", f"{user_cmd[1]}",
+                    "--login", login_string
+                ]
+                subprocess.Popen(cmds, shell=True)
                 cmd_log.append(" ".join(user_cmd))
         elif user_cmd[0] == 'push' and acer.is_logined:
             ac_obj.push_danmaku(user_cmd[1])
@@ -468,24 +473,21 @@ def acfun_detail(ac_obj, act=None, ext=None):
         if act == 'danmaku':
             ac_obj.watching_danmaku(potplayer=ext)
             return None
+        elif act == 'like':
+            if isinstance(ext, str) and ext.isdigit():
+                console.print(f"正在执行点赞{ext}个\r\n完成后窗口自动关闭")
+                ac_obj.like(int(ext) or 1)
+            return None
         return cli_live(ac_obj, act, ext)
     console.print(f"抱歉，暂不支持命令行预览 {obj_type} 类型")
     return None
-
-
-# 对象类型
-# 视频，番剧，文章，用户，直播
-# acfun <url> <act> <ext>
-# 功能类型
-# 签到，
-# acfun <src> <act>
 
 
 @click.command()
 @click.argument('src', default='help')
 @click.argument('act', default="", nargs=1)
 @click.option('--ext')
-@click.option('--login')
+@click.option('--login', help="username:password or username")
 def cli(src, act=None, ext=None, login=None):
     act = None if act == "" else act
     ext = None if ext == "" else ext
@@ -499,7 +501,27 @@ def cli(src, act=None, ext=None, login=None):
                 acer.loading(login)
     while True:
         if src == 'help':  # 帮助
-            click.echo(f"Need Help?")
+            help_words = """
+1. login(first time)
+    [cyan]acfun[/cyan] ... [i]--login[/i] <username:password>
+   login(use cookie)
+    [cyan]acfun[/cyan] ... [i]--login[/i] <username>
+2. Preview page
+    [cyan]acfun[/cyan] <url>
+3. Preview page with num
+    [cyan]acfun[/cyan] [yellow]up[/yellow] <num>
+    [cyan]acfun[/cyan] [yellow]live[/yellow] <num>
+    [cyan]acfun[/cyan] [yellow]video[/yellow] <num>
+    [cyan]acfun[/cyan] [yellow]bangumi[/yellow] <num>
+4. Signin with login
+    [cyan]acfun[/cyan] [yellow]signin[/yellow] [i]--login[/i] <username:password>
+5. LiveDanmaku in CMD
+    [cyan]acfun[/cyan] <live_url> [yellow]danmaku[/yellow]
+6. LiveDanmaku in CMD and open player
+    [cyan]acfun[/cyan] <live_url> [yellow]danmaku[/yellow] [i]--ext[/i] <player_path>
+"""
+            console.clear()
+            console.print(Panel(help_words, title="ACFUNSDK CLI"))
             return None
         elif src == 'signin':  # 签到
             acer.signin()

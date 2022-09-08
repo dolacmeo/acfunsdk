@@ -300,6 +300,18 @@ class Acer:
             return data.get('data')
         return None
 
+    def search_user(self, keyword: str):
+        api_req = self.client.get(source.apis['search_user'], params={'keyword': keyword})
+        return api_req.json()
+
+    def username_check(self, name: str):
+        api_req = self.client.post(source.apis['check_username'], data={'name': name})
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return True
+        print(api_data)
+        return False
+
     @need_login
     def like(self, obj_id: str, objectType: int):
         form_data = {

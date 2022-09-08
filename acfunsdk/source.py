@@ -43,6 +43,8 @@ routes = {
 
 apis = {
     'cdn_domain': f"{scheme}://{domains['main']}/rest/pc-direct/image/cdnDomain",
+    'check_username': f"{scheme}://{domains['main']}/rest/pc-direct/user/checkNameUnique",
+    'search_user': f"{scheme}://{domains['main']}/rest/pc-direct/search/user",
     'message': f"{scheme}://{domains['msg']}/",
     'token_visitor': f"{scheme}://{domains['id_api']}/rest/app/visitor/login",
     'token': f"{scheme}://{domains['id_api']}/rest/web/token/get",
@@ -87,7 +89,9 @@ apis = {
     'throw_banana': f"{scheme}://{domains['main']}/rest/pc-direct/banana/throwBanana",
 
     'follow_feed': f"{scheme}://{domains['main']}/rest/pc-direct/feed/followFeedV2",
+    'video_feed': f"{scheme}://{domains['main']}/rest/pc-direct/feed/webPush",
     'article_feed': f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",
+    'follow_live_users': f"{scheme}://{domains['main']}/rest/pc-direct/live/followLiveUsers",
 
     'comment': f"{scheme}://{domains['main']}/rest/pc-direct/comment/list",
     'comment_floor': f"{scheme}://{domains['main']}/rest/pc-direct/comment/listByFloor",

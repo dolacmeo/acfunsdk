@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acfunSDK"
-version = "0.8.7"
+version = "0.8.8"
 description = "acfunSDK - UNOFFICEICAL"
 license = "MIT"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]

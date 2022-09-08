@@ -7,6 +7,8 @@ import click
 import httpx
 import keyboard
 import subprocess
+from html import unescape
+from datetime import datetime, timedelta
 from climage.climage import _toAnsi
 from climage.climage import _color_types
 from io import BytesIO
@@ -37,7 +39,7 @@ def unix2string(t: (int, float, str), f: str = "%Y-%m-%d %H:%M:%S"):
     return time.strftime(f, time.localtime(t))
 
 
-def load_image_to_cli(url_or_path, title=None, width=None):
+def load_image_to_cli(url_or_path, title=None, width=None, title_align=None):
     ansi_rate = 1.3
     is_auto = width is None
     width = min(int(width or 100), terminal_width - 10)  # 最大不超过窗口宽
@@ -59,7 +61,7 @@ def load_image_to_cli(url_or_path, title=None, width=None):
     _ansi = _toAnsi(_im, oWidth=_im.size[0], is_unicode=True,
                     color_type=_color_types.truecolor, palette="default")
     _txt = Text.from_ansi(_ansi)
-    return Panel(_txt, subtitle=title, subtitle_align='center', width=_im.size[0] + 4)
+    return Panel(_txt, subtitle=title, subtitle_align=title_align or 'center', width=_im.size[0] + 4)
 
 
 console = Console(width=terminal_width)
@@ -80,26 +82,168 @@ contents = {
 
 def cli_image(ac_obj, title=None, width=None):
     img_panel = load_image_to_cli(ac_obj.src, title, width)
+    console.clear()
     console.print(img_panel)
-    console.print('图片已显示，点击空格继续...')
-    keyboard.wait('space')
     return None
 
 
 def cli_video(ac_obj, act=None, ext=None):
-    # 封面图    用户图
-    #           用户信息
-    # 视频信息
+    cmd_log = []
+    video_layout = Layout()
+    video_layout.split_column(
+        Layout(name='title', size=2),
+        Layout(name='info', size=28)
+    )
+    video_layout['title'].split_row(
+        Layout(name='title-main', size=87),
+        Layout(name='title-sub', size=28),
+    )
+    video_layout['info'].split_row(
+        Layout(name='video', size=88),
+        Layout(name='acup', size=28),
+    )
+    video_layout['video'].split_column(
+        Layout(name='cover_img', size=20),
+        Layout(name='base_info', size=8)
+    )
+    video_layout['acup'].split_column(
+        Layout(name='avatar', size=10),
+        Layout(name='upinfo')
+    )
+    video_raw = ac_obj.video_data
+    video_title = video_raw['title'].strip()
+    video_title = video_title.replace("️", "")
+    title_text = f" [b]{video_title}[/b]\r\n" \
+                 f" {video_raw['channel']['parentName']} > {video_raw['channel']['name']}    " \
+                 f"👀{video_raw['viewCount']}  🔗{video_raw['shareCount']}  " \
+                 f"评{video_raw['commentCount']}  弹{video_raw['danmakuCount']}"
+    video_layout['title-main'].update(title_text)
+    video_create = unix2string(video_raw['createTimeMillis'])
+    subtitle_text = f"⏰[{video_create}]\r\n" \
+                    f"👍{video_raw['likeCount']}  🌟{video_raw['stowCount']}  🍌{video_raw['bananaCount']}"
+    subtitle = Text(subtitle_text, justify='right')
+    video_layout['title-sub'].update(subtitle)
+
+    video_duration = str(timedelta(milliseconds=video_raw['durationMillis']))
+    video_duration = video_duration.split('.')[0]
+    if video_duration.startswith('0:'):
+        video_duration = video_duration[3:]
+    cover_title = f"▶ 0:00/{video_duration}"
+    cover_panel = load_image_to_cli(video_raw['coverUrl'], title=cover_title, width=84, title_align='left')
+    cover_panel.title = f"[#62a5ff]{source.routes['video']}{ac_obj.ac_num}[/#62a5ff]"
+    cover_panel.title_align = 'left'
+    video_layout['cover_img'].update(cover_panel)
+    acup = video_raw['user']
+    avatar_panel = load_image_to_cli(acup['headUrl'], acup['name'], 24)
+    if acup.get('verifiedText'):
+        avatar_panel.title = acup['verifiedText']
+    video_layout['avatar'].update(avatar_panel)
+
+    up_text = f"| 关  注 | 粉  丝 | 投  稿 |\r\n" \
+              f"| {acup['followingCount']: >6} |" \
+              f"{acup['fanCount']: >6} | " \
+              f"{acup['contributeCount']: >6} |"
+    up_stat = Text(up_text)
+    video_staff = ac_obj.staff()
+    if video_staff is None:
+        signature = acup['signature'].replace('\n', '↩').replace('\r', '')
+        signature = unescape(signature)
+        signature = Panel(emoji.replace_emoji(signature, ""), title='签名', title_align='left', height=16)
+        video_layout['upinfo'].update(Group(up_stat, signature))
+    else:
+        staff_text = [
+            f"{video_staff['upInfo']['staffRoleName']}:{video_staff['upInfo']['name']}"
+        ]
+        for up in video_staff['staffInfos']:
+            staff_text.append(f"{up['staffRoleName']}:{up['name']}")
+        staff_panel = Panel("\r\n".join(staff_text), title='联合出品', title_align='left', height=16)
+        video_layout['upinfo'].update(Group(up_stat, staff_panel))
+
+    video_info = f"{video_raw['description'] or '暂无简介'}\r\n"
+    ac_link_rex = r"(\[a[ac]=\d*@(video|album|article)\]([^\[]*)\[\/a[ac]\])"
+    if video_raw['description']:
+        info_link = re.compile(ac_link_rex).findall(video_info)
+        for link in info_link:
+            video_info = video_info.replace(link[0], f"[#62a5ff]{link[2]}[/#62a5ff] ")
+
+    video_tags = " ".join([f"[{x['name']}]" for x in video_raw['tagList']])
+    info_panel = Panel(video_info, subtitle=video_tags, subtitle_align='left')
+    if video_raw['originalDeclare']:
+        info_panel.title = "🚫未经作者授权，禁止转载"
+        info_panel.title_align = 'right'
+    video_layout['base_info'].update(info_panel)
+
+    video_title = "[bold #e95c5e]AcFun弹幕视频网 - " \
+                 "认真你就输啦 (・ω・)ノ- ( ゜- ゜)つロ[/bold #e95c5e]"
+    video_panel = Panel(video_layout, height=32, title=video_title, title_align='center', border_style="#e95c5e")
+
+    console.clear()
+    console.print(video_panel)
     # 功能按钮：弹幕、评论、UP
-    pass
+    return None
 
 
 def cli_bangumi(ac_obj, act=None, ext=None):
-    # 封面图    分集列表
-    #           分集列表
-    # 视频信息  分集列表
+    bangumi_layout = Layout()
+    bangumi_layout.split_column(
+        Layout(name='title', size=2),
+        Layout(name='info', size=28)
+    )
+    bangumi_layout['title'].split_row(
+        Layout(name='title-main', size=87),
+        Layout(name='title-sub', size=28),
+    )
+    bangumi_layout['info'].split_row(
+        Layout(name='cover', size=56),
+        Layout(name='detail', size=60),
+    )
+    bangumi_layout['detail'].split_column(
+        Layout(name='season', size=3),
+        Layout(name='episode'),
+    )
+    bangumi_raw = ac_obj.bangumi_data
+    bangumi_title = bangumi_raw['bangumiTitle'].strip()
+    bangumi_text = f" [ {bangumi_raw['extendsStatus']} ] [b]{bangumi_title}[/b]\r\n" \
+                   f" [ {bangumi_raw['bangumiPaymentType']['name']} ] " \
+                   f"看{bangumi_raw['playCountShow']}  " \
+                   f"评{bangumi_raw['commentCountShow']}"
+    bangumi_layout['title-main'].update(bangumi_text)
+    subtitle_text = f"⏰[{bangumi_raw['updateTime']}]\r\n" \
+                    f"👍{bangumi_raw['bangumiLikeCountShow']}  " \
+                    f"🌟{bangumi_raw['stowCountShow']}  " \
+                    f"🍌{bangumi_raw['bangumiBananaCountShow']}"
+    subtitle = Text(subtitle_text, justify='right')
+    bangumi_layout['title-sub'].update(subtitle)
+    cover_panel = load_image_to_cli(bangumi_raw['bangumiCoverImageV'], width=52)
+    cover_panel.title = f"[#62a5ff]{source.routes['video']}{ac_obj.aa_num}[/#62a5ff]"
+    cover_panel.title_align = 'left'
+    bangumi_layout['cover'].update(cover_panel)
+    if len(bangumi_raw['relatedBangumis']) == 0:
+        bangumi_layout['season'].visible = False
+    else:
+        season_list = []
+        for x in bangumi_raw['relatedBangumis']:
+            season_list.append(f"{x['name']}")
+        season_txt = Text(" | ".join(season_list), style='bold')
+        season_txt.align('center', 56)
+        season_panel = Panel(season_txt, title="更多季", title_align='right')
+        bangumi_layout['season'].update(season_panel)
+
+    intro_text = [
+        f"{bangumi_title} {bangumi_raw['latestItem']} {bangumi_raw['extendsStatus']}",
+        bangumi_raw['bangumiIntro']
+    ]
+    intro_panel = Panel("\r\n".join(intro_text), title="番剧简介", title_align='left')
+    bangumi_layout['episode'].update(intro_panel)
+
+    bangumi_title = "[bold #e95c5e]AcFun弹幕视频网 - " \
+                    "认真你就输啦 (・ω・)ノ- ( ゜- ゜)つロ[/bold #e95c5e]"
+    bangumi_panel = Panel(bangumi_layout, height=32, title=bangumi_title, title_align='center', border_style="#e95c5e")
+
+    console.clear()
+    console.print(bangumi_panel)
     # 功能按钮：弹幕、评论
-    pass
+    return None
 
 
 def cli_article(ac_obj, act=None, ext=None):
@@ -107,7 +251,7 @@ def cli_article(ac_obj, act=None, ext=None):
     # 时间、状态        用户信息
     # 简介
     # 功能按钮：正文、评论
-    pass
+    return None
 
 
 def cli_acup(ac_obj, act=None, ext=None):
@@ -124,24 +268,50 @@ def cli_acup(ac_obj, act=None, ext=None):
     signature = signature.replace('\n', '↩ ')
     reg_time = unix2string(ac_obj.up_data['registerTime'])
     login_time = unix2string(ac_obj.up_data['lastLoginTime'])
-    info_text = f"UID: {up_uid} \r\n" \
-                f"昵称: {up_name} \r\n" \
-                f"签名: {signature} \r\n" \
-                f"注册时间: {reg_time} \r\n" \
-                f"最后登录: {login_time} \r\n" \
-                f"关注: {ac_obj.following_count: >4} | 粉丝: {ac_obj.followed_count} \r\n" \
-                f"视频: {ac_obj.video_count: >4} | 文章: {ac_obj.article_count: >4} " \
-                f"| 合集: {ac_obj.album_count: >2}"
-    up_layout['info'].update(Panel(info_text, title=up_name))
-    up_avatar = load_image_to_cli(up_avatar, f"{up_uid}", 20)
+    up_title = f"@{up_name}"
+    if ac_obj.up_data['isContractUp']:
+        up_title = f"[red]{up_title}[/red]"
+    if ac_obj.up_data.get('verifiedText'):
+        up_title = f"[b]{up_title}[/b] | {ac_obj.up_data['verifiedText']}"
+    info_subtitle = f"注册时间: {reg_time} | 最后登录: {login_time}"
+    detail_text = f"关注: {ac_obj.following_count: >6} | " \
+                  f"粉丝: {ac_obj.followed_count: >6} | " \
+                  f"视频: {ac_obj.video_count: >6} | " \
+                  f"文章: {ac_obj.article_count: >6} | " \
+                  f"合集: {ac_obj.album_count: >6} \r\n" \
+                  f"{signature}"
+    info_panel = Panel(detail_text, title=up_title, title_align='left',
+                       subtitle=info_subtitle)
+    up_layout['info'].update(info_panel)
+    up_avatar = load_image_to_cli(up_avatar, width=20)
+    up_avatar.title = f"UID:{up_uid}"
     up_avatar.height = 9
+    if len(ac_obj.up_data['verifiedTypes']):
+        verifed_icon = []
+        for x in ac_obj.up_data['verifiedTypes']:
+            if x == 1:  # AcFun管理员
+                verifed_icon.append("🐒")
+            elif x == 2:  # AcFun官方认证
+                verifed_icon.append("✅")
+            elif x == 3:  # AVI虚拟偶像标识
+                verifed_icon.append("✨")
+            elif x == 4:  # 高弹达人标识???
+                verifed_icon.append("🏆")
+            elif x == 5:  # 阿普学院标志
+                verifed_icon.append("🎓")
+        up_avatar.subtitle = " ".join(verifed_icon)
     up_layout['avatar'].update(up_avatar)
-    console.print(Panel(up_layout, height=11))
-    pass
+    up_panel = Panel(up_layout, height=11, border_style="#e95c5e")
+
+
+    console.clear()
+    console.print(up_panel)
+    return None
 
 
 def cli_live(ac_obj, act=None, ext=None):
     is_out = False
+    login_string = ""
     cmd_log = []
 
     def live_panel():
@@ -181,7 +351,7 @@ def cli_live(ac_obj, act=None, ext=None):
         live_layout['cover'].update(cover_panel)
         acup = live_raw['user']
         avatar_panel = load_image_to_cli(acup['headUrl'], acup['name'], 24)
-        if acup['verifiedText']:
+        if 'verifiedText' in acup:
             avatar_panel.title = acup['verifiedText']
         live_layout['avatar'].update(avatar_panel)
         up_text = f"| 关  注 | 粉  丝 | 投  稿 |\r\n" \
@@ -211,7 +381,7 @@ def cli_live(ac_obj, act=None, ext=None):
                      "认真你就输啦 (・ω・)ノ- ( ゜- ゜)つロ[/bold #e95c5e]"
         live_log = "\r\n".join(cmd_log)
         live_layout['log'].update(Panel(live_log, title='命令日志', title_align='right'))
-        return Panel(live_layout, height=32, title=live_title, title_align='center')
+        return Panel(live_layout, height=32, title=live_title, title_align='center', border_style="#e95c5e")
 
     while is_out is False:
         console.clear()
@@ -227,29 +397,44 @@ def cli_live(ac_obj, act=None, ext=None):
             acer = Acer()
             cmd_log.append("logout")
             continue
+        elif user_cmd.lower() == 'like':
+            ac_obj.like(1)
+            cmd_log.append("like")
+            continue
         elif user_cmd.lower() == 'danmaku':
-            os.system(f"start cmd /c acfun {source.routes['live']}{ac_obj.uid} danmaku")
-            cmd_log.append("danmaku")
+            # os.system(f"start cmd /c acfun {source.routes['live']}{ac_obj.uid} danmaku")
+            cmds = [
+                "start", "cmd", "/c",
+                "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku",
+                "--login", login_string
+            ]
+            subprocess.Popen(cmds, shell=True)
+            cmd_log.append("danmaku[only]")
             continue
         user_cmd = user_cmd.split(maxsplit=1)
         if len(user_cmd) == 2 and user_cmd[0] == 'login':
             if user_cmd[1].count(":") == 1:
                 name, pwd = user_cmd[1].split(":")
                 acer.login(name, pwd)
+                login_string = user_cmd[1]
                 continue
             if (len(user_cmd[1]) == 11 and user_cmd[1].isdigit()) or user_cmd[1].count("@") == 1:
                 if os.path.isfile(f"{user_cmd[1]}.cookies"):
                     acer.loading(user_cmd[1])
+                    login_string = user_cmd[1]
                     continue
             cmd_log.append("login")
         elif len(user_cmd) == 2 and user_cmd[0] == 'danmaku':
             if user_cmd[1][0] == user_cmd[1][-1] and user_cmd[1][0] in ["'", '"']:
                 user_cmd[1] = user_cmd[1][1:-1]
-            subprocess.Popen([
+            cmds = [
                 "start", "cmd", "/c",
-                "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku", "--ext", f"{user_cmd[1]}"
-            ], shell=True)
-            cmd_log.append("danmaku")
+                "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku",
+                "--ext", f"{user_cmd[1]}",
+                "--login", login_string
+            ]
+            subprocess.Popen(cmds, shell=True)
+            cmd_log.append("danmaku[player]")
             continue
         elif user_cmd[0] == 'like' and user_cmd[1].isdigit():
             if int(user_cmd[1]) <= 600:
@@ -268,22 +453,23 @@ def acfun_detail(ac_obj, act=None, ext=None):
         return None
     obj_type = ac_obj.__class__.__name__
     if obj_type in ['AcLink', 'AcChannel', 'AcAlbum']:
-        return None
+        pass
     elif obj_type == "AcImage":
         return cli_image(ac_obj, act, ext)
     elif obj_type == 'AcVideo':
-        pass
+        return cli_video(ac_obj, act, ext)
     elif obj_type == 'AcBangumi':
-        pass
+        return cli_bangumi(ac_obj, act, ext)
     elif obj_type == 'AcArticle':
         pass
     elif obj_type == 'AcUp':
-        pass
+        return cli_acup(ac_obj, act, ext)
     elif obj_type == "AcLiveUp":
         if act == 'danmaku':
             ac_obj.watching_danmaku(potplayer=ext)
             return None
         return cli_live(ac_obj, act, ext)
+    console.print(f"抱歉，暂不支持命令行预览 {obj_type} 类型")
     return None
 
 
@@ -303,6 +489,7 @@ def acfun_detail(ac_obj, act=None, ext=None):
 def cli(src, act=None, ext=None, login=None):
     act = None if act == "" else act
     ext = None if ext == "" else ext
+    login = None if login == "" else login
     if isinstance(login, str):
         if login.count(":") == 1:
             username, password = login.split(':')
@@ -318,7 +505,16 @@ def cli(src, act=None, ext=None, login=None):
             acer.signin()
             return None
         elif src.startswith('http') and parse.urlsplit(src).netloc.endswith('acfun.cn'):
-            result = acfun_detail(acer.get(src), act=act, ext=ext)
+            return acfun_detail(acer.get(src), act=act, ext=ext)
+        elif src.lower() in ['video', 'bangumi', 'live', 'up']:
+            if src.lower() == 'video':
+                return cli_video(acer.AcVideo(act))
+            elif src.lower() == 'bangumi':
+                return cli_video(acer.AcBangumi(act))
+            elif src.lower() == 'live':
+                return cli_video(acer.AcLiveUp(act))
+            elif src.lower() == 'up':
+                return cli_video(acer.AcUp(dict(userId=act)))
             return None
 
     pass

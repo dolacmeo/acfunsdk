@@ -140,6 +140,7 @@ apis = {
     'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
     'im_image_upload': "https://sixinpic.kuaishou.com/rest/v2/app/upload",
 
+    'report_task': "https://api-ipv6.acfunchina.com/rest/app/task/reportTaskAction",
     'qrcode': "https://ksurl.cn/createqrcode",
 }
 

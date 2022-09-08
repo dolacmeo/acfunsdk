@@ -126,6 +126,12 @@
                                 {% if 2 in RAW.user.verifiedTypes %}
                                 <span class="verified-icon official-verified-icon" title="{{ "AcFun官方认证\n"|safe + RAW.user.verifiedText or '' }}"></span>
                                 {% endif %}
+                                {% if 3 in RAW.user.verifiedTypes %}
+                                <span class="verified-icon avi-verified-icon" title="AVI虚拟偶像标识"></span>
+                                {% endif %}
+                                {% if 4 in RAW.user.verifiedTypes %}
+                                <span class="verified-icon advanced-danmaku-verified-icon" title="高弹达人标识"></span>
+                                {% endif %}
                                 {% if 5 in RAW.user.verifiedTypes %}
                                 <span class="up-college-verified verified-icon">
                                     <span class="verified-icon up-college-verified-icon"></span>
@@ -136,8 +142,6 @@
                                     </span>
                                 </span>
                                 {% endif %}
-                                <span class="verified-icon avi-verified-icon" title="AVI虚拟偶像标识" style="display: none;"></span>
-                                <span class="verified-icon advanced-danmaku-verified-icon" title="高弹达人标识" style="display:none"></span>
                             </div>
                             <div class="publish-time">发布于&nbsp;{{ RAW.createTimeMillis|unix2datestr }}</div>
                         </div>

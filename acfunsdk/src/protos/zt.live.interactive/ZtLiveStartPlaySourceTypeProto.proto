@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-enum ZtLiveStartPlaySourceTypeProto {
-    ZtLiveStartPlaySourceTypeProtoA = 0;
-    ZtLiveStartPlaySourceTypeProtoB = 1;
-}

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message BatchGetMessageClickStatusRequest {
-	string strTargetId = 1;
-	repeated int64 seqId = 2;
-}

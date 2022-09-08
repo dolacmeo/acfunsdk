@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message CommonStateSignalAuthorPause {
-    int64 a = 1;
-    string b = 2;
-    string c = 3;
-}

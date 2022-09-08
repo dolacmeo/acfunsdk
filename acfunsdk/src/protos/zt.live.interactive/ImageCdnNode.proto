@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message ImageCdnNode {
-	string cdn = 1;
-	string url = 2;
-	string urlPattern = 3;
-}

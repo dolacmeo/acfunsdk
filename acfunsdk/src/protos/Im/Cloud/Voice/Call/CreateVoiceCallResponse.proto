@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Voice.Call;
-
-message CreateVoiceCallResponse {
-	string roomId = 1;
-	bytes signalData = 2;
-}

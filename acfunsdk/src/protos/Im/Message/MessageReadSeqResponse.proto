@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-import "ReadSeqInfo.proto";
-
-message MessageReadSeqResponse {
-	repeated ReadSeqInfo readSeqInfo = 1;
-}

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message WidgetDisplayStyle {
-    bool a = 1;
-    bool b = 2;
-}

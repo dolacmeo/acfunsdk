@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message CommonStateSignalPKAccept {
-    string a = 1;
-    string b = 2;
-}

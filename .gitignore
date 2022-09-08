@@ -177,9 +177,9 @@ dmypy.json
 cython_debug/
 
 download/
-acfun/assets/
-acfun/src/protos
-acfun/src/protoc.exe
+acfunsdk/assets/
+acfunsdk/src/protos
+acfunsdk/src/protoc.exe
 ffmpeg.exe
 *.cookies
 scratch.py

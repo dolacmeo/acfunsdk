@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message ClickStatus {
-	int64 seqId = 1;
-	bool clicked = 2;
-}

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-import "MessageRangeIndex.proto";
-
-message MessageRangeIndexGetResponse {
-	repeated MessageRangeIndex messageRangeIndex = 1;
-}

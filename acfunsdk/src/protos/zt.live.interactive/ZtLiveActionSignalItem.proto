@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu;
-
-message ZtLiveActionSignalItem {
-	string signalType = 1;
-	repeated bytes payload = 2;
-}

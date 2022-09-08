@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Voice.Call;
-
-message GetVoiceCallDetailRequest {
-	string roomId = 1;
-}

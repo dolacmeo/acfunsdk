@@ -1,8 +1,0 @@
-﻿syntax = "proto3";
-
-package AcFunDanmu;
-
-message CommonStateSignalAuthorChatAccept {
-	string authorChatId = 1;
-	string aryaSignalInfo = 2;
-}

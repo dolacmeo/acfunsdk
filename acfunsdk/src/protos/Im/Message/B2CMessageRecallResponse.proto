@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message B2CMessageRecallResponse {
-}

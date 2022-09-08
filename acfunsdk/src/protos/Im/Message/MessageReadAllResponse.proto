@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Message;
-
-message MessageReadAllResponse {
-	int64 readAllTimestamp = 1;
-}

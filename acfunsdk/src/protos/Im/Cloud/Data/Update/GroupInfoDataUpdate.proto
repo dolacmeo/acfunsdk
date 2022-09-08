@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Data.Update;
-
-message GroupInfoDataUpdate {
-	string groupId = 1;
-}

@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Profile;
-
-message ProfileKickUserLoginDeviceRequest {
-	string deviceId = 1;
-}

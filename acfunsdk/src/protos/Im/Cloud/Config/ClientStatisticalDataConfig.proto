@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package AcFunDanmu.Im.Cloud.Config;
-
-message ClientStatisticalDataConfig {
-	double cmdDataReportSampleRate = 1;
-	double networkFlowCostReportSampleRate = 2;
-}

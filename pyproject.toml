@@ -28,6 +28,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 packages = [{include = "acfunsdk"}]
+exclude = ["acfunsdk/app/"]
 
 [tool.poetry.dependencies]
 python = "^3.8"

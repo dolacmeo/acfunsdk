@@ -17,8 +17,8 @@ class AcClient:
     _client = None
     history = list()
 
-    def __init__(self):
-        self._client = httpx.Client(headers=source.header)
+    def __init__(self, header=None):
+        self._client = httpx.Client(headers=header or source.header)
 
     @property
     def cookies(self):

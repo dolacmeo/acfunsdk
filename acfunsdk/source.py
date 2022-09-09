@@ -20,7 +20,11 @@ domains = {
     "user": "member.acfun.cn",
     "live": "live.acfun.cn",
     "mobile": "m.acfun.cn",
-    "id_api": "id.app.acfun.cn"
+    "id_api": "id.app.acfun.cn",
+    "app_cdn": "sec-cdn.gifshow.com",
+    "app_sdk": "acfun-log-sdk.gifshow.com",
+    "app_api": "api-new.app.acfun.cn",
+    "api_ipv6": "api-ipv6.acfunchina.com",
 }
 
 routes = {
@@ -146,6 +150,31 @@ apis = {
 
     'report_task': "https://api-ipv6.acfunchina.com/rest/app/task/reportTaskAction",
     'qrcode': "https://ksurl.cn/createqrcode",
+}
+
+app_apis = {
+    # 'startup': f"{scheme}://{domains['app_sdk']}/rest/log/sdk/startup",
+    'safetyid': f"{scheme}://{domains['app_cdn']}/safetyid",
+    'api_startup': f"{scheme}://{domains['app_api']}/rest/app/system/startup",
+    # 'nav_bar': f"{scheme}://{domains['app_api']}/rest/app/configuration/navigationBar",
+    'config': f"{scheme}://{domains['app_api']}/rest/app/abTest/config",
+    # 'search_recommend': f"{scheme}://{domains['api_ipv6']}/rest/app/search/recommend",
+
+    # 'selection_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/selection/feed",
+    # 'tag_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/tag/feed",
+    # 'operations': f"{scheme}://{domains['api_ipv6']}/rest/app/operation/getOperations",
+    # 'uper_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/user/related/category/uperFeed",
+
+    # 'unread_count': f"{scheme}://{domains['api_ipv6']}/rest/app/clock/r",
+
+    # 用户APP签到 header需要sign form: access_token
+    # 'app_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/signIn",
+    # 'has_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/hasSignedIn",
+    # 'get_signin_infos': f"{scheme}://{domains['api_ipv6']}/rest/app/user/getSignInInfos",
+
+    # 任务中心 header需要sign
+    # 'task_panel': f"{scheme}://{domains['api_ipv6']}/rest/app/task/taskPanel",
+
 }
 
 websocket_links = [
@@ -913,31 +942,130 @@ ChannelList = [
 ]
 
 videoQualitiesRefer = {
-    "2160p120HDR": {"definition": "4K", "disableAutoSwitch": True, "limitType": 1, "qualityLabel": "2160P120 HDR",
-                    "qualityType": "2160p120HDR", "width": 3840, "height": 2160},
-    "2160p120": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p120", "qualityLabel": "2160P120",
-                 "definition": "4K", "width": 3840, "height": 2160},
-    "2160p60HDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60HDR",
-                   "qualityLabel": "2160P60 HDR", "definition": "4K", "width": 3840, "height": 2160},
-    "2160p60": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p60", "qualityLabel": "2160P60",
-                "definition": "4K", "width": 3840, "height": 2160},
-    "2160pHDR": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160pHDR", "qualityLabel": "2160P HDR",
-                 "definition": "4K", "width": 3840, "height": 2160},
-    "2160p": {"limitType": 1, "disableAutoSwitch": True, "qualityType": "2160p", "qualityLabel": "2160P",
-              "definition": "4K", "width": 3840, "height": 2160},
-    "1080p60HDR": {"limitType": 1, "qualityType": "1080p60HDR", "qualityLabel": "1080P60 HDR", "definition": "HD",
-                   "width": 1920, "height": 1080},
-    "1080p60": {"limitType": 1, "qualityType": "1080p60", "qualityLabel": "1080P60", "definition": "HD", "width": 1920,
-                "height": 1080},
-    "1080p+": {"limitType": 1, "qualityType": "1080p+", "qualityLabel": "1080P+", "definition": "HD", "width": 1920,
-               "height": 1080},
-    "1080pHDR": {"limitType": 1, "qualityType": "1080pHDR", "qualityLabel": "1080P HDR", "definition": "HD",
-                 "width": 1920, "height": 1080},
-    "1080p": {"limitType": 1, "qualityType": "1080p", "qualityLabel": "1080P", "definition": "HD", "width": 1920,
-              "height": 1080},
-    "720p60": {"limitType": 1, "qualityType": "720p60", "qualityLabel": "720P60", "width": 1280, "height": 720},
-    "720p": {"defaultSelect": True, "qualityType": "720p", "qualityLabel": "720P", "width": 1280, "height": 720},
-    "540p": {"qualityType": "540p", "qualityLabel": "540P", "width": 960, "height": 540},
-    "480p": {"qualityType": "480p", "qualityLabel": "480P", "width": 720, "height": 480},
-    "360p": {"qualityType": "360p", "qualityLabel": "360P", "width": 640, "height": 360},
+    "2160p120HDR": {
+        "definition": "4K",
+        "disableAutoSwitch": True,
+        "limitType": 1,
+        "qualityLabel": "2160P120 HDR",
+        "qualityType": "2160p120HDR",
+        "width": 3840,
+        "height": 2160
+    },
+    "2160p120": {
+        "limitType": 1,
+        "disableAutoSwitch": True,
+        "qualityType": "2160p120",
+        "qualityLabel": "2160P120",
+        "definition": "4K",
+        "width": 3840,
+        "height": 2160
+    },
+    "2160p60HDR": {
+        "limitType": 1,
+        "disableAutoSwitch": True,
+        "qualityType": "2160p60HDR",
+        "qualityLabel": "2160P60 HDR",
+        "definition": "4K",
+        "width": 3840,
+        "height": 2160
+    },
+    "2160p60": {
+        "limitType": 1,
+        "disableAutoSwitch": True,
+        "qualityType": "2160p60",
+        "qualityLabel": "2160P60",
+        "definition": "4K",
+        "width": 3840,
+        "height": 2160
+    },
+    "2160pHDR": {
+        "limitType": 1,
+        "disableAutoSwitch": True,
+        "qualityType": "2160pHDR",
+        "qualityLabel": "2160P HDR",
+        "definition": "4K",
+        "width": 3840,
+        "height": 2160
+    },
+    "2160p": {
+        "limitType": 1,
+        "disableAutoSwitch": True,
+        "qualityType": "2160p",
+        "qualityLabel": "2160P",
+        "definition": "4K",
+        "width": 3840,
+        "height": 2160
+    },
+    "1080p60HDR": {
+        "limitType": 1,
+        "qualityType": "1080p60HDR",
+        "qualityLabel": "1080P60 HDR",
+        "definition": "HD",
+        "width": 1920,
+        "height": 1080
+    },
+    "1080p60": {
+        "limitType": 1,
+        "qualityType": "1080p60",
+        "qualityLabel": "1080P60",
+        "definition": "HD",
+        "width": 1920,
+        "height": 1080
+    },
+    "1080p+": {
+        "limitType": 1,
+        "qualityType": "1080p+",
+        "qualityLabel": "1080P+",
+        "definition": "HD",
+        "width": 1920,
+        "height": 1080
+    },
+    "1080pHDR": {
+        "limitType": 1,
+        "qualityType": "1080pHDR",
+        "qualityLabel": "1080P HDR",
+        "definition": "HD",
+        "width": 1920,
+        "height": 1080
+    },
+    "1080p": {
+        "limitType": 1,
+        "qualityType": "1080p",
+        "qualityLabel": "1080P",
+        "definition": "HD",
+        "width": 1920,
+        "height": 1080
+    },
+    "720p60": {
+        "limitType": 1,
+        "qualityType": "720p60",
+        "qualityLabel": "720P60",
+        "width": 1280,
+        "height": 720
+    },
+    "720p": {
+        "defaultSelect": True,
+        "qualityType": "720p",
+        "qualityLabel": "720P",
+        "width": 1280,
+        "height": 720
+    },
+    "540p": {
+        "qualityType": "540p",
+        "qualityLabel": "540P",
+        "width": 960,
+        "height": 540
+    },
+    "480p": {
+        "qualityType": "480p",
+        "qualityLabel": "480P",
+        "width": 720,
+        "height": 480
+    },
+    "360p": {
+        "qualityType": "360p",
+        "qualityLabel": "360P",
+        "width": 640,
+        "height": 360
+    },
 }

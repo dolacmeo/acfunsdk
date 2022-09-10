@@ -72,6 +72,7 @@ contents = {
     "nav_ask": "输入<show><空格><编号>可以显示子栏目，输入<open><空格><编号>可以进入栏目，"
                "或者按 [bold red]Q[/bold red] 退出",
     "wen_title": "[bold #e95c5e]文章区 - AcFun弹幕视频网[/bold #e95c5e]",
+    "404": "[red]【404】咦？世界线变动了，你好像来到了奇怪的地方。看看其他内容吧~[/red]"
 }
 
 
@@ -161,9 +162,9 @@ def cli_video(ac_obj, act=None, ext=None):
         for link in info_link:
             video_info = video_info.replace(link[0], f"[#62a5ff]{link[2]}[/#62a5ff] ")
 
-    video_tags = " ".join([f"[{x['name']}]" for x in video_raw['tagList']])
+    video_tags = " ".join([f"[{x['name']}]" for x in video_raw.get('tagList', [])])
     info_panel = Panel(video_info, subtitle=video_tags, subtitle_align='left')
-    if video_raw['originalDeclare']:
+    if 'originalDeclare' in video_raw:
         info_panel.title = "🚫未经作者授权，禁止转载"
         info_panel.title_align = 'right'
     video_layout['base_info'].update(info_panel)
@@ -455,6 +456,9 @@ def cli_live(ac_obj, act=None, ext=None):
 # 详情菜单
 def acfun_detail(ac_obj, act=None, ext=None):
     if ac_obj is None:
+        return None
+    if ac_obj.is_404:
+        console.print(contents['404'])
         return None
     obj_type = ac_obj.__class__.__name__
     if obj_type in ['AcLink', 'AcChannel', 'AcAlbum']:

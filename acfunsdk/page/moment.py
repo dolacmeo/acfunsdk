@@ -9,6 +9,13 @@ from acfunsdk.exceptions import *
 __author__ = 'dolacmeo'
 
 
+def limit_string(s, n):
+    s = s[:n]
+    if len(s) == n:
+        s = s[:-2] + "..."
+    return s
+
+
 class Moment:
     raw_data = dict()
     like_count = 0
@@ -19,15 +26,14 @@ class Moment:
     def __init__(self, acer, raw_data: dict):
         self.acer = acer
         self.raw_data = raw_data
-        if self.tag_rtype in [1, 2, 3, 10]:
-            if self.rtype == 3:
-                self.linked = self.acer.AcArticle(self.rid)
-            elif self.rtype == 2:
-                self.linked = self.acer.AcVideo(self.rid)
-            elif self.rtype == 10:
-                rsource = self.raw_data.get('repostSource')
-                if rsource is not None:
-                    self.linked = Moment(self.acer, self.raw_data.get('repostSource'))
+        if self.rtype == 3:
+            self.linked = self.acer.AcArticle(self.rid)
+        elif self.rtype == 2:
+            self.linked = self.acer.AcVideo(self.rid)
+        elif self.rtype == 10:
+            rsource = self.raw_data.get('repostSource')
+            if rsource is not None:
+                self.linked = Moment(self.acer, self.raw_data.get('repostSource'))
 
     @property
     def tag_rtype(self):
@@ -45,7 +51,13 @@ class Moment:
     def mtype(self):
         return self.raw_data.get('momentType')
 
+    @property
+    def text_without_ubb(self):
+        return self.raw_data.get("replaceUbbText")
+
     def __repr__(self):
+        if self.tag_rtype is None and self.rtype == 10:
+            return f"AcMoment({limit_string(self.text_without_ubb, 7)} {self.linked})"
         if self.tag_rtype in [1, 2, 10]:
             name = self.raw_data.get('user', {}).get('userName', '')
             return f"AcMoment(@{name} | {str(self.linked)})".encode(errors='replace').decode()

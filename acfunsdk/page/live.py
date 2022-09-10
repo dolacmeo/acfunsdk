@@ -51,6 +51,7 @@ class AcLiveUp:
     acws = None
     is_open = False
     media_data = None
+    is_404 = False
 
     def __init__(self, acer, uid: [int, str], raw: [dict, None] = None):
         self.acer = acer
@@ -60,6 +61,7 @@ class AcLiveUp:
             self.infos()
         self.AcUp = self.acer.AcUp({"userId": self.uid})
         self.media_data = self.media_list()
+        self.is_404 = self.AcUp.is_404
 
     @property
     def title(self):

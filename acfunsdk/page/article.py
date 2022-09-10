@@ -43,10 +43,10 @@ class AcArticle:
 
     def loading(self):
         req = self.acer.client.get(routes['article'] + self.ac_num)
+        self.is_404 = req.status_code // 100 != 2
+        if self.is_404:
+            return None
         self.page_obj = Bs(req.text, 'lxml')
-        if self.page_obj.select_one("#main > script") is None:
-            self.is_404 = True
-            return
         json_text = match1(req.text, r"(?s)articleInfo\s*=\s*(\{.*?\});")
         self.article_data = json.loads(json_text)
         self.page_pagelets = get_page_pagelets(self.page_obj)

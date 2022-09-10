@@ -59,7 +59,7 @@ class AcVideo:
 
     def loading(self):
         req = self.acer.client.get(self.referer)
-        self.is_404 = req.status_code == 404
+        self.is_404 = req.status_code // 100 != 2
         if self.is_404:
             return False
         self.page_obj = Bs(req.text, 'lxml')

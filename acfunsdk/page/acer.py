@@ -17,6 +17,7 @@ class AcUp:
     album_count = None
     following_count = None
     followed_count = None
+    is_404 = False
 
     def __init__(self, acer, up_data: dict):
         self.up_data = up_data
@@ -26,8 +27,10 @@ class AcUp:
 
     def _get_acup(self):
         api_req = self.acer.client.get(apis['userInfo'], params={"userId": self.uid})
-        if api_req.json().get('result') == 0:
-            self.up_data.update(api_req.json().get('profile', {}))
+        if api_req.json().get('result') != 0:
+            self.is_404 = True
+            return None
+        self.up_data.update(api_req.json().get('profile', {}))
 
     @property
     def name(self):
@@ -37,6 +40,8 @@ class AcUp:
         return f"Acer([{self.uid}] @{self.name})".encode(errors='replace').decode()
 
     def loading(self):
+        if self.is_404 is True:
+            return None
         page_req = self.acer.client.get(routes['up'] + self.uid)
         self.up_page = Bs(page_req.text, "lxml")
         self.video_count = self.up_page.select_one(

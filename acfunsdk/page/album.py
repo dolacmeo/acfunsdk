@@ -12,6 +12,7 @@ class AcAlbum:
     page_obj = None
     page_data = None
     content_data = list()
+    is_404 = False
 
     def __init__(self, acer, aa_num: [str, int]):
         self.acer = acer
@@ -21,10 +22,15 @@ class AcAlbum:
         self.loading()
 
     def __repr__(self):
+        if self.is_404:
+            return f"AcAlbum([aa{self.aa_num}] 404)"
         return f"AcAlbum([aa{self.aa_num}]{self.info['title']} @{self.info['authorName']})".encode(errors='replace').decode()
 
     def loading(self):
         req = self.acer.client.get(f"{routes['album']}{self.aa_num}")
+        self.is_404 = req.status_code // 100 != 2
+        if self.is_404:
+            return None
         self.page_obj = Bs(req.text, 'lxml')
         json_text = match1(req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
         self.page_data = json.loads(json_text)

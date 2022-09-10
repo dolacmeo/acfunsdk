@@ -3,6 +3,7 @@ import json
 import time
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
+from acfunsdk.page.utils import match1
 
 __author__ = 'dolacmeo'
 
@@ -79,6 +80,7 @@ class AcChannel:
     is_main = False
     parent_data = None
     sub_data = None
+    is_404 = False
 
     def __init__(self, acer, cid, nav_info: dict):
         self.acer = acer
@@ -104,22 +106,25 @@ class AcChannel:
                     self.info = self.sub_data
                     break
         self.is_main = self.sub_data is None
+        if self.parent_data is None:
+            self.is_404 = True
 
     def __repr__(self):
+        if self.is_404 is True:
+            return f"AcChannel(#{self.cid} 404)"
         return f"AcChannel(#{self.cid} {self.info['name']})"
 
     def loading(self):
         if not self.is_main:
             print("Is sub channels, just use videos.")
             return False
-        req = self.acer.client.get(f"{routes['index']}{self.link}")
-        self.channel_obj = Bs(req.text, 'lxml')
-        inner_data = self.channel_obj.select_one('#app').find_next_sibling("script").text.strip()
-        js_head = "window.__INITIAL_STATE__="
-        js_end = ";(function(){var s;(s=document.currentScript||" \
-                 "document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());"
-        assert inner_data.startswith(js_head) and inner_data.endswith(js_end)
-        self.channel_data = json.loads(inner_data[len(js_head):-len(js_end)])
+        page_req = self.acer.client.get(f"{routes['index']}{self.link}")
+        self.channel_obj = Bs(page_req.text, 'lxml')
+        json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
+        if json_text is None:
+            self.is_404 = True
+            return False
+        self.channel_data = json.loads(json_text)
 
     def hot_words(self):
         if not self.is_main:

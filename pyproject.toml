@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acfunSDK"
-version = "0.8.8.fix1"
+version = "0.8.8.dev1"
 description = "acfunSDK - UNOFFICEICAL"
 license = "MIT"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
@@ -28,7 +28,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 packages = [{include = "acfunsdk"}]
-exclude = ["acfunsdk/app/"]
+exclude = [
+    "acfunsdk/app/",
+    "acfunsdk/src/",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"

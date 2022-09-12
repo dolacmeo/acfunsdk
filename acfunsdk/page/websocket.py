@@ -287,6 +287,7 @@ class AcWebSocket:
     live_obj = None
     _live_player = None
     is_close = True
+    ws_recv_listener = None
 
     def __init__(self, acer):
         self.acer = acer
@@ -325,13 +326,10 @@ class AcWebSocket:
         if command not in self.commands:
             self.commands[command] = []
         self.commands[command].append({"seqId": f"{seqId}", "way": "send", "time": time.time()})
-        # print(f"send: [{seqId}] {command}")
         self.ws.send(content)
 
     def task(self, seqId: int, command, content):
         self.add_task(seqId, command, content)
-        # if f"{seqId}" not in self.listenner:
-        #     self.listenner[f"{seqId}"] = None
 
     def ans_task(self, seqId: int, command, result):
         if f"{seqId}" not in self.tasks:
@@ -340,9 +338,12 @@ class AcWebSocket:
         if command not in self.commands:
             self.commands[command] = []
         self.commands[command].append({"seqId": f"{seqId}", "way": "recv", "time": time.time()})
-        # if f"{seqId}" in self.listenner:
-        #     self.listenner[f"{seqId}"] = result
-        self.unread.append(f"{seqId}.recv")
+        if callable(self.ws_recv_listener):
+            need_return = self.ws_recv_listener(seqId, command, result)
+            if need_return is True:
+                return None
+        else:
+            self.unread.append(f"{seqId}.recv")
         if command == 'Basic.Register':
             self.task(*self.protos.ClientConfigGet_Request())
             print(f"did       : {self.acer.did}")
@@ -451,6 +452,8 @@ class AcWebSocket:
 
     def live_enter_room(self, uid: int, room_bans: [list, None] = None,
                         potplayer: [str, None] = None, quality: int = 1):
+        if self._main_thread is None or self.is_close is True:
+            self.run()
         if isinstance(potplayer, str) and os.path.isfile(potplayer):
             self.player_config = {"player_path": potplayer, "quality": quality}
         self.live_room_msg_bans = [] if room_bans is None else room_bans

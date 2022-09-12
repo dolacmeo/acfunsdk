@@ -18,6 +18,8 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 from rich.text import Text
 from rich.layout import Layout
+from rich.live import Live
+from rich.align import Align
 import emoji
 
 from acfunsdk import Acer
@@ -136,7 +138,7 @@ def cli_video(ac_obj, act=None, ext=None):
     video_layout['avatar'].update(avatar_panel)
 
     up_text = f"| 关  注 | 粉  丝 | 投  稿 |\r\n" \
-              f"| {acup['followingCount']: >6} |" \
+              f"| {acup['followingCount']: >6} | " \
               f"{acup['fanCount']: >6} | " \
               f"{acup['contributeCount']: >6} |"
     up_stat = Text(up_text)
@@ -319,7 +321,7 @@ def cli_live(ac_obj, act=None, ext=None):
         live_layout.split_column(
             Layout(name='title', size=2),
             Layout(name='info', size=20),
-            Layout(name='bottom', size=8)
+            Layout(name='bottom', size=9)
         )
         live_layout['title'].split_row(
             Layout(name='title-main', size=87),
@@ -364,91 +366,120 @@ def cli_live(ac_obj, act=None, ext=None):
         live_layout['upinfo'].update(Group(up_stat, signature))
         action_text = [
             f" 1.看弹幕(danmaku PotPlayer路径)，会弹出新窗口播放弹幕，播放器可选",
-            f" 2.给主播点赞(like 次数)，每个赞1秒，别弄太多哦",
-            f" 3.登录后发弹幕(push 内容)，发完可以到弹幕窗口查看",
-            f" 4.登录后送礼物(gift 编号 数量 次数)，礼物编号什么的没法告诉你，反正 1 是香蕉",
-            f" 5.登录(login 用户名:密码)，已登录可用(login 用户名)",
-            f" 6.退出(quit)，那就下次再见! [阿妹你看 上帝压狗]"
+            f" 2.录制(record 保存目录路径)，会弹出新窗口，保存目录可选，默认当前",
+            f" 3.给主播点赞(like 次数)，每个赞1秒，别弄太多哦",
+            f" 4.登录后发弹幕(push 内容)，发完可以到弹幕窗口查看",
+            f" 5.登录后送礼物(gift 编号 数量 次数)，礼物编号什么的没法告诉你，反正 1 是香蕉",
+            f" 6.登录(login 用户名:密码)，已登录可用(login 用户名)",
+            f" 7.退出(quit)，那就下次再见! [阿妹你看 上帝压狗]"
         ]
-        tip_panel = Panel("\r\n".join(action_text), title="操作命令", title_align='left', height=8)
+        tip_panel = Panel("\r\n".join(action_text), title="操作命令", title_align='left', height=9)
         if acer.is_logined:
-            action_text[2] = action_text[2].replace('登录后', "")
             action_text[3] = action_text[3].replace('登录后', "")
-            action_text[4] = f" 5.退出登录(logout)"
-            tip_panel = Panel("\r\n".join(action_text), title="操作命令", title_align='left', height=8)
+            action_text[4] = action_text[4].replace('登录后', "")
+            action_text[5] = f" 5.退出登录(logout)"
+            tip_panel = Panel("\r\n".join(action_text), title="操作命令", title_align='left', height=9)
         live_layout['tips'].update(tip_panel)
         live_title = "[bold #e95c5e]直播 - AcFun弹幕视频网 - " \
                      "认真你就输啦 (・ω・)ノ- ( ゜- ゜)つロ[/bold #e95c5e]"
         live_log = "\r\n".join(cmd_log)
         live_layout['log'].update(Panel(live_log, title='命令日志', title_align='right'))
-        return Panel(live_layout, height=32, title=live_title, title_align='center', border_style="#e95c5e")
+        return Panel(live_layout, height=33, title=live_title, title_align='center', border_style="#e95c5e")
 
-    while is_out is False and ac_obj.media_list() is not False:
-        console.clear()
-        console.print(live_panel())
-        user_cmd = Prompt.ask("命令").strip()
-        if len(user_cmd) == 0:
-            continue
-        if user_cmd.lower() == 'quit':
-            is_out = True
-            continue
-        elif user_cmd.lower() == 'logout':
-            global acer
-            acer = Acer()
-            cmd_log.append("logout")
-            continue
-        elif user_cmd.lower() == 'like':
-            ac_obj.like(1)
-            cmd_log.append("like")
-            continue
-        elif user_cmd.lower() == 'danmaku':
-            # os.system(f"start cmd /c acfun {source.routes['live']}{ac_obj.uid} danmaku")
-            cmds = [
-                "start", "cmd", "/c",
-                "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku",
-                "--login", login_string
-            ]
-            subprocess.Popen(cmds, shell=True)
-            cmd_log.append("danmaku[only]")
-            continue
-        user_cmd = user_cmd.split(maxsplit=1)
-        if len(user_cmd) == 2 and user_cmd[0] == 'login':
-            if user_cmd[1].count(":") == 1:
-                name, pwd = user_cmd[1].split(":")
-                acer.login(name, pwd)
-                login_string = user_cmd[1]
+    console.clear()
+    with Live(console=console, auto_refresh=False) as live:
+        while is_out is False and ac_obj.media_list() is not False:
+            live.console.clear()
+            live.update(live_panel(), refresh=True)
+            user_cmd = Prompt.ask("命令").strip()
+            if len(user_cmd) == 0:
                 continue
-            if (len(user_cmd[1]) == 11 and user_cmd[1].isdigit()) or user_cmd[1].count("@") == 1:
-                if os.path.isfile(f"{user_cmd[1]}.cookies"):
-                    acer.loading(user_cmd[1])
-                    login_string = user_cmd[1]
-                    continue
-            cmd_log.append("login")
-        elif len(user_cmd) == 2 and user_cmd[0] == 'danmaku':
-            if user_cmd[1][0] == user_cmd[1][-1] and user_cmd[1][0] in ["'", '"']:
-                user_cmd[1] = user_cmd[1][1:-1]
-            cmds = [
-                "start", "cmd", "/c",
-                "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku",
-                "--ext", f"{user_cmd[1]}",
-                "--login", login_string
-            ]
-            subprocess.Popen(cmds, shell=True)
-            cmd_log.append("danmaku[player]")
-            continue
-        elif user_cmd[0] == 'like' and user_cmd[1].isdigit():
-            if int(user_cmd[1]) <= 600:
+            if user_cmd.lower() == 'quit':
+                is_out = True
+                continue
+            elif user_cmd.lower() == 'logout':
+                global acer
+                acer = Acer()
+                cmd_log.append("logout")
+                continue
+            elif user_cmd.lower() == 'like':
+                ac_obj.like(1)
+                cmd_log.append("like")
+                continue
+            elif user_cmd.lower() == 'record':
                 cmds = [
-                    "start", "cmd", "/c",
-                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "like",
-                    "--ext", f"{user_cmd[1]}",
-                    "--login", login_string
+                    "start", "cmd", "/q", "/c",
+                    f"chcp 65001 && mode con cols=52 lines=4 && title AcLive({ac_obj.uid}) &&",
+                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "record"
                 ]
                 subprocess.Popen(cmds, shell=True)
-                cmd_log.append(" ".join(user_cmd))
-        elif user_cmd[0] == 'push' and acer.is_logined:
-            ac_obj.push_danmaku(user_cmd[1])
-            cmd_log.append("push")
+                cmd_log.append("record[only]")
+                continue
+            elif user_cmd.lower() == 'danmaku':
+                cmds = [
+                    "start", "cmd", "/q", "/c",
+                    f"chcp 65001 && mode con cols=80 lines=60 && title AcLive({ac_obj.uid}) &&",
+                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku"
+                ]
+                if login_string:
+                    cmds += ["--login", login_string]
+                subprocess.Popen(cmds, shell=True)
+                cmd_log.append("danmaku[only]")
+                continue
+            user_cmd = user_cmd.split(maxsplit=1)
+            if len(user_cmd) == 2 and user_cmd[0] == 'login':
+                if user_cmd[1].count(":") == 1:
+                    name, pwd = user_cmd[1].split(":")
+                    acer.login(name, pwd)
+                    login_string = user_cmd[1]
+                    continue
+                if (len(user_cmd[1]) == 11 and user_cmd[1].isdigit()) or user_cmd[1].count("@") == 1:
+                    if os.path.isfile(f"{user_cmd[1]}.cookies"):
+                        acer.loading(user_cmd[1])
+                        login_string = user_cmd[1]
+                        continue
+                cmd_log.append("login")
+            elif len(user_cmd) == 2 and user_cmd[0] == 'danmaku':
+                if user_cmd[1][0] == user_cmd[1][-1] and user_cmd[1][0] in ["'", '"']:
+                    user_cmd[1] = user_cmd[1][1:-1]
+                cmds = [
+                    "start", "cmd", "/q", "/c",
+                    f"chcp 65001 && mode con cols=80 lines=60 && title AcLive({ac_obj.uid}) &&",
+                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "danmaku",
+                    "--ext", f"{user_cmd[1]}"
+                ]
+                if login_string:
+                    cmds += ["--login", login_string]
+                subprocess.Popen(cmds, shell=True)
+                cmd_log.append("danmaku[player]")
+                continue
+            elif len(user_cmd) == 2 and user_cmd[0] == 'record':
+                if user_cmd[1][0] == user_cmd[1][-1] and user_cmd[1][0] in ["'", '"']:
+                    user_cmd[1] = user_cmd[1][1:-1]
+                cmds = [
+                    "start", "cmd", "/q", "/c",
+                    f"chcp 65001 && mode con cols=52 lines=4 && title AcLive({ac_obj.uid}) &&",
+                    "acfun", f"{source.routes['live']}{ac_obj.uid}", "record",
+                    "--ext", f"{user_cmd[1]}"
+                ]
+                if login_string:
+                    cmds += ["--login", login_string]
+                subprocess.Popen(cmds, shell=True)
+                cmd_log.append("record[with path]")
+                continue
+            elif user_cmd[0] == 'like' and user_cmd[1].isdigit():
+                if int(user_cmd[1]) <= 600:
+                    cmds = [
+                        "start", "cmd", "/c",
+                        "acfun", f"{source.routes['live']}{ac_obj.uid}", "like",
+                        "--ext", f"{user_cmd[1]}",
+                        "--login", login_string
+                    ]
+                    subprocess.Popen(cmds, shell=True)
+                    cmd_log.append(" ".join(user_cmd))
+            elif user_cmd[0] == 'push' and acer.is_logined:
+                ac_obj.push_danmaku(user_cmd[1])
+                cmd_log.append("push")
     console.clear()
     return None
 
@@ -476,6 +507,10 @@ def acfun_detail(ac_obj, act=None, ext=None):
     elif obj_type == "AcLiveUp":
         if act == 'danmaku':
             ac_obj.watching_danmaku(potplayer=ext)
+            return None
+        if act == 'record':
+            save_path = os.getcwd() if ext is None else ext
+            ac_obj.record(save_path)
             return None
         elif act == 'like':
             if isinstance(ext, str) and ext.isdigit():

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acfunSDK"
-version = "0.8.8.dev1"
+version = "0.8.9"
 description = "acfunSDK - UNOFFICEICAL"
 license = "MIT"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
@@ -52,6 +52,7 @@ click = "^8.1"
 emoji = "^2"
 climage = "^0.1.3"
 keyboard = "^0.13"
+humanize = "^4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

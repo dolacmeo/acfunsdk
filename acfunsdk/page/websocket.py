@@ -154,7 +154,7 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                 # 内容信息
                 user = user_info(fans)
                 send_time = unix2string(fans['sendTimeMs'])
-                users.append(f"{{{send_time}}} \r\n{user} 点赞了❤ \r\n")
+                users.append(f"{{{send_time}}} \r\n{user} 点赞了💖 \r\n")
                 words.append("".join(users))
         elif signal_name == "CommonActionSignalUserEnterRoom":
             words = list()
@@ -208,8 +208,10 @@ def ac_live_room_reader(data: list, gift_data: [dict, None] = None, msg_bans: [l
                 send_time = unix2string(fans['sendTimeMs'])
                 words.append(f"{{{send_time}}} \r\n{user} {gift} \r\n")
                 words.append("".join(users))
-        elif signal_name == "CommonActionSignalRichText":  # 高级弹幕
-            pass
+        elif signal_name == "CommonActionSignalRichText":
+            # 高级弹幕
+            # 包括发红包
+            return data
         elif signal_name == "AcfunActionSignalJoinClub":
             words = list()
             for fans in payload:
@@ -285,6 +287,7 @@ class AcWebSocket:
     live_room_msg_bans = []
     live_room_gift = None
     live_obj = None
+    live_log = None
     _live_player = None
     is_close = True
     ws_recv_listener = None
@@ -332,6 +335,13 @@ class AcWebSocket:
         self.add_task(seqId, command, content)
 
     def ans_task(self, seqId: int, command, result):
+        if self.live_log is not None:
+            self.live_log.write(json.dumps({
+                "command": command,
+                "message": result,
+                "time": time.time(),
+                "seqId": f"{seqId}"
+            }, separators=(',', ':')))
         if f"{seqId}" not in self.tasks:
             self.tasks[f"{seqId}"] = {}
         self.tasks[f"{seqId}"]["recv"] = {"command": command, "content": result, "time": time.time()}
@@ -419,6 +429,9 @@ class AcWebSocket:
             for child_proc in parent_proc.children(recursive=True):
                 child_proc.kill()
             parent_proc.kill()
+        if self.live_log is not None:
+            self.live_log.close()
+            self.live_log = None
         self.ws.close()
 
     def restart(self):
@@ -451,11 +464,19 @@ class AcWebSocket:
         return self.task(*message)
 
     def live_enter_room(self, uid: int, room_bans: [list, None] = None,
-                        potplayer: [str, None] = None, quality: int = 1):
+                        potplayer: [str, None] = None, quality: int = 1,
+                        log_path: [str, os.PathLike, None] = None):
         if self._main_thread is None or self.is_close is True:
             self.run()
         if isinstance(potplayer, str) and os.path.isfile(potplayer):
             self.player_config = {"player_path": potplayer, "quality": quality}
+        if log_path is not None:
+            start_time = time.strftime('%Y%m%d', time.localtime(create_time))
+            if os.path.isdir(log_path):
+                live_log_path = os.path.join(log_path, f"AcLive({uid})_{start_time}.log")
+                self.live_log = open(live_log_path, 'a')
+            elif os.path.isfile(log_path) and log_path.endwith(".log"):
+                self.live_log = open(log_path, 'a')
         self.live_room_msg_bans = [] if room_bans is None else room_bans
         self.live_obj = self.acer.AcLive().get(uid)
         cmd = self.protos.ZtLiveCsEnterRoom_Request(uid)

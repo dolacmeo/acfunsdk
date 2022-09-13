@@ -508,7 +508,7 @@ def acfun_detail(ac_obj, act=None, ext=None):
         if act == 'danmaku':
             ac_obj.watching_danmaku(potplayer=ext)
             return None
-        if act == 'record':
+        elif act == 'record':
             save_path = os.getcwd() if ext is None else ext
             ac_obj.record(save_path)
             return None

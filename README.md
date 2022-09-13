@@ -13,15 +13,12 @@
 
 acfunSDK是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
-几乎搜集了所有与 [AcFun弹幕视频网][acfun.cn] 相关的接口与数据。
-
-ps: _如发现未知接口，或现有功能失效，请随时提交 [Issue]_
+> 声明：`acfunSDK`是python的学习工具，并未破解任何acfun相关内容。代码完全公开，仅用于交流学习。
+> 如涉及版权等相关问题，请遵守acfun相关协议及法律法规。如有bug或其他疑问，欢迎发布[issues][Issue]。
 
 - - -
 
-**Python** : 开发环境为 `Python 3.8.10` & `Python 3.9.6`
-
-`Python`本体请自行[下载安装][python]。
+**Python** : 开发环境为 `Python 3.8.10`， 本体请自行[下载安装][python]。
 
 ## [从PyPI安装](https://pypi.org/project/acfunsdk/)
 
@@ -29,7 +26,7 @@ ps: _如发现未知接口，或现有功能失效，请随时提交 [Issue]_
 python -m pip install acfunsdk
 ```
 
-**需要`ffmpeg`**  主要用于下载视频。
+**‼需要`ffmpeg`**  主要用于下载视频。
 > 建议去官网下载 https://ffmpeg.org/download.html
 >
 > 可执行文件 `ffmpeg` 需要加入到环境变量，或复制到运行根目录。

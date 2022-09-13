@@ -69,4 +69,4 @@ url = "https://mirrors.aliyun.com/pypi/simple/"
 "Bug Tracker" = "https://github.com/dolaCmeo/acfunSDK/issues"
 
 [tool.poetry.scripts]
-acfun = 'acfun.__main__:cli'
+acfun = 'acfunsdk.__main__:cli'

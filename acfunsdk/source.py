@@ -69,7 +69,8 @@ apis = {
     'search': f"{scheme}://{domains['main']}/search",
     'search_keywords': f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
     'history': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
-    'unread': "{scheme}://{domains['main']}/rest/pc-direct/clock/r",
+    'unread': f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
+    'video_scenes': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
 
     'get_users': f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
     'follow': f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",

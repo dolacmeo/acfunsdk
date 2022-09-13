@@ -80,6 +80,20 @@ class AcVideo:
     def video_list(self):
         return self.video_data.get('videoList', [])
 
+    def video_scenes(self):
+        form_data = {"resourceId": self.ac_num, "resourceType": 2,
+                     "videoId": self.video_data.get('currentVideoId')}
+        api_req = self.acer.client.post(apis['video_scenes'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        video_sprite = None
+        for line in api_data.get("spriteVtt", "").split("\n"):
+            if line.startswith("http"):
+                video_sprite = line
+                break
+        return video_sprite
+
     def set_video(self, num=1):
         assert num <= len(self.video_list)
         self.part_num = num

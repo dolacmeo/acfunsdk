@@ -195,6 +195,7 @@ WebSocket通信及数据处理:
 + [`emoji`](https://pypi.org/project/emoji/)`>=2`
 + [`keyboard`](https://pypi.org/project/keyboard/)`>=0.1.3`
 + [`climage`](https://pypi.org/project/climage/)`>=0.13`
++ [`humanize`](https://pypi.org/project/humanize/)`>=4.3`
 
 </details>
 

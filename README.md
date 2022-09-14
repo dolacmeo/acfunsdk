@@ -174,7 +174,6 @@ demo_video.saver(saver_path).save_all()
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
 
 下载及html页面渲染:
-+ [`alive-progress`](https://pypi.org/project/alive-progress/)`>=2.4`
 + [`filetype`](https://pypi.org/project/filetype/)`>=1.1`
 + [`jinja2`](https://pypi.org/project/jinja2/)`>=3.1`
 

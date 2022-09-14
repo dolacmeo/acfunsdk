@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from datetime import timedelta
-from alive_progress import alive_bar
+from rich.progress import Progress
 from acfunsdk.libs.ffmpeg_progress_yield import FfmpegProgress
 from acfunsdk.source import scheme, domains, routes, apis, pagelets, pagelets_big, pagelets_normal, videoQualitiesRefer
 from acfunsdk.exceptions import *
@@ -335,11 +335,13 @@ def acfun_video_downloader(client, data: dict,
         '--', video_save_path
     ]
     ff = FfmpegProgress(ffmpeg_params)
-    with alive_bar(100, title=f"{ac_name}", manual=True, force_tty=True) as bar:
+    with Progress() as pp:
+        ff_download = pp.add_task(f"{ac_name}[{quality_text}].mp4", total=100)
         for progress in ff.run_command_with_progress():
             if progress > 0:
-                bar(progress/100)
-        bar(1)
+                pp.update(ff_download, completed=progress)
+        pp.update(ff_download, completed=100)
+        pp.stop()
     if os.path.isfile(video_save_path):
         return video_save_path
     return False
@@ -365,23 +367,16 @@ def downloader(client, src_url, fname: [str, None] = None, dest_dir: [str, None]
                     return None
                 total = int(response.headers.get("Content-Length", 0))
                 total = None if total == 0 else total // 1024
-                downloaded = 0
-                with alive_bar(total, manual=False if total is None else True,
-                               length=30, disable=not display,
-                               title=fname, title_length=20, force_tty=True,
-                               monitor=None if total is None else "{count}/{total} [{percent:.1%}]",
-                               stats=False, elapsed_end=False) as progress:
+                with Progress(disable=not display) as pp:
+                    download = pp.add_task(fname, total=total or 100)
                     for chunk in response.iter_bytes():
                         download_file.write(chunk)
                         if total is None:
-                            progress(int(response.num_bytes_downloaded // 1024))
-                        elif total == 0:
-                            progress(int((response.num_bytes_downloaded - downloaded) // 1024))
+                            pp.update(download, advance=1)
                         else:
-                            progress(downloaded / total)
-                        downloaded = response.num_bytes_downloaded
-                    if total is not None:
-                        progress(1)
+                            pp.update(download, completed=response.num_bytes_downloaded // 1024)
+                    pp.update(download, completed=total or 100)
+                    pp.stop()
     except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout):
         print("httpx.ConnectError:", src_url)
         os.remove(fpath)
@@ -964,7 +959,8 @@ class AcComment:
         self.sub_comments = dict()
         page = 1
         page_max = 10
-        with alive_bar(100, manual=True, length=30, title="get all comments", force_tty=True, stats=False) as bar:
+        with Progress() as pp:
+            comments = pp.add_task("AcComment", total=page_max)
             while page <= page_max:
                 api_data = self._get_data(page)
                 if api_data.get('result') != 0:
@@ -976,8 +972,9 @@ class AcComment:
                 page_max = api_data.get('totalPage', page)
                 page = api_data.get('curPage', 1)
                 page += 1
-                bar(page / page_max)
-            bar(1)
+                pp.update(comments, total=page_max, completed=page)
+            pp.update(comments, total=page_max, completed=page_max)
+            pp.stop()
 
         for rid, sub_data in self.sub_comments.items():
             while sub_data['pcursor'] != "no_more":

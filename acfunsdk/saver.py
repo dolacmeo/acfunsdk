@@ -4,6 +4,7 @@ import os
 import re
 import time
 import json
+import math
 import shutil
 import zipfile
 from uuid import uuid4
@@ -11,13 +12,21 @@ from urllib.parse import urlparse, urlencode
 from .source import routes, apis
 from .page.utils import downloader, danmaku2ass, acfun_video_downloader
 from bs4 import BeautifulSoup as Bs
-from alive_progress import alive_bar
+from rich.progress import Progress
 from jinja2 import PackageLoader, Environment
 
 __author__ = 'dolacmeo'
 
 
-def unix2datestr(t: (int, float), f: str = "%Y-%m-%d %H:%M:%S"):
+def unix2datestr(t: (int, float, None) = None, f: str = "%Y-%m-%d %H:%M:%S"):
+    if t is None:
+        return time.strftime(f, time.localtime(time.time()))
+    t = int(t)
+    n = int(math.log10(t))
+    if n > 10:
+        t = t // math.pow(10, n - 10)
+    elif n < 10:
+        t = t * math.pow(10, 10 - n)
     return time.strftime(f, time.localtime(t))
 
 
@@ -295,7 +304,7 @@ class AcSaver:
                 fname = uuid4().hex.upper()
             # elif src_uu.netloc in self.cdns:
             #     fname = src_uu.path.split('/')[-1]
-        return self._download(src_url, fname, ex_dir)
+        return self._download(src_url, fname, ex_dir, display=False)
 
     def _save_member(self, ids: list, force: bool = False):
         if len(ids) == 0:
@@ -307,12 +316,12 @@ class AcSaver:
         ids_with_ext = [f"{i}.json" for i in ids]
         ids = list(set(ids_with_ext).difference([x for x in saved if x.endswith('.json')]))
         ids = [y.split('.')[0] for y in ids]
-        with alive_bar(len(ids), length=30, disable=len(ids) < 5, title="save members",
-                       force_tty=True, stats=False) as progress:
+        with Progress() as pp:
+            get_member = pp.add_task("save members", total=len(ids))
             for uid in ids:
                 if all([f"{uid}.json" in saved, f"{uid}.js" in saved, f"{uid}_avatar" in saved]) is True \
                         and force is False:
-                    progress()
+                    pp.update(get_member, advance=1)
                     done.append(uid)
                     continue
                 user_req = self.acer.client.get(apis['userInfo'], params=dict(userId=uid))
@@ -323,7 +332,7 @@ class AcSaver:
                 user_avatar = os.path.join(member_dir, f"{uid}_avatar")
                 if all([os.path.isfile(user_json), os.path.isfile(user_js), os.path.isfile(user_avatar)]) is True \
                         and force is False:
-                    progress()
+                    pp.update(get_member, advance=1)
                     done.append(uid)
                     continue
                 with open(user_json, 'w') as uid_file:
@@ -344,8 +353,10 @@ class AcSaver:
                         shutil.move(avatar_path, user_avatar)
                 if all([user_json_saved, user_js_saved, avatar_saved]):
                     done.append(uid)
-                progress()
+                pp.update(get_member, advance=1)
                 time.sleep(0.1)
+            pp.update(get_member, completed=len(ids))
+            pp.stop()
         return done
 
     def get_user(self, uid: str):
@@ -598,6 +609,7 @@ class ArticleSaver(AcSaver):
         up_data = self.get_user(self.ac_obj.article_data['user']['id'])
         article_template = self.templates.get_template('article.html')
         article_html = article_template.render(
+            cache_date=unix2datestr(),
             up_reg_date=unix2datestr(up_data['registerTime']),
             v_num=self.v_num, up_data=up_data, RAW=self.ac_obj.article_data)
         html_obj = Bs(article_html, 'lxml')
@@ -689,6 +701,7 @@ class VideoSaver(AcSaver):
         up_data = self.get_user(self.ac_obj.video_data['user']['id'])
         video_template = self.templates.get_template('video.html')
         video_html = video_template.render(
+            cache_date=unix2datestr(),
             up_reg_date=unix2datestr(up_data['registerTime']), partNum=num,
             v_num=v_num, up_data=up_data, RAW=self.ac_obj.video_data)
         html_path = os.path.join(self.dest_path, self.folder_path, f"ac{v_num}.html")

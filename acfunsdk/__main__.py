@@ -471,15 +471,19 @@ def cli_live(ac_obj, act=None, ext=None):
                 if int(user_cmd[1]) <= 600:
                     cmds = [
                         "start", "cmd", "/c",
+                        f"chcp 65001 && mode con cols=52 lines=4 && title AcLive({ac_obj.uid}) &&",
                         "acfun", f"{source.routes['live']}{ac_obj.uid}", "like",
                         "--ext", f"{user_cmd[1]}",
                         "--login", login_string
                     ]
                     subprocess.Popen(cmds, shell=True)
                     cmd_log.append(" ".join(user_cmd))
-            elif user_cmd[0] == 'push' and acer.is_logined:
-                ac_obj.push_danmaku(user_cmd[1])
-                cmd_log.append("push")
+            elif user_cmd[0] == 'push':
+                if acer.is_logined:
+                    ac_obj.push_danmaku(user_cmd[1])
+                    cmd_log.append("push")
+                else:
+                    console.print("need login!")
     console.clear()
     return None
 

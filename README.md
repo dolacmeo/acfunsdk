@@ -172,7 +172,6 @@ demo_video.saver(saver_path).save_all()
 + [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
 + [`lxml`](https://pypi.org/project/lxml/)`>=4.9`
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
-+ [`cssutils`](https://pypi.org/project/cssutils/)`>=2.6`
 
 下载及html页面渲染:
 + [`alive-progress`](https://pypi.org/project/alive-progress/)`>=2.4`
@@ -184,11 +183,11 @@ WebSocket通信及数据处理:
 + [`pycryptodome`](https://pypi.org/project/pycryptodome/)`>=3.15`
 + [`protobuf`](https://pypi.org/project/protobuf/)`==3.20.1`
 + [`proto-plus`](https://pypi.org/project/proto-plus/)`==1.22.1`
-+ [`rich`](https://pypi.org/project/rich/)`>=12.5`
 + [`psutil`](https://pypi.org/project/psutil/)`>=5.9`
 
 图形化命令行:
 + [`click`](https://pypi.org/project/click/)`>=8.1`
++ [`rich`](https://pypi.org/project/rich/)`>=12.5`
 + [`emoji`](https://pypi.org/project/emoji/)`>=2`
 + [`keyboard`](https://pypi.org/project/keyboard/)`>=0.1.3`
 + [`climage`](https://pypi.org/project/climage/)`>=0.13`

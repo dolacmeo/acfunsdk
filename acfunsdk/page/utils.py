@@ -8,7 +8,6 @@ import httpx
 import random
 import base64
 import shutil
-import cssutils
 import filetype
 import subprocess
 from uuid import uuid4
@@ -533,12 +532,12 @@ class AcPagelet:
         if self.pagelet_id != "pagelet_banner":
             return None
         data = dict()
-        for rule in cssutils.parseString(self.pagelet_raw.get('styles', [])[0]):
-            if isinstance(rule, cssutils.css.cssstylerule.CSSStyleRule) and \
-                    rule.selectorText == ".page-top-banner .banner-pic":
-                for pro in rule.style:
-                    if pro.name == 'background-image':
-                        data['image'] = pro.value[5:-2]
+        banner_css_text = "\n".join(self.pagelet_raw.get('styles', [])).replace("\n", "")
+        banner_css = match1(banner_css_text, r"\.page-top-banner \.banner-pic \{(?P<banner>[^}]*)}")
+        assert banner_css is not None
+        banner_image = match1(banner_css, r"background-image: url\('(?P<image>[^)]*)'\);")
+        assert banner_image is not None
+        data['image'] = banner_image
         data['url'] = self.pagelet_obj.select_one(".page-top-banner > a.banner-pic").attrs['href']
         data['title'] = self.pagelet_obj.select_one(".float-text").text
         if obj is True:

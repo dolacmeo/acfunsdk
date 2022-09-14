@@ -29,6 +29,7 @@ domains = {
 
 routes = {
     "index": f"{scheme}://{domains['main']}",
+    "bangumi_list": f"{scheme}://{domains['main']}/bangumilist",
     "ico": f"{scheme}://{domains['main']}/favicon.ico",
     "video": f"{scheme}://{domains['main']}/v/ac",
     "article": f"{scheme}://{domains['main']}/a/ac",

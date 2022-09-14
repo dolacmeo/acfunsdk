@@ -6,7 +6,7 @@ from .search import AcSearch
 from .acer import AcUp
 from .article import AcArticle
 from .video import AcVideo
-from .bangumi import AcBangumi
+from .bangumi import AcBangumi, AcBangumiList
 from .album import AcAlbum
 from .moment import AcMoment
 from .live import AcLive, AcLiveUp

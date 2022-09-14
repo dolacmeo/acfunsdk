@@ -110,6 +110,9 @@ class Acer:
     def AcIndex(self):
         return AcIndex(self)
 
+    def AcBangumiList(self):
+        return AcBangumiList(self)
+
     def AcDownload(self):
         return AcDownload(self)
 
@@ -168,7 +171,7 @@ class Acer:
         return AcSaver(self, None, dest_path)
 
     def get(self, url_str: str, title=None):
-        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share']:
+        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share', 'bangumi_list']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
                 if link_name == 'up':
@@ -179,6 +182,8 @@ class Acer:
                     return self.AcVideo(ends)
                 elif link_name == 'live':
                     return self.AcLiveUp(int(ends))
+                elif link_name == 'bangumi_list':
+                    return self.AcBangumiList()
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
         channel_rex = re.compile(f"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
         if channel_rex:

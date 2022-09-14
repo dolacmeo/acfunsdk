@@ -207,12 +207,13 @@ WebSocket通信及数据处理:
 ## About Me
 
 [![ac彩娘-阿部高和](https://tx-free-imgs2.acfun.cn/kimg/bs2/zt-image-host/ChQwODliOGVhYzRjMTBmOGM0ZWY1ZRCIzNcv.gif)][dolacfun]
-♂ 整点大香蕉🍌
+[♂ 整点大香蕉🍌][acfunsdk_page]
 <img alt="AcFunCard" align="right" src="https://discovery.sunness.dev/39088">
 
 - - - 
 
 [dolacfun]: https://www.acfun.cn/u/39088
+[acfunsdk_page]: https://www.acfun.cn/a/ac37416587
 
 [acfun.cn]: https://www.acfun.cn/
 [Issue]: https://github.com/dolaCmeo/acfunSDK/issues

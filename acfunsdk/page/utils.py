@@ -859,6 +859,15 @@ class AcPagelet:
                 data['items'].append(self.acer.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
             else:
                 data['items'].append(v_data)
+        ads = self.pagelet_obj.select(".normal-ad-link")
+        if len(ads):
+            data['ads'] = list()
+        for ad in ads:
+            data['ads'].append({
+                "url": routes['index'] + ad.attrs['href'],
+                "title": ad.attrs['data-title'],
+                "image": ad.select_one('img').attrs['src']
+            })
         data.update(self._index_pagelet_left_info(obj))
         data.update(self._index_pagelet_right_rank(obj))
         return data

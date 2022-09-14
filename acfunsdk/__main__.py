@@ -7,8 +7,8 @@ import httpx
 import subprocess
 from html import unescape
 from datetime import timedelta
-from climage.climage import _toAnsi
-from climage.climage import _color_types
+from acfunsdk.libs.climage import _toAnsi
+from acfunsdk.libs.climage import _color_types
 from io import BytesIO
 from PIL import Image
 from urllib import parse

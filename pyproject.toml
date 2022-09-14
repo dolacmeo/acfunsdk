@@ -48,9 +48,8 @@ psutil = "^5.9"
 rich = "^12.5"
 click = "^8.1"
 emoji = "^2"
-climage = "^0.1.3"
-keyboard = "^0.13"
-humanize = "^4.3"
+Pillow = "^9"
+kdtree = "^0.16"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

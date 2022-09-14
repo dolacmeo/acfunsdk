@@ -3,9 +3,8 @@ import os
 import time
 import json
 import subprocess
-import humanize
 from urllib import parse
-from acfunsdk.page.utils import get_usable_ffmpeg
+from acfunsdk.page.utils import get_usable_ffmpeg, sizeof_fmt
 from acfunsdk.source import scheme, domains, routes, apis
 from acfunsdk.page.websocket import AcWebSocket
 from rich.console import Console
@@ -300,7 +299,7 @@ class AcLiveUp:
             filesize = int(data.get('total_size', 0))
             infos = f" 已录制 {data.get('out_time', '00:00:00.000000')}\r\n " \
                     f" 比特率: {data.get('bitrate', '???')}   " \
-                    f"大小: {humanize.naturalsize(filesize, gnu=True): >6} "
+                    f"大小: {sizeof_fmt(filesize): >6} "
             record_panel = Panel(Text(infos, justify='center'),
                                  title=f"AcLive({self.uid})@{now_time}.mp4",
                                  border_style='red', width=50, style="black on white")

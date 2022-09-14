@@ -165,6 +165,7 @@ demo_video.saver(saver_path).save_all()
 >
 >+ [`ffmpeg_progress_yield`](https://github.com/slhck/ffmpeg-progress-yield)
 >+ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
+>+ [`climage`](https://pypi.org/project/climage/)
 
 **依赖: 包含在 `requirements.txt` 中**
 
@@ -188,9 +189,7 @@ WebSocket通信及数据处理:
 + [`click`](https://pypi.org/project/click/)`>=8.1`
 + [`rich`](https://pypi.org/project/rich/)`>=12.5`
 + [`emoji`](https://pypi.org/project/emoji/)`>=2`
-+ [`keyboard`](https://pypi.org/project/keyboard/)`>=0.1.3`
-+ [`climage`](https://pypi.org/project/climage/)`>=0.13`
-+ [`humanize`](https://pypi.org/project/humanize/)`>=4.3`
++ [`Pillow`](https://pypi.org/project/Pillow/)`>=9`
 
 </details>
 

@@ -10,4 +10,4 @@ from .bangumi import AcBangumi
 from .album import AcAlbum
 from .moment import AcMoment
 from .live import AcLive, AcLiveUp
-from .utils import AcComment, AcLink, AcImage, AcMessage, B64s
+from .utils import AcComment, AcLink, AcImage, AcMessage, B64s, downloader

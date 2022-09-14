@@ -87,12 +87,25 @@ class AcVideo:
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
-        video_sprite = None
-        for line in api_data.get("spriteVtt", "").split("\n"):
-            if line.startswith("http"):
-                video_sprite = line
-                break
-        return video_sprite
+        if api_data.get("spriteVtt") is None:
+            return None
+        pos_data = list()
+        sprite_data = api_data.get("spriteVtt", "").split("\n\n")[1:]
+        sprite_img = sprite_data[0].split("\n")[1].split("#")[0]
+        for line in sprite_data:
+            pos, img_url = line.split("\n")
+            pos_s, pos_e = pos.split(" --> ")
+            _, xywh = img_url.split("#xywh=")
+            pos_data.append([pos_s, pos_e, xywh])
+        return {"sprite_image": sprite_img, "pos": pos_data}
+
+    def video_hotspot(self):
+        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        api_req = self.acer.client.post(apis['video_hotspot'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        return api_data.get("hotSpotDistribution")
 
     def set_video(self, num=1):
         assert num <= len(self.video_list)

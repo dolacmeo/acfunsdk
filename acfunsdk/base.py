@@ -189,6 +189,9 @@ class Acer:
             return self.AcLink(url_str, title)
         return None
 
+    def download(self, src_url, fname: [str, None] = None, dest_dir: [str, None] = None, display: bool = True):
+        return downloader(self.client, src_url, fname, dest_dir, display)
+
     def check_online(self):
         req = self.client.get(source.routes['ico'], timeout=10)
         return req.status_code == 200

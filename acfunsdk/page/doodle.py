@@ -85,6 +85,7 @@ class AcDoodle:
                     "voteId": ele['values']['voteId']['value'],
                     "voteToken": ele['values']['voteToken']['value'],
                 }
+        self.doodle_image = sorted(self.doodle_image, key=lambda x: x['raw']['values']['styles.offset-y']['value'])
 
     def vote_data(self):
         if self.doodle_vote is None:

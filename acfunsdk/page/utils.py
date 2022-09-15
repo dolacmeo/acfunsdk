@@ -475,9 +475,6 @@ class AcLink:
         self.url = url_complete(url)
         self.container = container
 
-    def loading(self):
-        pass
-
     def __repr__(self):
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcLink({self.title}{show_link})"
@@ -492,15 +489,12 @@ class AcImage:
         self.url = url_complete(url)
         self.container = container
 
-    def loading(self):
-        pass
-
     def __repr__(self):
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcImg({self.name}[{self.src}]{show_link})"
 
-    def save_as(self, fname: [str, None] = None, dest_dir: [str, None] = None):
-        return downloader(self.acer.client, self.url, fname, dest_dir)
+    def link(self):
+        return self.acer.get(self.url)
 
 
 class AcPagelet:

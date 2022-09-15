@@ -32,6 +32,9 @@ def acer_get():
     # 分  享: https://m.acfun.cn/v/?ac=37086357
     demo_share = acer.get("https://m.acfun.cn/v/?ac=37086357")
     print(demo_share)
+    # 涂鸦(单页): https://hd.acfun.cn/doodle/knNWmnco.html
+    demo_doodle = acer.get("https://hd.acfun.cn/doodle/knNWmnco.html")
+    print(demo_doodle)
 
 
 # 通过ID直接获取内容对象
@@ -58,6 +61,9 @@ def acer_get_byid():
     # 直  播: https://live.acfun.cn/live/378269
     demo_live = acer.AcLiveUp(378269)
     print(demo_live)
+    # 涂鸦(单页): https://hd.acfun.cn/doodle/knNWmnco.html
+    demo_doodle = acer.AcDoodle("knNWmnco")
+    print(demo_doodle)
 
 
 # 调取内容对象

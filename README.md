@@ -74,6 +74,9 @@ print(demo_live)
 # 分  享: https://m.acfun.cn/v/?ac=37086357
 demo_share = acer.get("https://m.acfun.cn/v/?ac=37086357")
 print(demo_share)
+# 涂鸦(单页): https://hd.acfun.cn/doodle/knNWmnco.html
+demo_doodle = acer.get("https://hd.acfun.cn/doodle/knNWmnco.html")
+print(demo_doodle)
 ```
 
 - - -

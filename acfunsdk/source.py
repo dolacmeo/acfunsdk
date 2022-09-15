@@ -4,7 +4,6 @@
 __author__ = 'dolacmeo'
 
 header = {
-    "Referer": "https://www.acfun.cn/",
     "accept-encoding": "gzip, deflate, br",
     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -21,6 +20,7 @@ domains = {
     "live": "live.acfun.cn",
     "mobile": "m.acfun.cn",
     "hd": "hd.acfun.cn",
+    "ks_api": "api.kuaishouzt.com",
     "id_api": "id.app.acfun.cn",
     "app_cdn": "sec-cdn.gifshow.com",
     "app_sdk": "acfun-log-sdk.gifshow.com",
@@ -132,15 +132,15 @@ apis = {
     'showFansClubApplyEntrance': f"{scheme}://{domains['user']}/common/api/showFansClubApplyEntrance",
     'checkFansClubAuth': f"{scheme}://{domains['user']}/interActive/api/checkFansClubAuth",
     'bind_ksaccount': f"{scheme}://{domains['id_api']}/rest/web/central/ksaccount/status",
-    'live_obs_status': "https://api.kuaishouzt.com/rest/zt/live/web/obs/status",
-    'live_obs_config': "https://api.kuaishouzt.com/rest/zt/live/web/obs/config",
-    'live_play': "https://api.kuaishouzt.com/rest/zt/live/web/startPlay",
-    'live_watching': "https://api.kuaishouzt.com/rest/zt/live/web/watchingList",
-    'live_danmaku': "https://api.kuaishouzt.com/rest/zt/live/web/audience/action/comment",
-    'live_gift_list': "https://api.kuaishouzt.com/rest/zt/live/web/gift/list",
-    'live_send_gift': "https://api.kuaishouzt.com/rest/zt/live/web/gift/send",
-    'live_like': "https://api.kuaishouzt.com/rest/zt/live/web/audience/action/like",
-    'live_balance': "https://api.kuaishouzt.com/rest/zt/live/web/pay/wallet/balance",
+    'live_obs_status': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/status",
+    'live_obs_config': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/config",
+    'live_play': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/startPlay",
+    'live_watching': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/watchingList",
+    'live_danmaku': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/comment",
+    'live_gift_list': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/list",
+    'live_send_gift': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/send",
+    'live_like': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/like",
+    'live_balance': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/pay/wallet/balance",
     'live_list': f"{scheme}://{domains['live']}/api/channel/list",
     'live_info': f"{scheme}://{domains['live']}/api/live/info",
     'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
@@ -158,8 +158,15 @@ apis = {
     'doodle_comment': "https://zt.gifshow.com/rest/zt/comment/list",
     'doodle_vote': f"{scheme}://{domains['hd']}/block/activity/auth/vote/list",
 
-    'report_task': "https://api-ipv6.acfunchina.com/rest/app/task/reportTaskAction",
+    'report_task': f"{scheme}://{domains['api_ipv6']}/rest/app/task/reportTaskAction",
     'qrcode': "https://ksurl.cn/createqrcode",
+
+    'feedback_config': "https://feedback.kuaishou.com/rest/cs/feedback/config/pc",
+    'feedback_tab': "https://feedback.kuaishou.com/rest/cs/feedback/faq/tab",
+    'feedback_children': "https://feedback.kuaishou.com/rest/cs/feedback/faq/children",
+    'feedback_question': "https://feedback.kuaishou.com/rest/cs/feedback/faq/question",
+
+    'academy_tea': f"{scheme}://{domains['user']}/academy/api/acerTeaList",
 }
 
 app_apis = {

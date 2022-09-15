@@ -10,4 +10,5 @@ from .bangumi import AcBangumi, AcBangumiList
 from .album import AcAlbum
 from .moment import AcMoment
 from .live import AcLive, AcLiveUp
+from .doodle import AcDoodle
 from .utils import AcComment, AcLink, AcImage, AcMessage, B64s, downloader

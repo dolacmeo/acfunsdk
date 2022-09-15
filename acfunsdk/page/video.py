@@ -113,6 +113,16 @@ class AcVideo:
         self.loading()
         return True
 
+    def get_ksPlayJson(self, videoId: [str, int, None] = None):
+        param = {"resourceId": self.ac_num, "resourceType": 2}
+        if videoId is not None:
+            param['videoId'] = videoId
+        api_req = self.acer.client.get(apis['video_ksplay'], params=param)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        return api_data.get("playInfo")
+
     def download(self, num=1, quality=None):
         self.set_video(num)
         video_download_path = os.path.join(self.acer.BASE_PATH, f"ac{self.ac_num}")

@@ -167,11 +167,15 @@ class Acer:
     def AcImage(self, src, url=None, name=None, container=None):
         return AcImage(self, src, url, name, container)
 
+    def AcDoodle(self, doodle_id: str):
+        return AcDoodle(self, doodle_id)
+
     def AcSaver(self, dest_path: [str, None] = None):
         return AcSaver(self, None, dest_path)
 
     def get(self, url_str: str, title=None):
-        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'moment', 'live', 'share', 'bangumi_list']:
+        for link_name in ['video', 'article', 'album', 'bangumi', 'up',
+                          'moment', 'live', 'share', 'bangumi_list', 'doodle']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
                 if link_name == 'up':
@@ -184,6 +188,8 @@ class Acer:
                     return self.AcLiveUp(int(ends))
                 elif link_name == 'bangumi_list':
                     return self.AcBangumiList()
+                elif link_name == 'doodle':
+                    return self.AcDoodle(ends)
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
         channel_rex = re.compile(f"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
         if channel_rex:

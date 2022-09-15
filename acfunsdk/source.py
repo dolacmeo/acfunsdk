@@ -20,6 +20,7 @@ domains = {
     "user": "member.acfun.cn",
     "live": "live.acfun.cn",
     "mobile": "m.acfun.cn",
+    "hd": "hd.acfun.cn",
     "id_api": "id.app.acfun.cn",
     "app_cdn": "sec-cdn.gifshow.com",
     "app_sdk": "acfun-log-sdk.gifshow.com",
@@ -44,6 +45,7 @@ routes = {
     'im': f"{scheme}://{domains['msg']}/im",
     "emot": f"{scheme}://{domains['main']}/emot/",
     "app": f"{scheme}://{domains['main']}/app/",
+    "doodle": f"{scheme}://{domains['hd']}/doodle/",
 }
 
 apis = {
@@ -71,7 +73,10 @@ apis = {
     'search_keywords': f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
     'history': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
     'unread': f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
+
+    'video_ksplay': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
     'video_scenes': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
+    'video_quality': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST
 
     'get_users': f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
     'follow': f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",
@@ -149,6 +154,9 @@ apis = {
     'image_upload_complete': "https://upload.kuaishouzt.com/api/upload/complete",
     'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
     'im_image_upload': "https://sixinpic.kuaishou.com/rest/v2/app/upload",
+
+    'doodle_comment': "https://zt.gifshow.com/rest/zt/comment/list",
+    'doodle_vote': f"{scheme}://{domains['hd']}/block/activity/auth/vote/list",
 
     'report_task': "https://api-ipv6.acfunchina.com/rest/app/task/reportTaskAction",
     'qrcode': "https://ksurl.cn/createqrcode",

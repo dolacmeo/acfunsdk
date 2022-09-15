@@ -308,8 +308,8 @@ class Acer:
             return data.get('data')
         return None
 
-    def search_user(self, keyword: str):
-        api_req = self.client.get(source.apis['search_user'], params={'keyword': keyword})
+    def search_user(self, keyword: str, page: int = 1):
+        api_req = self.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
         return api_req.json()
 
     def username_check(self, name: str):

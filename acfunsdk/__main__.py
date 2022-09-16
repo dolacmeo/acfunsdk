@@ -510,7 +510,8 @@ def acfun_detail(ac_obj, act=None, ext=None):
         return cli_acup(ac_obj, act, ext)
     elif obj_type == "AcLiveUp":
         if act == 'danmaku':
-            ac_obj.watching_danmaku(potplayer=ext)
+            console.print(f"直播弹幕暂不可用")
+            # ac_obj.watching_danmaku(potplayer=ext)
             return None
         elif act == 'record':
             save_path = os.getcwd() if ext is None else ext

@@ -3,12 +3,7 @@ lxml>=4.9
 beautifulsoup4>=4.11
 filetype>=1.1
 jinja2>=3.1
-websocket-client>=1.4
-pycryptodome>=3.15
-protobuf==3.20.1
-proto-plus==1.22.1
 rich>=12.5
-psutil>=5.9
 click>=8.1
 emoji>=2
 Pillow>=9

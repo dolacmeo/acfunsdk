@@ -6,7 +6,6 @@ import subprocess
 from urllib import parse
 from acfunsdk.page.utils import get_usable_ffmpeg, sizeof_fmt
 from acfunsdk.source import scheme, domains, routes, apis
-from acfunsdk.page.websocket import AcWebSocket
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -228,27 +227,6 @@ class AcLiveUp:
         else:
             print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
         return live_obs_stream
-
-    def watching_danmaku(self, room_bans: [list, None] = None, potplayer: [str, None] = None, quality: int = 1):
-        if room_bans is None:
-            room_bans = [
-                # "ZtLiveScActionSignal",
-                "ZtLiveScStateSignal",
-                "ZtLiveScNotifySignal",
-            ]
-        live_adapt = self.media_list()
-        if live_adapt is False:
-            return False
-        self.acws = AcWebSocket(self.acer)
-        self.acws.run()
-        self.acws.live_enter_room(self.uid, room_bans, potplayer, quality)
-        try:
-            count = 0
-            while True:
-                count += 1
-                time.sleep(0.1)
-        except KeyboardInterrupt:
-            self.acws.close()
 
     def record(self, save_path: [str, os.PathLike], quality: int = 1):
         live_adapt = self.media_list()

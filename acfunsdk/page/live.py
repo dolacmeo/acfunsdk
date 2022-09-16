@@ -58,6 +58,9 @@ class AcLiveUp:
     is_open = False
     media_data = None
     is_404 = False
+    liveId = None
+    enterRoomAttach = None
+    availableTickets = []
 
     def __init__(self, acer, uid: [int, str], raw: [dict, None] = None):
         self.acer = acer
@@ -121,6 +124,9 @@ class AcLiveUp:
         elif api_data.get('result') != 1:
             return False
         self.is_open = True
+        self.liveId = api_data['data'].get("liveId")
+        self.availableTickets = api_data['data'].get("availableTickets", [])
+        self.enterRoomAttach = api_data['data'].get("enterRoomAttach")
         api_data = api_data.get('data', {}).get('videoPlayRes', "")
         live_data = json.loads(api_data).get('liveAdaptiveManifest', [])[0]
         live_adapt = live_data.get('adaptationSet', {}).get('representation', {})

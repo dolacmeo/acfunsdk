@@ -1,5 +1,5 @@
 # coding=utf-8
-from .index import AcIndex, AcDownload
+from .index import AcIndex
 from .channel import AcChannel, AcWen
 from .rank import AcRank
 from .search import AcSearch
@@ -11,4 +11,4 @@ from .album import AcAlbum
 from .moment import AcMoment
 from .live import AcLive, AcLiveUp
 from .doodle import AcDoodle
-from .utils import AcComment, AcLink, AcImage, AcMessage, B64s, downloader
+from .utils import AcComment, AcLink, AcImage, AcMessage, B64s

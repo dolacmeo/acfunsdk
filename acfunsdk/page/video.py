@@ -4,9 +4,7 @@ import json
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import ms2time, \
-    get_channel_info, get_page_pagelets, acfun_video_downloader, \
-    AcDanmaku, match1
-from acfunsdk.saver import VideoSaver
+    get_channel_info, get_page_pagelets, AcDanmaku, match1
 
 __author__ = 'dolacmeo'
 
@@ -73,9 +71,6 @@ class AcVideo:
             self.video_data['staffInfos'] = staff_data.get('staffInfos')
             self.video_data['upInfo'] = staff_data.get('upInfo')
 
-    def saver(self, dest_path=None):
-        return VideoSaver(self.acer, self, dest_path)
-
     @property
     def video_list(self):
         return self.video_data.get('videoList', [])
@@ -123,15 +118,15 @@ class AcVideo:
             return None
         return api_data.get("playInfo")
 
-    def download(self, num=1, quality=None):
-        self.set_video(num)
-        video_download_path = os.path.join(self.acer.BASE_PATH, f"ac{self.ac_num}")
-        saved = acfun_video_downloader(self.acer.client, self.video_data, video_download_path, quality)
-        if saved is False:
-            return False
-        with open(os.path.join(video_download_path, f"ac{self.ac_num}.json"), 'w') as jfile:
-            json.dump(self.video_data, jfile)
-        return True
+    # def download(self, num=1, quality=None):
+    #     self.set_video(num)
+    #     video_download_path = os.path.join(self.acer.BASE_PATH, f"ac{self.ac_num}")
+    #     saved = acfun_video_downloader(self.acer.client, self.video_data, video_download_path, quality)
+    #     if saved is False:
+    #         return False
+    #     with open(os.path.join(video_download_path, f"ac{self.ac_num}.json"), 'w') as jfile:
+    #         json.dump(self.video_data, jfile)
+    #     return True
 
     def up(self):
         return self.acer.AcUp(self.video_data.get('user', {}))

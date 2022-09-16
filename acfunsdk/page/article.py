@@ -4,9 +4,8 @@ import html
 import json
 import textwrap
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
+from acfunsdk.source import routes
 from acfunsdk.page.utils import warp_mix_chars, get_page_pagelets, match1
-from acfunsdk.saver import ArticleSaver
 
 __author__ = 'dolacmeo'
 
@@ -50,9 +49,6 @@ class AcArticle:
         json_text = match1(req.text, r"(?s)articleInfo\s*=\s*(\{.*?\});")
         self.article_data = json.loads(json_text)
         self.page_pagelets = get_page_pagelets(self.page_obj)
-
-    def saver(self, dest_path=None):
-        return ArticleSaver(self.acer, self, dest_path)
 
     def recommends(self):
         articles = list()

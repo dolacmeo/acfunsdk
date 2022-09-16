@@ -144,6 +144,7 @@ apis = {
     'live_list': f"{scheme}://{domains['live']}/api/channel/list",
     'live_info': f"{scheme}://{domains['live']}/api/live/info",
     'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
+    'live_medal': f"{scheme}://{domains['live']}/rest/pc-direct/fansClub/live/medalInfo",
 
     'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
     'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf",

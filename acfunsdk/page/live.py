@@ -132,6 +132,12 @@ class AcLiveUp:
         live_adapt = live_data.get('adaptationSet', {}).get('representation', {})
         return live_adapt
 
+    def medal_info(self):
+        api_req = self.acer.client.post(apis['live_medal'], params={"uperId": self.uid})
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
     def push_danmaku(self, content: str):
         if self.is_open is False:
             return False

@@ -8,7 +8,6 @@ from urllib import parse
 from . import source
 from .page import *
 from .exceptions import *
-from .saver import AcSaver
 
 __author__ = 'dolacmeo'
 
@@ -170,9 +169,6 @@ class Acer:
     def AcDoodle(self, doodle_id: str):
         return AcDoodle(self, doodle_id)
 
-    def AcSaver(self, dest_path: [str, None] = None):
-        return AcSaver(self, None, dest_path)
-
     def get(self, url_str: str, title=None):
         for link_name in ['video', 'article', 'album', 'bangumi', 'up',
                           'moment', 'live', 'share', 'bangumi_list', 'doodle']:
@@ -199,9 +195,6 @@ class Acer:
                 return self.AcImage(url_str)
             return self.AcLink(url_str, title)
         return None
-
-    def download(self, src_url, fname: [str, None] = None, dest_dir: [str, None] = None, display: bool = True):
-        return downloader(self.client, src_url, fname, dest_dir, display)
 
     def check_online(self):
         req = self.client.get(source.routes['ico'], timeout=10)

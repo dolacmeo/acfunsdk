@@ -146,10 +146,41 @@ class AcInfo:
     }
 
 
-class AcReportComplaint:
+class AcReport:
     url = "https://www.acfun.cn/infringementreport"
-    doc = "https://cdn.aixifan.com/downloads/AcFun%E4%B8%BE%E6%8A%A5%E7%94%B3%E8%AF%89%E8%A1%A8.doc"
+    complaint_doc = "https://cdn.aixifan.com/downloads/AcFun%E4%B8%BE%E6%8A%A5%E7%94%B3%E8%AF%89%E8%A1%A8.doc"
     email = "ac-report@kuaishou.com"
+
+    @staticmethod
+    def submit(url: str, rid: str, rtype: str, uid: str, crime: str, proof: str, description: str):
+        assert int(rtype) in [1, 2, 3, 4, 5, 6, 8, 10]
+        crimes = ['色情', '血腥', '暴力', '猎奇', '政治', '辱骂', '广告', '挖坟', '剧透', '其他',
+                  '话题不符', '少儿不宜', '未成年不良信息']
+        assert int(crime) in range(1, len(crimes) + 1)
+        assert uid.isdigit()
+        assert len(url) >= 5
+        assert len(proof) >= 5
+        assert len(description) >= 5
+        form = {
+            "url": url,
+            "resourceId": rid,
+            "resourceType": rtype,
+            "defendantUserId": uid,
+            "crime": crime,
+            "proof": proof,
+            "description": description,
+        }
+        api_req = httpx.post(apis['report'], data=form)
+        return api_req.json().get("result") == 0
+
+    @staticmethod
+    def feedback(title: str, content: str, tel: str):
+        assert len(title) >= 5
+        assert len(content) >= 5
+        assert len(tel) == 11
+        form = {"title": title, "content": content, "tel": tel}
+        api_req = httpx.post(apis['feedback'], data=form)
+        return api_req.json().get("result") == 0
 
 
 class AcAcademy:

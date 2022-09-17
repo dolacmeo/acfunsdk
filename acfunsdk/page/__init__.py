@@ -17,8 +17,8 @@ from .doodle import AcDoodle
 from .comment import AcComment
 from .danmaku import AcDanmaku
 from .message import MyMessage
-from .acer import MyFollow, MyFavourite, MyDanmaku, MyContribute, MyFansClub, MyAlbum, BananaMall
-from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReportComplaint, AcDownload
+from .acer import MyFansClub, MyFollow, MyFavourite, MyAlbum, MyContribute, MyDanmaku, BananaMall
+from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReport, AcDownload
 from .utils import B64s
 
 __author__ = 'dolacmeo'
@@ -28,7 +28,7 @@ class AcFun:
     nav_data = dict()
     channel_data = source.ChannelList
     AcInfo = AcInfo
-    AcReportComplaint = AcReportComplaint
+    AcReport = AcReport
     AcAcademy = AcAcademy
 
     def __init__(self, acer):

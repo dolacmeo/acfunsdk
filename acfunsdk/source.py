@@ -78,6 +78,9 @@ apis = {
     'history_del_all': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/deleteAll",
     'unread': f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
 
+    'report': f"{scheme}://{domains['main']}/rest/pc-direct/exposures/spam",
+    'feedback': f"{scheme}://{domains['main']}/rest/pc-direct/feedback/userFeedback",
+
     'video_ksplay': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
     'video_scenes': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
     'video_quality': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST

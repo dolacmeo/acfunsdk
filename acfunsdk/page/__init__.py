@@ -30,6 +30,16 @@ class AcFun:
     AcInfo = AcInfo
     AcReport = AcReport
     AcAcademy = AcAcademy
+    resource_type_map = {
+        "1": "AcBangumi",  # 番剧
+        "2": "AcVideo",  # 视频稿件
+        "3": "AcArticle",  # 文章稿件
+        "4": "AcAlbum",  # 合辑
+        "5": "AcUp",  # 用户
+        "6": "AcComment",  # 评论
+        # "8": "私信",
+        "10": "AcMomen",  # 动态
+    }
 
     def __init__(self, acer):
         self.acer = acer
@@ -85,8 +95,8 @@ class AcFun:
     def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None):
         return AcSearch(self.acer, keyword, s_type)
 
-    def AcUp(self, updata):
-        return AcUp(self.acer, updata)
+    def AcUp(self, uid):
+        return AcUp(self.acer, uid)
 
     def AcLiveUp(self, uid, raw=None):
         return AcLiveUp(self.acer, uid, raw)
@@ -124,6 +134,10 @@ class AcFun:
     def AcDanmaku(self, video_data: dict):
         return AcDanmaku(self.acer, video_data)
 
+    def resource(self, rtype: int, rid: int):
+        assert str(rtype) in self.resource_type_map.keys()
+        return getattr(self, self.resource_type_map[str(rtype)])(rid)
+
     def get(self, url_str: str, title=None):
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")
@@ -146,7 +160,7 @@ class AcFun:
                 elif link_name == 'album':
                     return self.AcAlbum(ends)
                 elif link_name == 'up':
-                    return self.AcUp({'userId': ends})
+                    return self.AcUp(ends)
                 elif link_name == 'article':
                     return self.AcArticle(ends)
                 elif link_name == 'bangumi':

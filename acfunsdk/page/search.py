@@ -67,7 +67,7 @@ class AcSearch:
         for item in self.result_obj.select('[class^=search-]'):
             if 'data-up-exposure-log' in item.attrs.keys():
                 json_data = json.loads(item.attrs['data-up-exposure-log'])
-                item_data.append(self.acer.acfun.AcUp({'userId': json_data['up_id']}))
+                item_data.append(self.acer.acfun.AcUp(json_data['up_id']))
             else:
                 json_data = json.loads(item.attrs['data-exposure-log'])
                 if 'search-video' in item.attrs['class']:

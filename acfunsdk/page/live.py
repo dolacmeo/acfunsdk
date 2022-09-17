@@ -61,7 +61,7 @@ class AcLiveUp:
         self.raw = raw
         if self.raw is None:
             self.infos()
-        self.AcUp = self.acer.acfun.AcUp({"userId": self.uid})
+        self.AcUp = self.acer.acfun.AcUp(self.uid)
         self.media_data = self.media_list()
         self.is_404 = self.AcUp.is_404
 

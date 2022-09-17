@@ -48,5 +48,5 @@ class AcRank:
             return None
         data_list = list()
         for content in self.rank_data:
-            data_list.append(self.acer.acfun.AcUp({"userId": content['userId'], "name": content['userName']}))
+            data_list.append(self.acer.acfun.AcUp(content['userId']))
         return data_list

@@ -19,9 +19,9 @@ class AcUp:
     followed_count = None
     is_404 = False
 
-    def __init__(self, acer, up_data: dict):
+    def __init__(self, acer, uid: [str, int], up_data: [dict, None] = None):
+        self.uid = int(uid)
         self.up_data = up_data
-        self.uid = str(self.up_data.get('userId', str(self.up_data.get('id', ''))))
         self.acer = acer
         self._get_acup()
 
@@ -129,7 +129,7 @@ class AcUp:
                 "id": item.select_one('div:nth-of-type(2) > a.name').attrs['href'][3:],
                 "name": item.select_one('div:nth-of-type(2) > a.name').text
             }
-            data.append(AcUp(self.acer, infos))
+            data.append(AcUp(self.acer, infos['id']))
         return data
 
     def followed(self, page=1, limit=10, orderby='newest'):
@@ -140,5 +140,5 @@ class AcUp:
                 "id": item.select_one('div:nth-of-type(2) > a.name').attrs['href'][3:],
                 "name": item.select_one('div:nth-of-type(2) > a.name').text
             }
-            data.append(AcUp(self.acer, infos))
+            data.append(AcUp(self.acer, infos['id']))
         return data

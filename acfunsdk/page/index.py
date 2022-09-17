@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from acfunsdk.source import routes, pagelets_from_page, pagelets_from_api, pagelets_big, pagelets_normal
 from acfunsdk.page.utils import get_page_pagelets, match1
-from .extra import AcImage, AcLink
 
 __author__ = 'dolacmeo'
 
@@ -51,7 +50,7 @@ class AcPagelet:
         data['url'] = self.pagelet_obj.select_one(".page-top-banner > a.banner-pic").attrs['href']
         data['title'] = self.pagelet_obj.select_one(".float-text").text
         if obj is True:
-            return AcImage(self.acer, data['image'], data['url'], data['title'])
+            return self.acer.acfun.AcImage(data['image'], data['url'], data['title'])
         return data
 
     def _index_top_area(self, obj=False):
@@ -70,8 +69,8 @@ class AcPagelet:
             })
         if obj is True:
             return dict(
-                slider=[AcImage(
-                    self.acer, s['image'], s['link'], s['title'],
+                slider=[self.acer.acfun.AcImage(
+                    s['image'], s['link'], s['title'],
                     self.acer.get(f"{routes['index']}{s['link']}")
                 ) for s in data['slider']],
                 items=[self.acer.AcVideo(v['mediaid'], dict(title=v['title'])) for v in data['items']]
@@ -101,7 +100,7 @@ class AcPagelet:
         }
         if obj is True:
             return dict(
-                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
+                ad=self.acer.acfun.AcImage(data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
                 items=[
                     self.acer.AcVideo(v['mediaid'], dict(title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))
                     for v in videos
@@ -132,7 +131,7 @@ class AcPagelet:
         }
         if obj is True:
             return dict(
-                ad=AcImage(self.acer, data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
+                ad=self.acer.acfun.AcImage(data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
                 items=[self.acer.AcLiveUp(v['liveid']) for v in videos]
             )
         return data
@@ -211,7 +210,7 @@ class AcPagelet:
         if obj is True:
             data.update({
                 'channel': self.acer.get(data['url']),
-                'icon': AcImage(self.acer, data['icon'], data['url'], f"{data['title']}_icon")
+                'icon': self.acer.acfun.AcImage(data['icon'], data['url'], f"{data['title']}_icon")
             })
         for i, day in enumerate(self.pagelet_obj.select('.area-left .column-list .time-block')):
             day_list = list()
@@ -276,7 +275,7 @@ class AcPagelet:
             return {
                 'channel': self.acer.get(data['url']),
                 'links': [self.acer.get(x['url'], x['title']) for x in data['links']],
-                'icon': AcImage(self.acer, data['icon'], data['url'], f"{data['title']}_icon")
+                'icon': self.acer.acfun.AcImage(data['icon'], data['url'], f"{data['title']}_icon")
             }
         return data
 
@@ -393,7 +392,7 @@ class AcPagelet:
                             'url': link.attrs['href']
                         }
                         if obj is True:
-                            those_links.append(AcLink(self.acer, **this_link))
+                            those_links.append(self.acer.acfun.AcLink(**this_link))
                         else:
                             those_links.append(this_link)
                     else:
@@ -402,7 +401,7 @@ class AcPagelet:
                             'src': link.select_one('img').attrs['src']
                         }
                         if obj is True:
-                            those_links.append(AcImage(self.acer, **this_link))
+                            those_links.append(self.acer.acfun.AcImage(**this_link))
                         else:
                             those_links.append(this_link)
                 data['links'][tag.text] = those_links
@@ -412,7 +411,7 @@ class AcPagelet:
                 'url': info.attrs['href']
             }
             if obj is True:
-                data['infos'].append(AcLink(self.acer, **this_link))
+                data['infos'].append(self.acer.acfun.AcLink(**this_link))
             else:
                 data['infos'].append(this_link)
         for ac in self.pagelet_obj.select_one('.footer-link > div:last-child').select('span'):
@@ -473,7 +472,7 @@ class AcIndex:
     def nav_list(self):
         navs = list()
         for cid in self.acer.nav_data.keys():
-            navs.append(self.acer.AcChannel(cid))
+            navs.append(self.acer.acfun.AcChannel(cid))
         return navs
 
     def get(self, area: str, obj=False):

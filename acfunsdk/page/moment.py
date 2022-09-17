@@ -1,9 +1,5 @@
 # coding=utf-8
 import json
-from .member import AcUp
-from .video import AcVideo
-from .comment import AcComment
-from .article import AcArticle
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import thin_string, limit_string, match1
 from acfunsdk.exceptions import *
@@ -22,9 +18,9 @@ class Moment:
         self.acer = acer
         self.raw_data = raw_data
         if self.rtype == 3:
-            self.linked = AcArticle(self.acer, self.rid)
+            self.linked = self.acer.acfun.AcArticle(self.rid)
         elif self.rtype == 2:
-            self.linked = AcVideo(self.acer, self.rid)
+            self.linked = self.acer.acfun.AcVideo(self.rid)
         elif self.rtype == 10:
             rsource = self.raw_data.get('repostSource')
             if rsource is not None:
@@ -68,10 +64,10 @@ class Moment:
         return f"AcMoment()"
 
     def up(self):
-        return AcUp(self.acer, self.raw_data.get('user'))
+        return self.acer.acfun.AcUp(self.raw_data.get('user'))
 
     def comment(self):
-        return AcComment(self.acer, self.rid, self.rtype, self)
+        return self.acer.acfun.AcComment(self.rid, self.rtype, self)
 
     @need_login
     def banana(self, count: int):

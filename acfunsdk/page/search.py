@@ -1,11 +1,6 @@
 # coding=utf-8
 import json
 import time
-from .member import AcUp
-from .video import AcVideo
-from .bangumi import AcBangumi
-from .article import AcArticle
-from .album import AcAlbum
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import apis
 
@@ -72,17 +67,17 @@ class AcSearch:
         for item in self.result_obj.select('[class^=search-]'):
             if 'data-up-exposure-log' in item.attrs.keys():
                 json_data = json.loads(item.attrs['data-up-exposure-log'])
-                item_data.append(AcUp(self.acer, {'userId': json_data['up_id']}))
+                item_data.append(self.acer.acfun.AcUp({'userId': json_data['up_id']}))
             else:
                 json_data = json.loads(item.attrs['data-exposure-log'])
                 if 'search-video' in item.attrs['class']:
-                    item_data.append(AcVideo(self.acer, json_data['content_id'], {"title": json_data['title']}))
+                    item_data.append(self.acer.acfun.AcVideo(json_data['content_id'], {"title": json_data['title']}))
                 elif 'search-article' in item.attrs['class']:
-                    item_data.append(AcArticle(self.acer, json_data['content_id'], {"title": json_data['title']}))
+                    item_data.append(self.acer.acfun.AcArticle(json_data['content_id'], {"title": json_data['title']}))
                 elif 'search-album' in item.attrs['class']:
-                    item_data.append(AcAlbum(self.acer, json_data['content_id']))
+                    item_data.append(self.acer.acfun.AcAlbum(json_data['content_id']))
                 elif 'search-bangumi' in item.attrs['class']:
-                    item_data.append(AcBangumi(self.acer, json_data['content_id']))
+                    item_data.append(self.acer.acfun.AcBangumi(json_data['content_id']))
         return item_data
 
 

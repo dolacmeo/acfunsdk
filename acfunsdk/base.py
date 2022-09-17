@@ -1,192 +1,11 @@
 # coding=utf-8
 import os
-import re
 import json
 import httpx
-import datetime
-from urllib import parse
-from . import source
 from .page import *
 from .exceptions import *
 
 __author__ = 'dolacmeo'
-
-
-class AcClient:
-    _client = None
-    history = list()
-
-    def __init__(self, header=None):
-        self._client = httpx.Client(headers=header or source.header)
-
-    @property
-    def cookies(self):
-        return self._client.cookies
-
-    @property
-    def stream(self):
-        return self._client.stream
-
-    def request(self, *args, **kwargs):
-        return self._client.request(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        url = kwargs.get('url', args[0])
-        self.history.append(['GET', url, datetime.datetime.now()])
-        return self._client.get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        url = kwargs.get('url', args[0])
-        self.history.append(['POST', url, datetime.datetime.now()])
-        return self._client.post(*args, **kwargs)
-
-    def put(self, *args, **kwargs):
-        url = kwargs.get('url', args[0])
-        self.history.append(['PUT', url, datetime.datetime.now()])
-        return self._client.put(*args, **kwargs)
-
-    def patch(self, *args, **kwargs):
-        url = kwargs.get('url', args[0])
-        self.history.append(['PATCH', url, datetime.datetime.now()])
-        return self._client.put(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        url = kwargs.get('url', args[0])
-        self.history.append(['DELETE', url, datetime.datetime.now()])
-        return self._client.put(*args, **kwargs)
-
-
-class AcFun:
-    nav_data = dict()
-    channel_data = source.ChannelList
-
-    def __init__(self, acer):
-        self.acer = acer
-        self.cdn_domain = self.acer.client.post(source.apis['cdn_domain'], headers={
-            "referer": source.routes['index']}).json().get('domain')
-        self._get_nav()
-
-    def _get_nav(self):
-        data = self.acer.client.get(source.apis['nav']).json().get("data", [])
-        for i in data:
-            if i['cid'] != 0:
-                self.nav_data.update({str(i['cid']): {x: i[x] for x in i if x != 'children'}})
-            for j in i['children']:
-                if j['cid'] != 0:
-                    self.nav_data.update({str(j['cid']): {y: j[y] for y in j if y != 'children'}})
-
-    def search_user(self, keyword: str, page: int = 1):
-        api_req = self.acer.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
-        return api_req.json()
-
-    def username_check(self, name: str):
-        api_req = self.acer.client.post(source.apis['check_username'], data={'name': name})
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return True
-        print(api_data)
-        return False
-
-    def AcIndex(self):
-        return AcIndex(self.acer)
-
-    def AcChannel(self, cid):
-        return AcChannel(self.acer, cid, self.nav_data.get(int(cid)))
-
-    def AcBangumiList(self):
-        return AcBangumiList(self.acer)
-
-    def AcWen(self,
-              realm_ids: [list, None] = None,
-              sort_type: str = "createTime",
-              time_range: str = "all",
-              only_original: bool = False,
-              limit: int = 10):
-        return AcWen(self.acer, realm_ids, sort_type, time_range, only_original, limit)
-
-    def AcRank(self,
-               cid: [int, None] = None,
-               sub_cid: [int, None] = None,
-               limit: int = 50,
-               date_range: [str, None] = None):
-        return AcRank(self.acer, cid, sub_cid, limit, date_range)
-
-    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None):
-        return AcSearch(self.acer, keyword, s_type)
-
-    def AcUp(self, updata):
-        return AcUp(self.acer, updata)
-
-    def AcLiveUp(self, uid, raw=None):
-        return AcLiveUp(self.acer, uid, raw)
-
-    def AcArticle(self, ac_num, data=None):
-        return AcArticle(self.acer, ac_num, data)
-
-    def AcVideo(self, ac_num, data=None):
-        return AcVideo(self.acer, ac_num, data)
-
-    def AcBangumi(self, aa_num):
-        return AcBangumi(self.acer, aa_num)
-
-    def AcAlbum(self, ac_num):
-        return AcAlbum(self.acer, ac_num)
-
-    def AcLive(self):
-        return AcLive(self.acer)
-
-    def AcDoodle(self, doodle_id: str):
-        return AcDoodle(self.acer, doodle_id)
-
-    def AcMomen(self):
-        return AcMoment(self.acer)
-
-    def get(self, url_str: str, title=None):
-        if url_str.startswith("http://"):
-            url_str = url_str.replace("http://", "https://")
-        if url_str == source.routes['index']:
-            return self.AcIndex()
-        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'rank',
-                          'moment', 'live', 'share', 'bangumi_list', 'doodle']:
-            if url_str.startswith(source.routes[link_name]):
-                ends = url_str[len(source.routes[link_name]):]
-                if link_name == 'bangumi_list':
-                    return self.AcBangumiList()
-                elif link_name == 'rank':
-                    q = parse.parse_qs(parse.urlsplit(url_str).query)
-                    kw = {
-                        'cid': None if q['pcid'] == "-1" else int(q['pcid'][0]),
-                        'sub_cid': None if q['cid'] == "-1" else int(q['cid'][0]),
-                        'date_range': q.get("range", ['DAY'])[0],
-                    }
-                    return self.AcRank(**kw)
-                elif link_name == 'album':
-                    return self.AcAlbum(ends)
-                elif link_name == 'up':
-                    return self.AcUp({'userId': ends})
-                elif link_name == 'article':
-                    return self.AcArticle(ends)
-                elif link_name == 'bangumi':
-                    return self.AcBangumi(ends)
-                elif link_name == 'video':
-                    return self.AcVideo(ends)
-                elif link_name == 'live':
-                    return self.AcLiveUp(ends)
-                elif link_name == 'moment':
-                    return self.AcMomen().get(ends)
-                elif link_name == 'share':
-                    return self.AcVideo(ends)
-                elif link_name == 'doodle':
-                    return self.AcDoodle(ends)
-                return getattr(self, f"Ac{link_name.capitalize()}")(ends)
-        channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
-        if channel_rex:
-            return self.AcChannel(channel_rex[0])
-        if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
-            if parse.urlsplit(url_str).netloc in self.cdn_domain:
-                return AcImage(self.acer, url_str)
-            return AcLink(self.acer, url_str, title)
-        return None
 
 
 class Acer:
@@ -200,11 +19,12 @@ class Acer:
     tokens = dict()
 
     message = None
+    follow = None
     favourite = None
 
     def __init__(self, **kwargs):
         self.config = kwargs
-        self.client = AcClient()
+        self.client = httpx.Client(headers=source.header)
         self._get_personal()
         self.acfun = AcFun(self)
 
@@ -240,7 +60,8 @@ class Acer:
             info_data = info_req.json()
             assert info_data.get('result') == 0
             self.data = info_data.get('info', {})
-            self.message = AcMessage(self)
+            self.message = MyMessage(self)
+            self.follow = MyFollow(self)
             self.favourite = MyFavourite(self)
         else:
             api_req = self.client.post(source.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
@@ -351,51 +172,6 @@ class Acer:
         return api_req.json().get('result') == 0
 
     @need_login
-    def follow_groups(self):
-        api_req = self.client.get(source.apis['follow_groups'])
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return api_data.get('groupList', [])
-        return None
-
-    def _follow_group_action(self, form_data: dict):
-        api_req = self.client.post(source.apis['follow_group'], data=form_data)
-        return api_req.json().get('result') == 0
-
-    @need_login
-    def follow_group_add(self, name: str):
-        form_data = {"action": 4, "groupName": name}
-        return self._follow_group_action(form_data)
-
-    @need_login
-    def follow_group_rename(self, gid: [int, str], name: str):
-        form_data = {"action": 6, "groupId": gid, "groupName": name}
-        return self._follow_group_action(form_data)
-
-    @need_login
-    def follow_group_remove(self, gid: [int, str]):
-        form_data = {"action": 5, "groupId": gid}
-        return self._follow_group_action(form_data)
-
-    @need_login
-    def follow_add(self, uid, attention: [bool, None] = None):
-        form_data = {"toUserId": uid, "action": 1}
-        if attention is True:
-            form_data['action'] = 14
-        elif attention is False:
-            form_data['action'] = 15
-        if form_data['action'] == 1:
-            form_data['groupId'] = 0
-        api_req = self.client.post(source.apis['follow'], data=form_data)
-        return api_req.json().get('result') == 0
-
-    @need_login
-    def follow_remove(self, uid):
-        form_data = {"toUserId": uid, "action": 2}
-        api_req = self.client.post(source.apis['follow'], data=form_data)
-        return api_req.json().get('result') == 0
-
-    @need_login
     def history(self, page: int = 1, limit: int = 10, obj: bool = False):
         # 观看历史
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
@@ -415,19 +191,6 @@ class Acer:
                     objs.append(self.acfun.AcArticle(x.get('resourceId'), x))
             return objs
         return histories
-
-    @need_login
-    def my_fans(self, page: int = 1, limit: int = 10, obj: bool = False):
-        # 粉丝列表
-        form_data = {"page": page, "count": limit, "action": 8}
-        api_req = self.client.post(source.apis['follow_fans'], data=form_data)
-        api_data = api_req.json()
-        if api_data.get('result') != 0:
-            return None
-        fans = api_data.get('friendList', [])
-        if obj is True:
-            return [self.acfun.AcUp(x) for x in fans]
-        return fans
 
     def _get_my_posted(self,
                        rtype: int,
@@ -527,87 +290,3 @@ class Acer:
     def post_video(self):
         # 发视频
         pass
-
-
-class MyFavourite:
-    folders = list()
-    default_fid = None
-
-    def __init__(self, acer):
-        self.acer = acer
-        self.video_groups()
-
-    def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
-        if fids is not None or rtype == 9:
-            form_data['addFolderIds'] = str(fids or self.default_fid)
-        req = self.acer.client.post(source.apis['favorite_add'], data=form_data,
-                                    headers={"referer": source.routes['index']})
-        return req.json().get('result') == 0
-
-    def cancel(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
-        if fids is not None or rtype == 9:
-            form_data['delFolderIds'] = fids or self.default_fid
-        req = self.acer.client.post(source.apis['favorite_remove'], data=form_data,
-                                    headers={"referer": source.routes['index']})
-        return req.json().get('result') == 0
-
-    def video_groups(self):
-        api_req = self.acer.client.get(source.apis['video_favorite_list'])
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            self.folders = api_data.get('dataList', [])
-            self.default_fid = self.folders[0].get('folderId')
-            return self.folders
-        return None
-
-    def video_group_add(self, name: str):
-        form_data = {"name": name}
-        api_req = self.acer.client.post(source.apis['video_favorite_group_add'], data=form_data,
-                                        headers={"referer": source.routes['index']})
-        return api_req.json().get('result') == 0
-
-    def video_group_rename(self, fid: [int, str], name: str):
-        form_data = {"folderId": fid, "name": name}
-        api_req = self.acer.client.post(source.apis['video_favorite_group_update'], data=form_data,
-                                        headers={"referer": source.routes['index']})
-        return api_req.json().get('result') == 0
-
-    def video_group_remove(self, fid: [int, str]):
-        form_data = {"folderId": fid}
-        api_req = self.acer.client.post(source.apis['video_favorite_group_delete'], data=form_data,
-                                        headers={"referer": source.routes['index']})
-        return api_req.json().get('result') == 0
-
-    def video_list(self, fid: [int, str], page: int = 1, limit: int = 10):
-        form_data = {"folderId": fid, "page": page, "perpage": limit}
-        api_req = self.acer.client.post(source.apis['favorite_video'], data=form_data)
-        data = api_req.json()
-        if data.get('result') == 0:
-            return data.get('favoriteList', [])
-        return None
-
-    def article_list(self, page: int = 1, limit: int = 10):
-        form_data = {"page": page, "perpage": limit}
-        api_req = self.acer.client.post(source.apis['favorite_article'], data=form_data)
-        data = api_req.json()
-        if data.get('result') == 0:
-            return data.get('favoriteList', [])
-        return None
-
-    def bangumi_list(self, page: int = 1, limit: int = 10):
-        param = {"page": page, "perpage": limit}
-        api_req = self.acer.client.get(source.apis['favorite_article'], params=param)
-        data = api_req.json()
-        if data.get('result') == 0:
-            return data.get('favoriteList', [])
-        return None
-
-    def album_list(self, page: int = 1, limit: int = 10):
-        form_data = {"page": page, "perpage": limit}
-        api_req = self.acer.client.post(source.apis['favorite_album'], data=form_data)
-        data = api_req.json()
-        if data.get('result') == 0:
-            return data.get('favoriteList', [])
-        return None

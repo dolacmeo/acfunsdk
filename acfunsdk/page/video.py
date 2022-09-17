@@ -1,7 +1,6 @@
 # coding=utf-8
 import json
 from bs4 import BeautifulSoup as Bs
-from .danmaku import AcDanmaku
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import ms2time, get_channel_info, get_page_pagelets, match1
 
@@ -118,7 +117,7 @@ class AcVideo:
         return api_data.get("playInfo")
 
     def up(self):
-        return self.acer.AcUp(self.video_data.get('user', {}))
+        return self.acer.acfun.AcUp(self.video_data.get('user', {}))
 
     def staff(self):
         if self.video_data.get('staffContribute') is not True:
@@ -129,10 +128,10 @@ class AcVideo:
         return api_data
 
     def danmaku(self):
-        return AcDanmaku(self.acer, self.video_data)
+        return self.acer.acfun.AcDanmaku(self.video_data)
 
     def comment(self):
-        return self.acer.AcComment(self.ac_num, 3, self.referer)
+        return self.acer.acfun.AcComment(self.ac_num, 3, self.referer)
 
     def like(self):
         return self.acer.like(self.ac_num, 2)

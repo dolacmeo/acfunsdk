@@ -3,7 +3,6 @@ import os
 import time
 import json
 import subprocess
-from .member import AcUp
 from acfunsdk.source import scheme, domains, routes, apis
 
 __author__ = 'dolacmeo'
@@ -62,7 +61,7 @@ class AcLiveUp:
         self.raw = raw
         if self.raw is None:
             self.infos()
-        self.AcUp = AcUp(self.acer, {"userId": self.uid})
+        self.AcUp = self.acer.acfun.AcUp({"userId": self.uid})
         self.media_data = self.media_list()
         self.is_404 = self.AcUp.is_404
 
@@ -89,7 +88,7 @@ class AcLiveUp:
         param = {"authorId": self.uid}
         api_req = self.acer.client.get(apis['live_up_contents'], params=param)
         api_data = api_req.json()
-        return [self.acer.AcVideo(i.get('dougaId')) for i in api_data.get('contributeList', {}).get('feed', [])]
+        return [self.acer.acfun.AcVideo(i.get('dougaId')) for i in api_data.get('contributeList', {}).get('feed', [])]
 
     def _api_action(self, api_name: str, form_data: dict):
         param = {

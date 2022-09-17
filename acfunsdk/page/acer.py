@@ -3,9 +3,9 @@ import re
 import time
 import json
 from bs4 import BeautifulSoup as Bs
-from .member import AcUp
 from .utils import thin_string
 from acfunsdk.source import scheme, routes, apis
+from acfunsdk.exceptions import *
 
 
 class Message:
@@ -30,7 +30,7 @@ class Message:
     def user(self):
         if self.whom is None:
             return None
-        return AcUp(self.acer, self.whom)
+        return self.acer.acfun.AcUp(self.whom)
 
 
 class ReplyMsg(Message):
@@ -122,7 +122,7 @@ class SystemMsg(Message):
         return f"AcMsg({self.intro})"
 
 
-class AcMessage:
+class MyMessage:
     req_count = 0
 
     def __init__(self, acer):
@@ -286,3 +286,151 @@ class AcMessage:
         if obj is True:
             return [SystemMsg(self, **i) for i in api_data]
         return api_data
+
+
+class MyFollow:
+
+    def __init__(self, acer):
+        self.acer = acer
+        pass
+
+    @need_login
+    def groups(self):
+        api_req = self.acer.client.get(apis['follow_groups'])
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return api_data.get('groupList', [])
+        return None
+
+    def _follow_group_action(self, form_data: dict):
+        api_req = self.acer.client.post(apis['follow_group'], data=form_data)
+        return api_req.json().get('result') == 0
+
+    @need_login
+    def group_add(self, name: str):
+        form_data = {"action": 4, "groupName": name}
+        return self._follow_group_action(form_data)
+
+    @need_login
+    def group_rename(self, gid: [int, str], name: str):
+        form_data = {"action": 6, "groupId": gid, "groupName": name}
+        return self._follow_group_action(form_data)
+
+    @need_login
+    def group_remove(self, gid: [int, str]):
+        form_data = {"action": 5, "groupId": gid}
+        return self._follow_group_action(form_data)
+
+    @need_login
+    def add(self, uid, attention: [bool, None] = None):
+        form_data = {"toUserId": uid, "action": 1}
+        if attention is True:
+            form_data['action'] = 14
+        elif attention is False:
+            form_data['action'] = 15
+        if form_data['action'] == 1:
+            form_data['groupId'] = 0
+        api_req = self.acer.client.post(apis['follow'], data=form_data)
+        return api_req.json().get('result') == 0
+
+    @need_login
+    def remove(self, uid):
+        form_data = {"toUserId": uid, "action": 2}
+        api_req = self.acer.client.post(apis['follow'], data=form_data)
+        return api_req.json().get('result') == 0
+
+    @need_login
+    def my_fans(self, page: int = 1, limit: int = 10, obj: bool = False):
+        form_data = {"page": page, "count": limit, "action": 8}
+        api_req = self.acer.client.post(apis['follow_fans'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        fans = api_data.get('friendList', [])
+        if obj is True:
+            return [AcUp(self.acer, x) for x in fans]
+        return fans
+
+
+class MyFavourite:
+    folders = list()
+    default_fid = None
+
+    def __init__(self, acer):
+        self.acer = acer
+        self.video_groups()
+
+    def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
+        form_data = {"resourceId": obj_id, "resourceType": rtype}
+        if fids is not None or rtype == 9:
+            form_data['addFolderIds'] = str(fids or self.default_fid)
+        req = self.acer.client.post(apis['favorite_add'], data=form_data,
+                                    headers={"referer": routes['index']})
+        return req.json().get('result') == 0
+
+    def cancel(self, obj_id: str, rtype: int, fids: [str, None] = None):
+        form_data = {"resourceId": obj_id, "resourceType": rtype}
+        if fids is not None or rtype == 9:
+            form_data['delFolderIds'] = fids or self.default_fid
+        req = self.acer.client.post(apis['favorite_remove'], data=form_data,
+                                    headers={"referer": routes['index']})
+        return req.json().get('result') == 0
+
+    def video_groups(self):
+        api_req = self.acer.client.get(apis['video_favorite_list'])
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            self.folders = api_data.get('dataList', [])
+            self.default_fid = self.folders[0].get('folderId')
+            return self.folders
+        return None
+
+    def video_group_add(self, name: str):
+        form_data = {"name": name}
+        api_req = self.acer.client.post(apis['video_favorite_group_add'], data=form_data,
+                                        headers={"referer": routes['index']})
+        return api_req.json().get('result') == 0
+
+    def video_group_rename(self, fid: [int, str], name: str):
+        form_data = {"folderId": fid, "name": name}
+        api_req = self.acer.client.post(apis['video_favorite_group_update'], data=form_data,
+                                        headers={"referer": routes['index']})
+        return api_req.json().get('result') == 0
+
+    def video_group_remove(self, fid: [int, str]):
+        form_data = {"folderId": fid}
+        api_req = self.acer.client.post(apis['video_favorite_group_delete'], data=form_data,
+                                        headers={"referer": routes['index']})
+        return api_req.json().get('result') == 0
+
+    def video_list(self, fid: [int, str], page: int = 1, limit: int = 10):
+        form_data = {"folderId": fid, "page": page, "perpage": limit}
+        api_req = self.acer.client.post(apis['favorite_video'], data=form_data)
+        data = api_req.json()
+        if data.get('result') == 0:
+            return data.get('favoriteList', [])
+        return None
+
+    def article_list(self, page: int = 1, limit: int = 10):
+        form_data = {"page": page, "perpage": limit}
+        api_req = self.acer.client.post(apis['favorite_article'], data=form_data)
+        data = api_req.json()
+        if data.get('result') == 0:
+            return data.get('favoriteList', [])
+        return None
+
+    def bangumi_list(self, page: int = 1, limit: int = 10):
+        param = {"page": page, "perpage": limit}
+        api_req = self.acer.client.get(apis['favorite_article'], params=param)
+        data = api_req.json()
+        if data.get('result') == 0:
+            return data.get('favoriteList', [])
+        return None
+
+    def album_list(self, page: int = 1, limit: int = 10):
+        form_data = {"page": page, "perpage": limit}
+        api_req = self.acer.client.post(apis['favorite_album'], data=form_data)
+        data = api_req.json()
+        if data.get('result') == 0:
+            return data.get('favoriteList', [])
+        return None

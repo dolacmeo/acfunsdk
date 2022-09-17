@@ -1,8 +1,5 @@
 # coding=utf-8
 from typing import Literal
-from .member import AcUp
-from .video import AcVideo
-from .article import AcArticle
 from acfunsdk.source import apis
 
 __author__ = 'dolacmeo'
@@ -41,9 +38,9 @@ class AcRank:
         data_list = list()
         for content in self.rank_data:
             if content['contentType'] == 2:
-                data_list.append(AcVideo(self.acer, content['dougaId'], content))
+                data_list.append(self.acer.acfun.AcVideo(content['dougaId'], content))
             elif content['contentType'] == 3:
-                data_list.append(AcArticle(self.acer, content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
     def ups(self):
@@ -51,5 +48,5 @@ class AcRank:
             return None
         data_list = list()
         for content in self.rank_data:
-            data_list.append(AcUp(self.acer, {"userId": content['userId'], "name": content['userName']}))
+            data_list.append(self.acer.acfun.AcUp({"userId": content['userId'], "name": content['userName']}))
         return data_list

@@ -4,8 +4,6 @@ import json
 import math
 from urllib import parse
 from bs4 import BeautifulSoup as Bs
-from .danmaku import AcDanmaku
-from .comment import AcComment
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import get_channel_info, get_page_pagelets, match1
 
@@ -76,10 +74,10 @@ class AcBangumi:
         return True
 
     def danmaku(self):
-        return AcDanmaku(self.acer, self.bangumi_data)
+        return self.acer.acfun.AcDanmaku(self.bangumi_data)
 
     def comment(self):
-        return AcComment(self.acer, f"{self.aa_num}_{self.vid}", 6, self.page_url)
+        return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", 6, self.page_url)
 
     def like(self):
         return self.acer.like(self.item_id, 18)

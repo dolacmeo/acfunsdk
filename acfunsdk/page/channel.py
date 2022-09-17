@@ -2,12 +2,6 @@
 import json
 import time
 from bs4 import BeautifulSoup as Bs
-from .rank import AcRank
-from .member import AcUp
-from .video import AcVideo
-from .bangumi import AcBangumi
-from .article import AcArticle
-from .extra import AcImage
 from acfunsdk.source import routes, apis, ChannelList
 from acfunsdk.page.utils import match1
 
@@ -47,13 +41,13 @@ class BlockContent:
         data_list = list()
         for v in self.content_data.get('webContents'):
             if v['mediaType'] == 0:
-                data_list.append(AcVideo(self.acer, v['mediaId'], v))
+                data_list.append(self.acer.acfun.AcVideo(v['mediaId'], v))
             elif v['mediaType'] == 1:
-                data_list.append(AcArticle(self.acer, v['mediaId'], v))
+                data_list.append(self.acer.acfun.AcArticle(v['mediaId'], v))
             elif v['mediaType'] == 4:
-                data_list.append(AcUp(self.acer, v))
+                data_list.append(self.acer.acfun.AcUp(v))
             elif v['mediaType'] == 8:
-                data_list.append(AcImage(self.acer, v['image'], v['link'], v['title'], self))
+                data_list.append(self.acer.acfun.AcImage(v['image'], v['link'], v['title'], self))
         return data_list
 
 
@@ -155,7 +149,7 @@ class AcChannel:
         else:
             cid = int(self.parent_data['channelId'])
             sub_cid = int(self.cid)
-        return AcRank(self.acer, cid, sub_cid, limit, date_range=date_range)
+        return self.acer.acfun.AcRank(cid, sub_cid, limit, date_range=date_range)
 
     def videos(self,
                page: int = 1,
@@ -222,7 +216,7 @@ class AcChannel:
                 }
             }
             if obj is True:
-                v_datas.append(AcVideo(self.acer, item_data['ac_num'], item_data))
+                v_datas.append(self.acer.acfun.AcVideo(item_data['ac_num'], item_data))
             else:
                 v_datas.append(item_data)
         return v_datas

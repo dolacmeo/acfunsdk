@@ -1,9 +1,6 @@
 # coding=utf-8
 import json
 from bs4 import BeautifulSoup as Bs
-from .video import AcVideo
-from .bangumi import AcBangumi
-from .article import AcArticle
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import match1
 
@@ -71,9 +68,9 @@ class AcAlbum:
         data_list = list()
         for content in self.content_data:
             if content['resourceTypeValue'] == 2:
-                data_list.append(AcVideo(self.acer, content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcVideo(content['resourceId'], content))
             elif content['resourceTypeValue'] == 3:
-                data_list.append(AcArticle(self.acer, content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
     def favorite_add(self):

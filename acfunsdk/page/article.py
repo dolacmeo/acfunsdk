@@ -4,7 +4,6 @@ import html
 import json
 import textwrap
 from bs4 import BeautifulSoup as Bs
-from .comment import AcComment
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import warp_mix_chars, get_page_pagelets, match1
 
@@ -118,7 +117,7 @@ class AcArticle:
     def comment(self):
         if len(self.article_data.keys()) == 0:
             self.loading()
-        return AcComment(self.acer, self.ac_num, 1, self.referer)
+        return self.acer.acfun.AcComment(self.ac_num, 1, self.referer)
 
     def like(self):
         return self.acer.like(self.ac_num, 3)

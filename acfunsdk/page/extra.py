@@ -203,8 +203,7 @@ class AcAcademy:
         form = {"courseType": "2", "pageSize": 40, "page": 1}
         api_req = httpx.post(apis['academy_tea'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
-        return api_data
+        return api_data.get("teacherList")
 
 
 class AcDownload:

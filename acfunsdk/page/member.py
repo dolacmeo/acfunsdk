@@ -2,10 +2,6 @@
 import json
 import time
 from bs4 import BeautifulSoup as Bs
-from .video import AcVideo
-from .article import AcArticle
-from .album import AcAlbum
-from .live import AcLiveUp
 from acfunsdk.source import routes, apis
 
 __author__ = 'dolacmeo'
@@ -60,7 +56,7 @@ class AcUp:
             '.tab-list > li[data-index=followed] > span').text
 
     def AcLive(self):
-        return AcLiveUp(self.acer, self.uid)
+        return self.acer.acfun.AcLiveUp(self.uid)
 
     def follow_add(self, attention: [bool, None] = None):
         return self.acer.follow_add(self.uid, attention)
@@ -101,7 +97,7 @@ class AcUp:
                 'createTime': item.select_one('p.date').text.replace('/', '-'),
                 'user': self.up_data
             }
-            data.append(AcVideo(self.acer, ac_num, infos))
+            data.append(self.acer.acfun.AcVideo(ac_num, infos))
         return data
 
     def article(self, page=1, limit=10, orderby='newest'):
@@ -114,7 +110,7 @@ class AcUp:
                 'dougaId': ac_num,
                 'user': self.up_data
             }
-            data.append(AcArticle(self.acer, ac_num, infos))
+            data.append(self.acer.acfun.AcArticle(ac_num, infos))
         return data
 
     def album(self, page=1, limit=10, orderby='newest'):
@@ -122,7 +118,7 @@ class AcUp:
         acer_data = self._get_data('album', page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('.ac-space-album'):
             ac_num = item.a.attrs['href'][5:]
-            data.append(AcAlbum(self.acer, ac_num))
+            data.append(self.acer.acfun.AcAlbum(ac_num))
         return data
 
     def following(self, page=1, limit=10, orderby='newest'):

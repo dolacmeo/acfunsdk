@@ -1,290 +1,34 @@
 # coding=utf-8
-import re
-import time
 import json
-from bs4 import BeautifulSoup as Bs
-from .utils import thin_string
-from acfunsdk.source import scheme, routes, apis
-from acfunsdk.exceptions import *
+from typing import Literal
+from acfunsdk.source import scheme, domains, routes, apis
+
+__author__ = 'dolacmeo'
 
 
-class Message:
-    intro = None
-    create_at = None
-    whom = None
-    raw_data = None
-    raw_link = None
-
-    def __init__(self, acer, **kwargs):
-        self.acer = acer
-        self.raw_data = kwargs
-        self.raw_link = kwargs.get('content_url')
-        self.intro = kwargs.get('intro')
-        self.create_at = kwargs.get('create_at')
-        if 'uid' in kwargs:
-            self.whom = {'userId': kwargs.get('uid'), 'name': kwargs.get('username')}
-
-    def __repr__(self):
-        return f"AcMsg({self.intro})"
-
-    def user(self):
-        if self.whom is None:
-            return None
-        return self.acer.acfun.AcUp(self.whom)
-
-
-class ReplyMsg(Message):
-
-    def __init__(self, acer, **kwargs):
-        self.content_title = kwargs.get('content_title', '')
-        self.replied = kwargs.get('replied', '')
-        self.content = kwargs.get('content', '')
-        self.ncid = kwargs.get('ncid', '')
-        self.username = kwargs.get('username', '')
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        return f"AcReply({self.content_title}—— {self.content} @{self.username})"
-
-    def content(self):
-        return self.acer.get(self.raw_data.get('content_url'))
-
-    def replay(self):
-        comments = self.content().comment()
-        return comments.find(self.raw_data.get('ncid'))
-
-
-class LikeMsg(ReplyMsg):
-
-    def __init__(self, acer, **kwargs):
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        return f"AcLike({self.replied} | @{self.username})"
-
-
-class AtMsg(ReplyMsg):
-
-    def __init__(self, acer, **kwargs):
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        return f"AcMsg({self.raw_link}#ncid={self.ncid} | @{self.username})"
-
-
-class GiftMsg(Message):
-    banana = 0
-
-    def __init__(self, acer, **kwargs):
-        self.content_title = kwargs.get('content_title', '')
-        self.username = kwargs.get('username', '')
-        self.banana = kwargs.get('banana', 0)
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        return f"AcGift({self.content_title} | 🍌x{self.banana} @{self.username})"
-
-
-class NoticeMsg(Message):
-
-    def __init__(self, acer, **kwargs):
-        self.content_title = kwargs.get('content_title', '')
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        return f"AcNotice({self.content_title} >>> {self.raw_link})"
-
-
-class SystemMsg(Message):
-    classify = None
-
-    def __init__(self, acer, **kwargs):
-        super().__init__(acer, **kwargs)
-
-    def __repr__(self):
-        if 'up' in self.raw_data and '关注了你' in self.raw_data.get('intro', ''):
-            link = self.raw_data.get('up', [])
-            return f"AcFans(+1 | @{link[0]})"
-        elif 'video' in self.raw_data and '已通过审核' in self.raw_data.get('intro', ''):
-            link = self.raw_data.get('video', [])
-            return f"AcPass({link[0]} 已通过审核)"
-        elif 'article' in self.raw_data and '已通过审核' in self.raw_data.get('intro', ''):
-            link = self.raw_data.get('article', [])
-            return f"AcPass({link[0]} 已通过审核)"
-        elif '有人收藏了你的' in self.raw_data.get('intro', ''):
-            if 'video' in self.raw_data:
-                link = self.raw_data.get('video', [])
-            elif 'article' in self.raw_data:
-                link = self.raw_data.get('article', [])
-            else:
-                return f"AcMsg({self.intro})"
-            return f"AcStar(+1 | {link[0]})"
-        return f"AcMsg({self.intro})"
-
-
-class MyMessage:
-    req_count = 0
+class MyFansClub:
 
     def __init__(self, acer):
         self.acer = acer
 
-    @property
-    def unread(self):
-        if self.acer.is_logined is False:
-            return None
-        api_req = self.acer.client.get(apis['unread'])
+    def medal_list(self):
+        api_req = self.acer.client.post(apis['live_medal_list'])
         api_data = api_req.json()
-        if api_data.get('result') != 0:
-            return None
-        return api_data.get("unReadCount")
+        assert api_data.get("result") == 0
+        return api_data.get("medalList")
 
-    def _get_msg_api(self, vid: str = '', page: int = 1):
-        vids = ['', 'like', 'atmine', 'gift', 'sysmsg', 'resmsg']
-        assert vid in vids
-        self.req_count += 1
-        param = {
-            "quickViewId": 'upCollageMain',
-            "reqID": self.req_count,
-            "ajaxpipe": 1,
-            "pageNum": page,
-            "t": str(time.time_ns())[:13],
-        }
-        api_req = self.acer.client.get(apis['message'] + vid, params=param)
-        if api_req.text.endswith("/*<!-- fetch-stream -->*/"):
-            api_data = json.loads(api_req.text[:-25])
-            page_obj = Bs(api_data.get('html', ''), 'lxml')
-        else:
-            return None
-        item_data = list()
-        total = str(page_obj.select_one('#listview').attrs['totalcount'])
-        for item in page_obj.select('#listview > ul,.main-block-msg-item'):
-            if vid == '':
-                main_url = scheme + ':' + item.select_one('.intro').a.attrs['href']
-                reply_url = item.select_one('a.msg-reply').attrs['href']
-                item_data.append({
-                    'content_url': main_url,
-                    'content_title': item.select_one('.intro').a.text.strip(),
-                    'replied': item.select_one('.msg-replied .inner').text.strip().replace('\xa0', ' '),
-                    'uid': item.select_one('.titlebar .name').attrs['href'][17:],
-                    'username': item.select_one('.titlebar .name').text,
-                    'create_at': item.select_one('.titlebar .time').text.strip(),
-                    'ncid': reply_url.split('#ncid=')[1],
-                    'content': item.select_one('.msg-reply .inner').text.strip().replace('\xa0', ' '),
-                    'intro': item.select_one('.content .intro').text.strip(),
-                })
-            elif vid == 'like':
-                this_url = item.select_one('a.replied').attrs['href'].split('#')
-                main_url = scheme + ':' + this_url[0]
-                item_data.append({
-                    'content_url': main_url,
-                    'replied': item.select_one('.clamp-text .inner').text.strip().replace('\xa0', ' '),
-                    'uid': item.select_one('.titlebar .name').attrs['href'][17:],
-                    'username': item.select_one('.titlebar .name').text,
-                    'ncid': this_url[1][5:],
-                    'create_at': item.select_one('.titlebar span.time').text.strip(),
-                    'intro': item.select_one('.titlebar').text.strip(),
-                })
-            elif vid == 'atmine':
-                this_url = item.select_one('.content .msg-text').attrs['href']
-                item_data.append({
-                    'content_url': scheme + ':' + this_url.split('#')[0],
-                    'ncid': this_url.split('#ncid=')[1],
-                    'uid': item.select_one('.avatar-section').attrs['href'][17:],
-                    'username': item.select_one('.titlebar-container .name').text,
-                    'create_at': item.select_one('.titlebar-container span.time').text.strip(),
-                    'intro': item.select_one('.titlebar-container .intro').text.strip(),
-                })
-            elif vid == 'gift':
-                if 'moment-gift' in item.attrs['class']:
-                    this_url = item.select_one('.msg-content').a.attrs['href']
-                    intro = thin_string(item.select_one('.msg-content').text)
-                    item_data.append({
-                        'classify': 'moment',
-                        'content_url': scheme + ':' + this_url,
-                        'content_title': '动态',
-                        'uid': item.select_one('.avatar-section').attrs['href'][17:],
-                        'username': item.select_one('.content .name').text,
-                        'create_at': item.select_one('.content span.time').text.strip(),
-                        'intro': intro,
-                        'banana': int(re.findall(r'(\d)根香蕉', intro)[0])
-                    })
-                else:
-                    acer_url = item.select_one('p a:nth-of-type(1)')
-                    this_url = item.select_one('p a:nth-of-type(2)')
-                    intro = thin_string(item.select_one('p').text)
-                    item_data.append({
-                        'classify': 'content',
-                        'content_url': scheme + ':' + this_url.attrs['href'],
-                        'content_title': this_url.text,
-                        'uid': acer_url.attrs['href'][17:],
-                        'username': acer_url.text,
-                        'create_at': item.select_one('.msg-item-time').text.strip(),
-                        'intro': intro,
-                        'banana': int(re.findall('(\d)根香蕉', intro)[0])
-                    })
-            elif vid == 'sysmsg':
-                this_title = item.select_one('div:nth-of-type(1)').text.strip()
-                this_content = item.select_one('div:nth-of-type(2)').get_text("|", strip=True)
-                this_content = "\n".join([text for text in this_content.split("|") if not text.startswith('http')])
-                this_content = re.sub('(>{2,})', '', this_content)
-                this_link = item.select_one('div:nth-of-type(2)').a.attrs['href']
-                item_data.append({
-                    'content_url': this_link,
-                    'content_title': this_title,
-                    'create_at': item.select_one('.msg-item-time').text.strip(),
-                    'intro': thin_string(this_content),
-                })
-            elif vid == 'resmsg':
-                intro = item.select_one('p:nth-of-type(1)').text.strip()
-                links = dict()
-                for link in item.select('a'):
-                    url_str = link.attrs['href']
-                    if not url_str.startswith('http'):
-                        url_str = scheme + ':' + url_str
-                    for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'live']:
-                        if url_str.startswith(routes[link_name]) and link_name not in links:
-                            links[link_name] = [link.text, url_str]
-                item_data.append({
-                    'create_at': item.select_one('p.msg-item-time').text.strip(),
-                    'intro': thin_string(intro, True),
-                    **links
-                })
-        return item_data, total
-
-    def reply(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('', page)
-        if obj is True:
-            return [ReplyMsg(self, **i) for i in api_data]
+    def medal_info(self, uid: [str, int]):
+        api_req = self.acer.client.post(apis['live_medal'], params={"uperId": uid})
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
         return api_data
 
-    def like(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('like', page)
-        if obj is True:
-            return [LikeMsg(self, **i) for i in api_data]
-        return api_data
-
-    def at(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('atmine', page)
-        if obj is True:
-            return [AtMsg(self, **i) for i in api_data]
-        return api_data
-
-    def gift(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('gift', page)
-        if obj is True:
-            return [GiftMsg(self, **i) for i in api_data]
-        return api_data
-
-    def notice(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('sysmsg', page)
-        if obj is True:
-            return [NoticeMsg(self, **i) for i in api_data]
-        return api_data
-
-    def system(self, page: int = 1, obj: bool = False):
-        api_data, total = self._get_msg_api('resmsg', page)
-        if obj is True:
-            return [SystemMsg(self, **i) for i in api_data]
+    def medal_wear(self, uid: [str, int], on_off: bool):
+        param = {"uperId": uid}
+        on_off = "on" if on_off is True else "off"
+        api_req = self.acer.client.post(apis[f"live_medal_wear_{on_off}"], params=param)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
         return api_data
 
 
@@ -294,7 +38,6 @@ class MyFollow:
         self.acer = acer
         pass
 
-    @need_login
     def groups(self):
         api_req = self.acer.client.get(apis['follow_groups'])
         api_data = api_req.json()
@@ -306,22 +49,18 @@ class MyFollow:
         api_req = self.acer.client.post(apis['follow_group'], data=form_data)
         return api_req.json().get('result') == 0
 
-    @need_login
     def group_add(self, name: str):
         form_data = {"action": 4, "groupName": name}
         return self._follow_group_action(form_data)
 
-    @need_login
     def group_rename(self, gid: [int, str], name: str):
         form_data = {"action": 6, "groupId": gid, "groupName": name}
         return self._follow_group_action(form_data)
 
-    @need_login
     def group_remove(self, gid: [int, str]):
         form_data = {"action": 5, "groupId": gid}
         return self._follow_group_action(form_data)
 
-    @need_login
     def add(self, uid, attention: [bool, None] = None):
         form_data = {"toUserId": uid, "action": 1}
         if attention is True:
@@ -333,13 +72,11 @@ class MyFollow:
         api_req = self.acer.client.post(apis['follow'], data=form_data)
         return api_req.json().get('result') == 0
 
-    @need_login
     def remove(self, uid):
         form_data = {"toUserId": uid, "action": 2}
         api_req = self.acer.client.post(apis['follow'], data=form_data)
         return api_req.json().get('result') == 0
 
-    @need_login
     def my_fans(self, page: int = 1, limit: int = 10, obj: bool = False):
         form_data = {"page": page, "count": limit, "action": 8}
         api_req = self.acer.client.post(apis['follow_fans'], data=form_data)
@@ -348,7 +85,7 @@ class MyFollow:
             return None
         fans = api_data.get('friendList', [])
         if obj is True:
-            return [AcUp(self.acer, x) for x in fans]
+            return [self.acer.acfun.AcUp(x) for x in fans]
         return fans
 
 
@@ -434,3 +171,294 @@ class MyFavourite:
         if data.get('result') == 0:
             return data.get('favoriteList', [])
         return None
+
+
+class MyAlbum:
+
+    def __init__(self, acer):
+        self.acer = acer
+
+    def list(self, page: int = 1, size: int = 10):
+        param = {"size": size, "page": page, "status": 0, "sort": 0}
+        api_req = self.acer.client.get(apis["my_album_list"], params=param)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def add(self, title: str, rtype: Literal[2, 3], cover: str, intro: str, status: Literal[1, 2]):
+        form = {
+            "title": title,
+            "resourceType": rtype,
+            "coverImage": cover,
+            "intro": intro,
+            "status": status,
+        }
+        api_req = self.acer.client.post(apis["my_album_add"], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data.get("arubamuId")
+
+    def remove(self, album_id: [str, int]):
+        api_req = self.acer.client.post(apis["my_album_del"], data={"arubamuId": album_id})
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def update(self, album_id: [str, int], title: str, rtype: Literal[2, 3],
+               cover: str, intro: str, status: Literal[1, 2]):
+        form = {
+            "arubamuId": album_id,
+            "title": title,
+            "resourceType": rtype,
+            "coverImage": cover,
+            "intro": intro,
+            "status": status,
+        }
+        api_req = self.acer.client.post(apis["my_album_update"], data=form)
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def get_contents(self, album_id: [str, int], page: int = 1, size: int = 10):
+        param = {"arubamuId": album_id, "page": page, "size": size}
+        api_req = self.acer.client.get(apis["my_album_contents"], params=param)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def contents_add(self, album_id: [str, int], rtype: Literal[2, 3], rids: [str, list]):
+        if isinstance(rids, str):
+            rids = rids.split(',')
+        rlist = [{"resourceId": x, "resourceType": rtype} for x in rids]
+        form = {
+            "arubamuId": album_id,
+            "resourceListStr": json.dumps(rlist, separators=(',', ':'))
+        }
+        api_req = self.acer.client.post(apis["my_album_content_add"], data=form)
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def contents_del(self, album_id: [str, int], rids: [str, list]):
+        if isinstance(rids, str):
+            rids = rids.split(',')
+        form = {
+            "arubamuId": album_id,
+            "arubamuContentIdList": rids
+        }
+        api_req = self.acer.client.post(apis["my_album_content_del"], data=form)
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+
+class MyContribute:
+
+    def __init__(self, acer):
+        self.acer = acer
+
+    def _get_my_posted(self,
+                       rtype: int,
+                       page: int = 1,
+                       status: str = 'all',
+                       sortby: str = 'recently',
+                       keyword: [str, None] = None):
+        # 我的文章
+        status_list = {
+            'all': 0,  # 全部
+            'passed': 1,  # 已通过
+            'posting': 2,  # 发布中
+            'returned': 3,  # 已退回
+        }
+        sort_list = {
+            'viwed': 1,  # 最多阅读
+            'banana': 2,  # 最多香蕉
+            'recently': 3,  # 最新发布
+        }
+        form_data = {
+            "pcursor": 0 if (page - 1) < 0 else (page - 1),
+            "resourceType": rtype,  # 2 视频 3 文章
+            "authorId": self.acer.uid,
+            "sortType": sort_list.get(sortby, 3),
+            "status": status_list.get(status, 0),
+            "keyword": keyword,
+        }
+        api_req = self.acer.client.post(apis['member_posted'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return api_data.get('feed', [])
+        return None
+
+    def my_articles(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
+        return self._get_my_posted(3, page, status, sortby, keyword)
+
+    def my_videos(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
+        return self._get_my_posted(2, page, status, sortby, keyword)
+
+    def data_center(self, days: int = 1):
+        api_req = self.acer.client.post(apis['dataCenter_overview'], data={'days': 1 if days < 1 else days})
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return api_data
+        return None
+
+    def data_center_detail(self, rtype: str, days: int = 1, sortby: str = 'viewCount'):
+        rtypes = {'video': 2, 'article': 3, 'live': None}
+        assert rtype in rtypes.keys()
+        sort_list = {
+            "viewCount": "阅读量",
+            "commentCount": "评论量",
+            "stowCount": "收藏量",
+            "shareCount": "分享量",
+            "bananaCount": "投蕉量"
+        }
+        assert sortby in sort_list
+        form_data = {'days': 1 if days < 1 else days}
+        if rtype == 'live':
+            api_req = self.acer.client.post(apis['dataCenter_live'], data=form_data)
+        else:
+            form_data.update({"resourceType": rtypes.get(rtype), "orderBy": sortby})
+            api_req = self.acer.client.post(apis['dataCenter_content'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return api_data
+        return None
+
+    def get_live_config(self):
+        param = {
+            "kpn": "ACFUN_APP",
+            "kpf": "PC_WEB",
+            "userId": self.acer.uid,
+            "subBiz": "mainApp"
+        }
+        param = self.acer.update_token(param)
+        api_req = self.acer.client.post(apis['live_obs_config'], params=param,
+                                        headers={'referer': f"{scheme}://{domains['user']}"})
+        return api_req.json()
+
+    def post_article(self):
+        # 发文章
+        pass
+
+    def post_video(self):
+        # 发视频
+        pass
+
+
+class MyDanmaku:
+
+    def __init__(self, acer):
+        self.acer = acer
+
+    def advance_config(self):
+        api_req = self.acer.client.post(apis['danmaku_config'])
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def advance_setup(self, n: Literal['1', '2', '3', '4', 1, 2, 3, 4]):
+        """
+        https://member.acfun.cn/inter-active/danmaku-setting
+        1 任何人
+        2 仅限粉丝
+        3 仅限互相关注
+        4 关闭高级弹幕
+        """
+        api_req = self.acer.client.post(apis['danmaku_setup'], data={"availableType": str(n)})
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def forbidden_words(self):
+        api_req = self.acer.client.post(apis['ban_danmaku'])
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data.get("data")
+
+    def forbidden_add(self, words: str):
+        api_req = self.acer.client.post(apis['ban_danmaku_add'], data={"forbiddenWords": words})
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def forbidden_del(self, words: str):
+        api_req = self.acer.client.post(apis['ban_danmaku_del'], data={"forbiddenWords": words})
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def advance_list(self,
+                     page: int = 1,
+                     ac_num: [int, str, None] = None,
+                     vid: [int, str, None] = None,
+                     search: [str, None] = None):
+        form = {
+            "dougaId": ac_num or "",
+            "videoId": vid or "",
+            "danmakuText": search or "",
+            "page": page,
+        }
+        api_req = self.acer.client.post(apis['search_danmaku_adv'], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def danmaku_list(self,
+                     page: int = 1,
+                     ac_num: [int, str, None] = None,
+                     vid: [int, str, None] = None,
+                     search: [str, None] = None):
+        form = {
+            "dougaId": ac_num or "",
+            "videoId": vid or "",
+            "danmakuText": search or "",
+            "page": page,
+        }
+        api_req = self.acer.client.post(apis['search_danmaku'], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def danmaku_protect(self, ac_num: [int, str], danmaku_id: [int, str], on_off: bool = True):
+        form = {
+            "videoResourceType": "douga",
+            "videoResourceId": ac_num,
+            "danmakuId": danmaku_id,
+            "rank": 9 if on_off is True else 5,
+        }
+        api_req = self.acer.client.post(apis['protect_danmaku'], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def danmaku_del(self, danmaku_ids: [int, str]):
+        form = {"danmakuIdList": str(danmaku_ids)}
+        api_req = self.acer.client.post(apis['delete_danmaku'], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+
+class BananaMall:
+
+    def __init__(self, acer):
+        self.acer = acer
+
+    def shop_list(self, page: int = 1, size: int = 30, stype: Literal[1, 2, 3] = 1, asc: bool = False):
+        form = {"pageNo": page, "pageSize": size, "sortType": stype, "asc": asc}
+        api_req = self.acer.client.post(apis['shop_list'], data=form)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def my_items(self, page: int = 1, size: int = 30):
+        param = {"page": page, "count": size}
+        api_req = self.acer.client.get(apis['shop_user_item'], params=param)
+        api_data = api_req.json()
+        assert api_data.get("result") == 0
+        return api_data
+
+    def set_item(self, pid: int, on_off: bool = True):
+        form = {"productId": pid}
+        on_off = "use" if on_off is True else "unuse"
+        api_req = self.acer.client.post(apis[f"shop_user_item_{on_off}"], data=form)
+        api_data = api_req.json()
+        return api_data.get("result") == 0
+
+    def my_orders(self):
+        # https://www.acfun.cn/member/mall?tab=orders
+        # 缺少足够样本获取翻页接口请求
+        raise PermissionError("接口未知：缺少足够样本获取翻页接口请求")

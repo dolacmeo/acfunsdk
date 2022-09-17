@@ -134,10 +134,10 @@ class AcVideo:
         return self.acer.acfun.AcComment(self.ac_num, 3, self.referer)
 
     def like(self):
-        return self.acer.like(self.ac_num, 2)
+        return self.acer.like_add(self.ac_num, 2)
 
     def like_cancel(self):
-        return self.acer.like_cancel(self.ac_num, 2)
+        return self.acer.like_delete(self.ac_num, 2)
 
     def favorite_add(self, folder_id: [str, None] = None):
         return self.acer.favourite.add(self.ac_num, self.resourceType, folder_id)

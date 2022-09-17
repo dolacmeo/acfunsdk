@@ -120,10 +120,10 @@ class AcArticle:
         return self.acer.acfun.AcComment(self.ac_num, 1, self.referer)
 
     def like(self):
-        return self.acer.like(self.ac_num, 3)
+        return self.acer.like_add(self.ac_num, 3)
 
     def like_cancel(self):
-        return self.acer.like_cancel(self.ac_num, 3)
+        return self.acer.like_delete(self.ac_num, 3)
 
     def favorite_add(self):
         return self.acer.favourite.add(self.ac_num, 3)

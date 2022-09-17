@@ -16,7 +16,8 @@ from .live import AcLive, AcLiveUp
 from .doodle import AcDoodle
 from .comment import AcComment
 from .danmaku import AcDanmaku
-from .acer import MyMessage, MyFollow, MyFavourite
+from .message import MyMessage
+from .acer import MyFollow, MyFavourite, MyDanmaku, MyContribute, MyFansClub, MyAlbum, BananaMall
 from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReportComplaint, AcDownload
 from .utils import B64s
 

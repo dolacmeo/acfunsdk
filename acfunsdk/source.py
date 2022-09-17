@@ -75,6 +75,7 @@ apis = {
     'search': f"{scheme}://{domains['main']}/search",
     'search_keywords': f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
     'history': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
+    'history_del_all': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/deleteAll",
     'unread': f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
 
     'video_ksplay': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
@@ -82,6 +83,20 @@ apis = {
     'video_quality': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST
 
     'get_users': f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
+    'my_album_list': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/my/list",
+    # 'my_album_list': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/albumList",
+    'my_album_add': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/add",
+    'my_album_update': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/modify",
+    'my_album_del': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/delete",
+    'my_album_contents': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/list",
+    'my_album_content_add': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/add",
+    'my_album_content_del': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/delete",
+
+    'shop_list': f"{scheme}://{domains['main']}/rest/pc-direct/shop/productList",
+    'shop_user_item': f"{scheme}://{domains['main']}/rest/pc-direct/shop/userItem",
+    'shop_user_item_use': f"{scheme}://{domains['main']}/rest/pc-direct/shop/useItem",
+    'shop_user_item_unuse': f"{scheme}://{domains['main']}/rest/pc-direct/shop/unUseItem",
+
     'follow': f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",
     'follow_fans': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getFollows",
     'follow_groups': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getGroups",
@@ -134,6 +149,16 @@ apis = {
     'getUserLiveCut': f"{scheme}://{domains['user']}/liveToll/api/getUserLiveCut",
     'showFansClubApplyEntrance': f"{scheme}://{domains['user']}/common/api/showFansClubApplyEntrance",
     'checkFansClubAuth': f"{scheme}://{domains['user']}/interActive/api/checkFansClubAuth",
+    'danmaku_videos': f"{scheme}://{domains['user']}interActive/api/getDougaList",
+    'search_danmaku': f"{scheme}://{domains['user']}/interActive/api/searchDanmaku",
+    'search_danmaku_adv': f"{scheme}://{domains['user']}/interActive/api/searchDanmakuAdvanced",
+    'delete_danmaku': f"{scheme}://{domains['user']}/interActive/api/deleteDanmaku",
+    'protect_danmaku': f"{scheme}://{domains['user']}/interActive/api/updateDanmakuRank",
+    'ban_danmaku': f"{scheme}://{domains['user']}/interActive/api/getForbiddenWords",
+    'ban_danmaku_add': f"{scheme}://{domains['user']}/interActive/api/addForbiddenWords",
+    'ban_danmaku_del': f"{scheme}://{domains['user']}/interActive/api/delForbiddenWords",
+    'danmaku_config': f"{scheme}://{domains['user']}/interActive/api/getAdvancedAvailable",
+    'danmaku_setup': f"{scheme}://{domains['user']}/interActive/api/setAdvancedAvailable",
     'bind_ksaccount': f"{scheme}://{domains['id_api']}/rest/web/central/ksaccount/status",
     'live_obs_status': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/status",
     'live_obs_config': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/config",
@@ -148,6 +173,10 @@ apis = {
     'live_info': f"{scheme}://{domains['live']}/api/live/info",
     'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
     'live_medal': f"{scheme}://{domains['live']}/rest/pc-direct/fansClub/live/medalInfo",
+    'live_medal_list': f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/list",
+    'live_medal_info': f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/extraInfo",
+    'live_medal_wear_on': f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/wear",
+    'live_medal_wear_off': f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/cancelWear",
 
     'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
     'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf",

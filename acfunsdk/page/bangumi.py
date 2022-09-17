@@ -80,10 +80,10 @@ class AcBangumi:
         return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", 6, self.page_url)
 
     def like(self):
-        return self.acer.like(self.item_id, 18)
+        return self.acer.like_add(self.item_id, 18)
 
     def like_cancel(self):
-        return self.acer.like_cancel(self.item_id, 18)
+        return self.acer.like_delete(self.item_id, 18)
 
     def favorite_add(self):
         return self.acer.favourite.add(self.aa_num, 1)

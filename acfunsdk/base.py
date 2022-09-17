@@ -2,6 +2,7 @@
 import os
 import json
 import httpx
+from typing import Literal
 from .page import *
 from .exceptions import *
 
@@ -13,19 +14,29 @@ class Acer:
     client = None
     config = dict()
 
-    is_logined = False
     did = None
     data = dict()
     tokens = dict()
 
+    is_logined = False
     message = None
     follow = None
     favourite = None
+    danmaku = None
+    contribute = None
+    fansclub = None
+    album = None
+    bananamall = None
 
     def __init__(self, **kwargs):
         self.config = kwargs
         self.client = httpx.Client(headers=source.header)
-        self._get_personal()
+        if "loading" in kwargs:
+            self.loading(kwargs['loading'])
+        elif "username" in kwargs and "password" in kwargs:
+            self.login(kwargs['username'], kwargs['password'])
+        else:
+            self._get_personal()
         self.acfun = AcFun(self)
 
     def __repr__(self):
@@ -63,6 +74,12 @@ class Acer:
             self.message = MyMessage(self)
             self.follow = MyFollow(self)
             self.favourite = MyFavourite(self)
+            self.danmaku = MyDanmaku(self)
+            self.contribute = MyContribute(self)
+            self.fansclub = MyFansClub(self)
+            self.album = MyAlbum(self)
+            self.bananamall = BananaMall(self)
+            self.signin()  # 自动签到
         else:
             api_req = self.client.post(source.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
             api_data = api_req.json()
@@ -109,20 +126,16 @@ class Acer:
         self.client = httpx.Client(headers=source.header)
         self.is_logined = False
         self.data = dict()
+        self.tokens = dict()
+        self.message = None
+        self.follow = None
+        self.favourite = None
+        self.danmaku = None
+        self.contribute = None
+        self.fansclub = None
+        self.album = None
+        self.bananamall = None
         return True
-
-    @need_login
-    def setup_signature(self, text: str):
-        api_req = self.client.post(source.apis['updateSignature'], data={'signature': text},
-                                   headers={'referer': 'https://www.acfun.cn/member/setting?tab=info'})
-        return api_req.json().get('result') == 0
-
-    @need_login
-    def signin(self):
-        api_req = self.client.get(source.apis['signIn'])
-        api_data = api_req.json()
-        print(api_data.get('msg'))
-        return api_data.get('result') == 0
 
     @need_login
     def acoin(self):
@@ -133,7 +146,30 @@ class Acer:
         return None
 
     @need_login
-    def like(self, obj_id: str, object_type: int):
+    def setup_signature(self, text: str):
+        api_req = self.client.post(source.apis['updateSignature'], data={'signature': text},
+                                   headers={'referer': 'https://www.acfun.cn/member/setting?tab=info'})
+        return api_req.json().get('result') == 0
+
+    @need_login
+    def signin(self):
+        if self.data.get("signIn") is True:
+            return True
+        api_req = self.client.get(source.apis['signIn'])
+        api_data = api_req.json()
+        return api_data.get('result') == 0
+
+    @need_login
+    def throw_banana(self, ac_num, rt: int, count: int):
+        api_req = self.client.post(source.apis['throw_banana'], data={
+            "resourceId": ac_num,
+            "count": 1 if 1 > count > 5 else count,
+            "resourceType": rt
+        }, headers={'referer': source.routes['index']})
+        return api_req.json().get('result') == 0
+
+    @need_login
+    def like_add(self, obj_id: str, object_type: int):
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
@@ -148,7 +184,7 @@ class Acer:
         return req.json().get('result') == 1
 
     @need_login
-    def like_cancel(self, obj_id: str, object_type: int):
+    def like_delete(self, obj_id: str, object_type: int):
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
@@ -163,17 +199,7 @@ class Acer:
         return req.json().get('result') == 1
 
     @need_login
-    def throw_banana(self, ac_num, rt: int, count: int):
-        api_req = self.client.post(source.apis['throw_banana'], data={
-            "resourceId": ac_num,
-            "count": 1 if 1 > count > 5 else count,
-            "resourceType": rt
-        }, headers={'referer': source.routes['index']})
-        return api_req.json().get('result') == 0
-
-    @need_login
     def history(self, page: int = 1, limit: int = 10, obj: bool = False):
-        # 观看历史
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
         api_req = self.client.post(source.apis['history'], data=form_data)
         api_data = api_req.json()
@@ -192,101 +218,10 @@ class Acer:
             return objs
         return histories
 
-    def _get_my_posted(self,
-                       rtype: int,
-                       page: int = 1,
-                       status: str = 'all',
-                       sortby: str = 'recently',
-                       keyword: [str, None] = None):
-        # 我的文章
-        status_list = {
-            'all': 0,  # 全部
-            'passed': 1,  # 已通过
-            'posting': 2,  # 发布中
-            'returned': 3,  # 已退回
-        }
-        sort_list = {
-            'viwed': 1,  # 最多阅读
-            'banana': 2,  # 最多香蕉
-            'recently': 3,  # 最新发布
-        }
-        form_data = {
-            "pcursor": 0 if (page - 1) < 0 else (page - 1),
-            "resourceType": rtype,  # 2 视频 3 文章
-            "authorId": self.uid,
-            "sortType": sort_list.get(sortby, 3),
-            "status": status_list.get(status, 0),
-            "keyword": keyword,
-        }
-        api_req = self.client.post(source.apis['member_posted'], data=form_data)
+    @need_login
+    def history_del_all(self, rtype: Literal["", "1,2", "3"] = ""):
+        # 空 全部;1,2 视频;3 文章
+        form_data = {"resourceTypes": rtype or ''}
+        api_req = self.client.post(source.apis['history'], data=form_data)
         api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return api_data.get('feed', [])
-        return None
-
-    @need_login
-    def my_articles(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
-        return self._get_my_posted(3, page, status, sortby, keyword)
-
-    @need_login
-    def my_videos(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
-        return self._get_my_posted(2, page, status, sortby, keyword)
-
-    @need_login
-    def my_danmaku(self):
-        # 弹幕管理
-        pass
-
-    @need_login
-    def data_center(self, days: int = 1):
-        api_req = self.client.post(source.apis['dataCenter_overview'], data={'days': 1 if days < 1 else days})
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return api_data
-        return None
-
-    @need_login
-    def data_center_detail(self, rtype: str, days: int = 1, sortby: str = 'viewCount'):
-        rtypes = {'video': 2, 'article': 3, 'live': None}
-        assert rtype in rtypes.keys()
-        sort_list = {
-            "viewCount": "阅读量",
-            "commentCount": "评论量",
-            "stowCount": "收藏量",
-            "shareCount": "分享量",
-            "bananaCount": "投蕉量"
-        }
-        assert sortby in sort_list
-        form_data = {'days': 1 if days < 1 else days}
-        if rtype == 'live':
-            api_req = self.client.post(source.apis['dataCenter_live'], data=form_data)
-        else:
-            form_data.update({"resourceType": rtypes.get(rtype), "orderBy": sortby})
-            api_req = self.client.post(source.apis['dataCenter_content'], data=form_data)
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return api_data
-        return None
-
-    @need_login
-    def get_live_config(self):
-        param = {
-            "kpn": "ACFUN_APP",
-            "kpf": "PC_WEB",
-            "userId": self.uid,
-            "subBiz": "mainApp"
-        }
-        param = self.update_token(param)
-        api_req = self.client.post(source.apis['live_obs_config'], params=param,
-                                   headers={'referer': f"{source.scheme}://{source.domains['user']}"})
-        return api_req.json()
-
-    @need_login
-    def post_article(self):
-        # 发文章
-        pass
-
-    @need_login
-    def post_video(self):
-        # 发视频
-        pass
+        return api_data.get('result') == 0

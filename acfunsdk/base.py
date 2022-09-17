@@ -56,152 +56,18 @@ class AcClient:
         return self._client.put(*args, **kwargs)
 
 
-class Acer:
-    debug = False
-    client = None
-    req_count = 0
-    BASE_PATH = os.getcwd()
-    DOWNLOAD_PATH = None
-
-    did = None
-    uid = None
-    username = None
-    is_logined = False
-    cookie = None
-    personal = dict()
-    tokens = dict()
+class AcFun:
     nav_data = dict()
     channel_data = source.ChannelList
 
-    message = None
-    moment = None
-    favourite = None
-
-    ac_index = AcIndex
-    ac_channel = AcChannel
-    ac_wen = AcWen
-    ac_rank = AcRank
-    ac_search = AcSearch
-    ac_up = AcUp
-    ac_article = AcArticle
-    ac_video = AcVideo
-    ac_bangumi = AcBangumi
-    ac_album = AcAlbum
-    ac_comment = AcComment
-    ac_link = AcLink
-    ac_image = AcImage
-
-    def __init__(self, debug: bool = False):
-        self.debug = debug
-        self.client = AcClient() if debug else httpx.Client(headers=source.header)
-        self.moment = AcMoment(self)
-        self._get_nav()
-        self.cdn_domain = self.client.post(source.apis['cdn_domain'], headers={
+    def __init__(self, acer):
+        self.acer = acer
+        self.cdn_domain = self.acer.client.post(source.apis['cdn_domain'], headers={
             "referer": source.routes['index']}).json().get('domain')
-        if self.check_online() is False:
-            raise AcExploded("阿禅爆炸 (今天A站挂了吗？)")
-        self._get_personal()
-
-    def __repr__(self):
-        show_name = self.username or ''
-        return f"Acer(#{self.uid or 'UNKNOWN'} {show_name})"
-
-    def AcIndex(self):
-        return AcIndex(self)
-
-    def AcBangumiList(self):
-        return AcBangumiList(self)
-
-    def AcDownload(self):
-        return AcDownload(self)
-
-    def AcChannel(self, cid):
-        return AcChannel(self, cid, self.nav_data.get(int(cid)))
-
-    def AcWen(self,
-              realmIds: [list, None] = None,
-              sortType: str = "createTime",
-              timeRange: str = "all",
-              onlyOriginal: bool = False,
-              limit: int = 10):
-        return AcWen(self, realmIds, sortType, timeRange, onlyOriginal, limit)
-
-    def AcRank(self,
-               cid: [int, None] = None,
-               sub_cid: [int, None] = None,
-               limit: int = 50,
-               date_range: [str, None] = None):
-        return AcRank(self, cid, sub_cid, limit, date_range)
-
-    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None):
-        return AcSearch(self, keyword, s_type)
-
-    def AcUp(self, updata):
-        return AcUp(self, updata)
-
-    def AcLiveUp(self, uid: int, raw=None):
-        return AcLiveUp(self, uid, raw)
-
-    def AcArticle(self, ac_num, data=None):
-        return AcArticle(self, ac_num, data)
-
-    def AcVideo(self, ac_num, data=None):
-        return AcVideo(self, ac_num, data)
-
-    def AcBangumi(self, aa_num):
-        return AcBangumi(self, aa_num)
-
-    def AcComment(self, ac_num, sourceType: int, referer: [str, None] = None):
-        return AcComment(self, ac_num, sourceType, referer)
-
-    def AcAlbum(self, ac_num):
-        return AcAlbum(self, ac_num)
-
-    def AcLive(self):
-        return AcLive(self)
-
-    def AcLink(self, url, title, container=None):
-        return AcLink(self, url, title, container)
-
-    def AcImage(self, src, url=None, name=None, container=None):
-        return AcImage(self, src, url, name, container)
-
-    def AcDoodle(self, doodle_id: str):
-        return AcDoodle(self, doodle_id)
-
-    def get(self, url_str: str, title=None):
-        for link_name in ['video', 'article', 'album', 'bangumi', 'up',
-                          'moment', 'live', 'share', 'bangumi_list', 'doodle']:
-            if url_str.startswith(source.routes[link_name]):
-                ends = url_str[len(source.routes[link_name]):]
-                if link_name == 'up':
-                    return self.AcUp({'userId': ends})
-                elif link_name == 'moment':
-                    return self.moment.get(ends)
-                elif link_name == 'share':
-                    return self.AcVideo(ends)
-                elif link_name == 'live':
-                    return self.AcLiveUp(int(ends))
-                elif link_name == 'bangumi_list':
-                    return self.AcBangumiList()
-                elif link_name == 'doodle':
-                    return self.AcDoodle(ends)
-                return getattr(self, f"Ac{link_name.capitalize()}")(ends)
-        channel_rex = re.compile(f"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
-        if channel_rex:
-            return self.AcChannel(channel_rex[0])
-        if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
-            if parse.urlsplit(url_str).netloc in self.cdn_domain:
-                return self.AcImage(url_str)
-            return self.AcLink(url_str, title)
-        return None
-
-    def check_online(self):
-        req = self.client.get(source.routes['ico'], timeout=10)
-        return req.status_code == 200
+        self._get_nav()
 
     def _get_nav(self):
-        data = self.client.get(source.apis['nav']).json().get("data", [])
+        data = self.acer.client.get(source.apis['nav']).json().get("data", [])
         for i in data:
             if i['cid'] != 0:
                 self.nav_data.update({str(i['cid']): {x: i[x] for x in i if x != 'children'}})
@@ -209,8 +75,156 @@ class Acer:
                 if j['cid'] != 0:
                     self.nav_data.update({str(j['cid']): {y: j[y] for y in j if y != 'children'}})
 
+    def search_user(self, keyword: str, page: int = 1):
+        api_req = self.acer.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
+        return api_req.json()
+
+    def username_check(self, name: str):
+        api_req = self.acer.client.post(source.apis['check_username'], data={'name': name})
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            return True
+        print(api_data)
+        return False
+
+    def AcIndex(self):
+        return AcIndex(self.acer)
+
+    def AcChannel(self, cid):
+        return AcChannel(self.acer, cid, self.nav_data.get(int(cid)))
+
+    def AcBangumiList(self):
+        return AcBangumiList(self.acer)
+
+    def AcWen(self,
+              realm_ids: [list, None] = None,
+              sort_type: str = "createTime",
+              time_range: str = "all",
+              only_original: bool = False,
+              limit: int = 10):
+        return AcWen(self.acer, realm_ids, sort_type, time_range, only_original, limit)
+
+    def AcRank(self,
+               cid: [int, None] = None,
+               sub_cid: [int, None] = None,
+               limit: int = 50,
+               date_range: [str, None] = None):
+        return AcRank(self.acer, cid, sub_cid, limit, date_range)
+
+    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None):
+        return AcSearch(self.acer, keyword, s_type)
+
+    def AcUp(self, updata):
+        return AcUp(self.acer, updata)
+
+    def AcLiveUp(self, uid, raw=None):
+        return AcLiveUp(self.acer, uid, raw)
+
+    def AcArticle(self, ac_num, data=None):
+        return AcArticle(self.acer, ac_num, data)
+
+    def AcVideo(self, ac_num, data=None):
+        return AcVideo(self.acer, ac_num, data)
+
+    def AcBangumi(self, aa_num):
+        return AcBangumi(self.acer, aa_num)
+
+    def AcAlbum(self, ac_num):
+        return AcAlbum(self.acer, ac_num)
+
+    def AcLive(self):
+        return AcLive(self.acer)
+
+    def AcDoodle(self, doodle_id: str):
+        return AcDoodle(self.acer, doodle_id)
+
+    def AcMomen(self):
+        return AcMoment(self.acer)
+
+    def get(self, url_str: str, title=None):
+        if url_str.startswith("http://"):
+            url_str = url_str.replace("http://", "https://")
+        if url_str == source.routes['index']:
+            return self.AcIndex()
+        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'rank',
+                          'moment', 'live', 'share', 'bangumi_list', 'doodle']:
+            if url_str.startswith(source.routes[link_name]):
+                ends = url_str[len(source.routes[link_name]):]
+                if link_name == 'bangumi_list':
+                    return self.AcBangumiList()
+                elif link_name == 'rank':
+                    q = parse.parse_qs(parse.urlsplit(url_str).query)
+                    kw = {
+                        'cid': None if q['pcid'] == "-1" else int(q['pcid'][0]),
+                        'sub_cid': None if q['cid'] == "-1" else int(q['cid'][0]),
+                        'date_range': q.get("range", ['DAY'])[0],
+                    }
+                    return self.AcRank(**kw)
+                elif link_name == 'album':
+                    return self.AcAlbum(ends)
+                elif link_name == 'up':
+                    return self.AcUp({'userId': ends})
+                elif link_name == 'article':
+                    return self.AcArticle(ends)
+                elif link_name == 'bangumi':
+                    return self.AcBangumi(ends)
+                elif link_name == 'video':
+                    return self.AcVideo(ends)
+                elif link_name == 'live':
+                    return self.AcLiveUp(ends)
+                elif link_name == 'moment':
+                    return self.AcMomen().get(ends)
+                elif link_name == 'share':
+                    return self.AcVideo(ends)
+                elif link_name == 'doodle':
+                    return self.AcDoodle(ends)
+                return getattr(self, f"Ac{link_name.capitalize()}")(ends)
+        channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
+        if channel_rex:
+            return self.AcChannel(channel_rex[0])
+        if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
+            if parse.urlsplit(url_str).netloc in self.cdn_domain:
+                return AcImage(self.acer, url_str)
+            return AcLink(self.acer, url_str, title)
+        return None
+
+
+class Acer:
+    BASE_PATH = os.getcwd()
+    client = None
+    config = dict()
+
+    is_logined = False
+    did = None
+    data = dict()
+    tokens = dict()
+
+    message = None
+    favourite = None
+
+    def __init__(self, **kwargs):
+        self.config = kwargs
+        self.client = AcClient()
+        self._get_personal()
+        self.acfun = AcFun(self)
+
+    def __repr__(self):
+        show_name = (" " + self.username) or ''
+        return f"Acer(#{self.uid or 'UNKNOWN'}{show_name})"
+
+    @property
+    def uid(self):
+        return self.data.get('userId')
+
+    @property
+    def username(self):
+        return self.data.get('userName')
+
+    def get(self, url_str: str, title=None):
+        return self.acfun.get(url_str, title)
+
     def _get_personal(self):
-        live_page_req = self.client.get(source.routes['live_index'])
+        live_page_req = self.client.get(source.routes['app'])
         assert live_page_req.status_code // 100 == 2
         self.did = live_page_req.cookies.get('_did')
         if self.is_logined:
@@ -225,9 +239,7 @@ class Acer:
             info_req = self.client.get(source.apis['personalInfo'])
             info_data = info_req.json()
             assert info_data.get('result') == 0
-            self.personal = info_data.get('info', {})
-            self.uid = self.personal.get('userId')
-            self.username = self.personal.get('userName')
+            self.data = info_data.get('info', {})
             self.message = AcMessage(self)
             self.favourite = MyFavourite(self)
         else:
@@ -238,7 +250,6 @@ class Acer:
                 "ssecurity": api_data.get("acSecurity", ''),
                 "visitor_st": api_data.get("acfun.api.visitor_st", ''),
             }
-            self.uid = api_data.get("userId")
 
     def update_token(self, data: dict):
         if self.is_logined:
@@ -247,14 +258,10 @@ class Acer:
             data.update({"acfun.api.visitor_st": self.tokens['visitor_st']})
         return data
 
-    def keys(self):
-        return self.personal.keys()
-
     def loading(self, username):
         cookie_data = open(f'{username}.cookies', 'rb').read()
         cookie = B64s(cookie_data, len(username)).b64decode()
-        self.cookie = json.loads(cookie.decode())
-        self.client.cookies.update(self.cookie)
+        self.client.cookies.update(json.loads(cookie.decode()))
         self.is_logined = True
         self._get_personal()
 
@@ -274,20 +281,17 @@ class Acer:
             cookie = B64s(cookie.encode(), len(username)).b64encode()
             with open(f'{username}.cookies', 'wb') as f:
                 f.write(cookie)
-        else:
-            print(result)
-            raise NotInCar('登录没成功，你到底是什么搞错了啊！')
         return self.is_logined
 
     def logout(self):
         self.client.get(source.apis['logout'])
         self.client = httpx.Client(headers=source.header)
         self.is_logined = False
-        self.personal = dict()
+        self.data = dict()
         return True
 
     @need_login
-    def update_signature(self, text: str):
+    def setup_signature(self, text: str):
         api_req = self.client.post(source.apis['updateSignature'], data={'signature': text},
                                    headers={'referer': 'https://www.acfun.cn/member/setting?tab=info'})
         return api_req.json().get('result') == 0
@@ -307,26 +311,14 @@ class Acer:
             return data.get('data')
         return None
 
-    def search_user(self, keyword: str, page: int = 1):
-        api_req = self.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
-        return api_req.json()
-
-    def username_check(self, name: str):
-        api_req = self.client.post(source.apis['check_username'], data={'name': name})
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            return True
-        print(api_data)
-        return False
-
     @need_login
-    def like(self, obj_id: str, objectType: int):
+    def like(self, obj_id: str, object_type: int):
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "subBiz": "mainApp",
             "interactType": 1,
-            "objectType": objectType,
+            "objectType": object_type,
             "objectId": obj_id,
             "userId": self.uid,
         }
@@ -335,13 +327,13 @@ class Acer:
         return req.json().get('result') == 1
 
     @need_login
-    def like_cancel(self, obj_id: str, objectType: int):
+    def like_cancel(self, obj_id: str, object_type: int):
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "subBiz": "mainApp",
             "interactType": 1,
-            "objectType": objectType,
+            "objectType": object_type,
             "objectId": obj_id,
             "userId": self.uid,
         }
@@ -416,11 +408,11 @@ class Acer:
             objs = list()
             for x in histories:
                 if x.get('resourceType') == 1:
-                    objs.append(self.AcBangumi(x.get('resourceId')))
+                    objs.append(self.acfun.AcBangumi(x.get('resourceId')))
                 elif x.get('resourceType') == 2:
-                    objs.append(self.AcVideo(x.get('resourceId'), x))
+                    objs.append(self.acfun.AcVideo(x.get('resourceId'), x))
                 elif x.get('resourceType') == 3:
-                    objs.append(self.AcArticle(x.get('resourceId'), x))
+                    objs.append(self.acfun.AcArticle(x.get('resourceId'), x))
             return objs
         return histories
 
@@ -434,7 +426,7 @@ class Acer:
             return None
         fans = api_data.get('friendList', [])
         if obj is True:
-            return [self.AcUp(x) for x in fans]
+            return [self.acfun.AcUp(x) for x in fans]
         return fans
 
     def _get_my_posted(self,
@@ -545,17 +537,17 @@ class MyFavourite:
         self.acer = acer
         self.video_groups()
 
-    def add(self, obj_id: str, rType: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rType}
-        if fids is not None or rType == 9:
+    def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
+        form_data = {"resourceId": obj_id, "resourceType": rtype}
+        if fids is not None or rtype == 9:
             form_data['addFolderIds'] = str(fids or self.default_fid)
         req = self.acer.client.post(source.apis['favorite_add'], data=form_data,
                                     headers={"referer": source.routes['index']})
         return req.json().get('result') == 0
 
-    def cancel(self, obj_id: str, rType: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rType}
-        if fids is not None or rType == 9:
+    def cancel(self, obj_id: str, rtype: int, fids: [str, None] = None):
+        form_data = {"resourceId": obj_id, "resourceType": rtype}
+        if fids is not None or rtype == 9:
             form_data['delFolderIds'] = fids or self.default_fid
         req = self.acer.client.post(source.apis['favorite_remove'], data=form_data,
                                     headers={"referer": source.routes['index']})
@@ -619,4 +611,3 @@ class MyFavourite:
         if data.get('result') == 0:
             return data.get('favoriteList', [])
         return None
-

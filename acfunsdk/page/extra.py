@@ -1,6 +1,8 @@
 # coding=utf-8
 import httpx
-from acfunsdk.source import apis
+from bs4 import BeautifulSoup as Bs
+from acfunsdk.source import scheme, routes, apis
+from .utils import url_complete
 
 __author__ = 'dolacmeo'
 
@@ -14,6 +16,36 @@ AcFun_danmaku_bg = [
     "https://ali-imgs.acfun.cn/kos/nlav10360/static/packageDownload/static/img/danmu-1.13b8f4cb7a790fdcfe19.png",
     "https://ali-imgs.acfun.cn/kos/nlav10360/static/packageDownload/static/img/danmu-2.7a0c666031b39fd1fa65.png",
 ]
+
+
+class AcLink:
+
+    def __init__(self, acer, url, title, container=None):
+        self.acer = acer
+        self.title = title
+        self.url = url_complete(url)
+        self.container = container
+
+    def __repr__(self):
+        show_link = f" >> {self.url}" if self.url else ""
+        return f"AcLink({self.title}{show_link})"
+
+
+class AcImage:
+
+    def __init__(self, acer, src, url=None, name=None, container=None):
+        self.acer = acer
+        self.src = url_complete(src)
+        self.name = name
+        self.url = url_complete(url)
+        self.container = container
+
+    def __repr__(self):
+        show_link = f" >> {self.url}" if self.url else ""
+        return f"AcImg({self.name}[{self.src}]{show_link})"
+
+    def link(self):
+        return self.acer.get(self.url)
 
 
 class AcHelp:
@@ -173,3 +205,69 @@ class AcAcademy:
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
+
+
+class AcDownload:
+    _app_page_raw = None
+
+    def __init__(self, acer):
+        self.acer = acer
+
+    def _app_page_obj(self):
+        if self._app_page_raw is None:
+            page_req = self.acer.client.get(routes['app'])
+            self._app_page_raw = Bs(page_req.text, 'lxml')
+        return self._app_page_raw
+
+    def emots(self):
+        urls = list()
+        emot_page = self.acer.client.get(routes['emot'])
+        emot_obj = Bs(emot_page.text, 'lxml')
+        for item in emot_obj.select('.emot-download'):
+            title = item.select_one(".emot-name").text
+            url = item.select_one("a.download-btn").attrs['href']
+            details = item.select_one(".emot-detail-top")
+            images = list()
+            if details:
+                for img in details.select('img'):
+                    images.append(f"{scheme}:{img.attrs['src']}")
+            urls.append({'title': title, 'url': f"{scheme}:{url}", 'details': images})
+        return urls
+
+    def Android_apk(self):
+        api_req = self.acer.client.get(apis['app_download'])
+        api_data = api_req.json()
+        return api_data.get('url')
+
+    def iOS_link(self):
+        ios_link = self._app_page_obj().select_one(".app-info .download a.ios")
+        return ios_link.attrs['href']
+
+    def LiveMate_win(self):
+        win_link = self._app_page_obj().select_one('.zbbl-info .download a.win')
+        return win_link.attrs['href']
+
+    def VirtualView_win(self):
+        win_link = self._app_page_obj().select_one('.mbzs-info .download a.win')
+        psd_link = self._app_page_obj().select_one('.mbzs-info .dis a.download-psd')
+        return win_link.attrs['href'], psd_link.attrs['href']
+
+    def FaceCatcher_win(self):
+        api_res = self.acer.client.post(apis['face_catcher'], headers={
+            "referer": "https://www.acfun.cn/face-catcher",
+            "origin": "https://www.acfun.cn"
+        })
+        api_data = api_res.json()
+        return api_data['downloadUrl'], api_data['psdUrl']
+
+    def emot_zips(self):
+        urls = list()
+        api_res = self.acer.client.post(apis['emot'], headers={
+            "referer": "https://www.acfun.cn/info/",
+            "origin": "https://www.acfun.cn"
+        })
+        api_data = api_res.json()
+        for em in api_data['emotionPackageList']:
+            if em['downloadUrl']:
+                urls.append({'url': em['downloadUrl'], 'filename': f"{em['name']}.zip"})
+        return urls

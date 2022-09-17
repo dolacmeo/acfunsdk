@@ -4,7 +4,8 @@ import html
 import json
 import textwrap
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes
+from .comment import AcComment
+from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import warp_mix_chars, get_page_pagelets, match1
 
 __author__ = 'dolacmeo'
@@ -78,7 +79,7 @@ class AcArticle:
 
         def html2console(data, width=80):
             lines = list()
-            page_raw = re.sub('\[emot=acfun,\d+/]', '', data.get('content', ''))
+            page_raw = re.sub(r'\[emot=acfun,\d+/]', '', data.get('content', ''))
             page_obj = Bs(html.unescape(page_raw), 'lxml')
             for tag in page_obj.select('p,hr'):
                 image = tag.select_one('img')
@@ -117,7 +118,7 @@ class AcArticle:
     def comment(self):
         if len(self.article_data.keys()) == 0:
             self.loading()
-        return self.acer.AcComment(self.ac_num, 1, self.referer)
+        return AcComment(self.acer, self.ac_num, 1, self.referer)
 
     def like(self):
         return self.acer.like(self.ac_num, 3)
@@ -133,3 +134,55 @@ class AcArticle:
 
     def banana(self, count: int):
         return self.acer.throw_banana(self.ac_num, 3, count)
+
+
+class AcWen:
+    realmIds = None
+    cursor = "first_page"
+    sortType = "createTime"
+    onlyOriginal = False
+    timeRange = "all"
+    limit = 10
+    article_data = list()
+
+    def __init__(self, acer,
+                 realmIds: [list, None] = None,
+                 sortType: str = "createTime",
+                 timeRange: str = "all",
+                 onlyOriginal: bool = False,
+                 limit: int = 10):
+        self.acer = acer
+        self.realmIds = realmIds
+        assert sortType in ['createTime', 'lastCommentTime', 'hotScore']
+        self.sortType = sortType
+        assert timeRange in ['all', 'oneDay', 'threeDay', 'oneWeek', 'oneMonth']
+        self.timeRange = timeRange
+        self.onlyOriginal = onlyOriginal
+        self.limit = limit
+
+    def feed(self, obj: bool = True):
+        if self.cursor == 'no_more':
+            return None
+        form_data = {
+            "cursor": self.cursor,
+            "sortType": self.sortType,
+            "onlyOriginal": self.onlyOriginal,
+            "timeRange": self.timeRange,
+            "limit": self.limit,
+        }
+        if isinstance(self.realmIds, list):
+            form_data['realmId'] = self.realmIds
+        api_req = self.acer.client.post(apis['article_feed'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') == 0:
+            self.cursor = api_data.get('cursor')
+            new_data = api_data.get('data', [])
+            self.article_data.extend(new_data)
+            if obj is True:
+                return [AcArticle(self.acer, x['articleId'], x) for x in new_data]
+            return new_data
+        return None
+
+    def clean_cache(self):
+        self.article_data = list()
+        return True

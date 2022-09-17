@@ -1,19 +1,14 @@
 # coding=utf-8
 import json
-import re
-from bs4 import BeautifulSoup as Bs
+from .member import AcUp
+from .video import AcVideo
+from .comment import AcComment
+from .article import AcArticle
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import thin_string, match1
+from acfunsdk.page.utils import thin_string, limit_string, match1
 from acfunsdk.exceptions import *
 
 __author__ = 'dolacmeo'
-
-
-def limit_string(s, n):
-    s = s[:n]
-    if len(s) == n:
-        s = s[:-2] + "..."
-    return s
 
 
 class Moment:
@@ -27,9 +22,9 @@ class Moment:
         self.acer = acer
         self.raw_data = raw_data
         if self.rtype == 3:
-            self.linked = self.acer.AcArticle(self.rid)
+            self.linked = AcArticle(self.acer, self.rid)
         elif self.rtype == 2:
-            self.linked = self.acer.AcVideo(self.rid)
+            self.linked = AcVideo(self.acer, self.rid)
         elif self.rtype == 10:
             rsource = self.raw_data.get('repostSource')
             if rsource is not None:
@@ -73,10 +68,10 @@ class Moment:
         return f"AcMoment()"
 
     def up(self):
-        return self.acer.AcUp(self.raw_data.get('user'))
+        return AcUp(self.acer, self.raw_data.get('user'))
 
     def comment(self):
-        return self.acer.AcComment(self.rid, self.rtype, self)
+        return AcComment(self.acer, self.rid, self.rtype, self)
 
     @need_login
     def banana(self, count: int):

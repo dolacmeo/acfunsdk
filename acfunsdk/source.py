@@ -4,6 +4,7 @@
 __author__ = 'dolacmeo'
 
 header = {
+    "Referer": "https://www.acfun.cn/",
     "accept-encoding": "gzip, deflate, br",
     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -31,6 +32,7 @@ domains = {
 routes = {
     "index": f"{scheme}://{domains['main']}",
     "bangumi_list": f"{scheme}://{domains['main']}/bangumilist",
+    "rank": f"{scheme}://{domains['main']}/rank/list/",
     "ico": f"{scheme}://{domains['main']}/favicon.ico",
     "video": f"{scheme}://{domains['main']}/v/ac",
     "article": f"{scheme}://{domains['main']}/a/ac",
@@ -49,6 +51,7 @@ routes = {
 }
 
 apis = {
+    'app': f"{scheme}://{domains['mobile']}/app/download",
     'cdn_domain': f"{scheme}://{domains['main']}/rest/pc-direct/image/cdnDomain",
     'check_username': f"{scheme}://{domains['main']}/rest/pc-direct/user/checkNameUnique",
     'search_user': f"{scheme}://{domains['main']}/rest/pc-direct/search/user",

@@ -1,10 +1,9 @@
 # coding=utf-8
-import os
 import json
 from bs4 import BeautifulSoup as Bs
+from .danmaku import AcDanmaku
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import ms2time, \
-    get_channel_info, get_page_pagelets, AcDanmaku, match1
+from acfunsdk.page.utils import ms2time, get_channel_info, get_page_pagelets, match1
 
 __author__ = 'dolacmeo'
 
@@ -108,25 +107,15 @@ class AcVideo:
         self.loading()
         return True
 
-    def get_ksPlayJson(self, videoId: [str, int, None] = None):
+    def get_ksPlayJson(self, video_id: [str, int, None] = None):
         param = {"resourceId": self.ac_num, "resourceType": 2}
-        if videoId is not None:
-            param['videoId'] = videoId
+        if video_id is not None:
+            param['videoId'] = video_id
         api_req = self.acer.client.get(apis['video_ksplay'], params=param)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
         return api_data.get("playInfo")
-
-    # def download(self, num=1, quality=None):
-    #     self.set_video(num)
-    #     video_download_path = os.path.join(self.acer.BASE_PATH, f"ac{self.ac_num}")
-    #     saved = acfun_video_downloader(self.acer.client, self.video_data, video_download_path, quality)
-    #     if saved is False:
-    #         return False
-    #     with open(os.path.join(video_download_path, f"ac{self.ac_num}.json"), 'w') as jfile:
-    #         json.dump(self.video_data, jfile)
-    #     return True
 
     def up(self):
         return self.acer.AcUp(self.video_data.get('user', {}))

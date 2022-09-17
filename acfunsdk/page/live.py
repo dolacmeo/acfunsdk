@@ -3,14 +3,8 @@ import os
 import time
 import json
 import subprocess
-from urllib import parse
-from acfunsdk.page.utils import sizeof_fmt
+from .member import AcUp
 from acfunsdk.source import scheme, domains, routes, apis
-from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
-from rich.align import Align
-from rich.live import Live
 
 __author__ = 'dolacmeo'
 
@@ -32,7 +26,7 @@ class AcLive:
         else:
             token_req = self.acer.client.post(apis['token_visitor'], data={'sid': "acfun.api.visitor"})
             token = token_req.json()
-        print(token)
+        return token
 
     def _get_list(self):
         if self.last_update is None or time.time() - self.last_update >= 60:
@@ -68,7 +62,7 @@ class AcLiveUp:
         self.raw = raw
         if self.raw is None:
             self.infos()
-        self.AcUp = self.acer.AcUp({"userId": self.uid})
+        self.AcUp = AcUp(self.acer, {"userId": self.uid})
         self.media_data = self.media_list()
         self.is_404 = self.AcUp.is_404
 

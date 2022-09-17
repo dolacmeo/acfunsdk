@@ -2,7 +2,13 @@
 import json
 import time
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
+from .rank import AcRank
+from .member import AcUp
+from .video import AcVideo
+from .bangumi import AcBangumi
+from .article import AcArticle
+from .extra import AcImage
+from acfunsdk.source import routes, apis, ChannelList
 from acfunsdk.page.utils import match1
 
 __author__ = 'dolacmeo'
@@ -41,13 +47,13 @@ class BlockContent:
         data_list = list()
         for v in self.content_data.get('webContents'):
             if v['mediaType'] == 0:
-                data_list.append(self.acer.AcVideo(v['mediaId'], v))
+                data_list.append(AcVideo(self.acer, v['mediaId'], v))
             elif v['mediaType'] == 1:
-                data_list.append(self.acer.AcArticle(v['mediaId'], v))
+                data_list.append(AcArticle(self.acer, v['mediaId'], v))
             elif v['mediaType'] == 4:
-                data_list.append(self.acer.AcUp(v))
+                data_list.append(AcUp(self.acer, v))
             elif v['mediaType'] == 8:
-                data_list.append(self.acer.AcImage(v['image'], v['link'], v['title'], self))
+                data_list.append(AcImage(self.acer, v['image'], v['link'], v['title'], self))
         return data_list
 
 
@@ -74,9 +80,9 @@ class ChannelBlock:
 
 
 class AcChannel:
+    channel_data = ChannelList
     nav_data = dict()
     channel_obj = None
-    channel_data = None
     is_main = False
     parent_data = None
     sub_data = None
@@ -91,10 +97,10 @@ class AcChannel:
 
     @property
     def _main_channels(self):
-        return {x["channelId"]: x for x in self.acer.channel_data}
+        return {x["channelId"]: x for x in self.channel_data}
 
     def _get_channel_info(self):
-        for channel in self.acer.channel_data:
+        for channel in self.channel_data:
             if self.cid == channel['channelId']:
                 self.parent_data = channel
                 self.info = self.parent_data
@@ -149,7 +155,7 @@ class AcChannel:
         else:
             cid = int(self.parent_data['channelId'])
             sub_cid = int(self.cid)
-        return self.acer.AcRank(cid, sub_cid, limit, date_range=date_range)
+        return AcRank(self.acer, cid, sub_cid, limit, date_range=date_range)
 
     def videos(self,
                page: int = 1,
@@ -216,63 +222,7 @@ class AcChannel:
                 }
             }
             if obj is True:
-                v_datas.append(self.acer.AcVideo(item_data['ac_num'], item_data))
+                v_datas.append(AcVideo(self.acer, item_data['ac_num'], item_data))
             else:
                 v_datas.append(item_data)
         return v_datas
-
-
-class AcWen:
-    realmIds = None
-    cursor = "first_page"
-    sortType = "createTime"
-    onlyOriginal = False
-    timeRange = "all"
-    limit = 10
-    article_data = list()
-
-    def __init__(self, acer,
-                 realmIds: [list, None] = None,
-                 sortType: str = "createTime",
-                 timeRange: str = "all",
-                 onlyOriginal: bool = False,
-                 limit: int = 10):
-        self.acer = acer
-        self.realmIds = realmIds
-        assert sortType in ['createTime', 'lastCommentTime', 'hotScore']
-        self.sortType = sortType
-        assert timeRange in ['all', 'oneDay', 'threeDay', 'oneWeek', 'oneMonth']
-        self.timeRange = timeRange
-        self.onlyOriginal = onlyOriginal
-        self.limit = limit
-
-    def feed(self, obj: bool = True):
-        if self.cursor == 'no_more':
-            return None
-        form_data = {
-            "cursor": self.cursor,
-            "sortType": self.sortType,
-            "onlyOriginal": self.onlyOriginal,
-            "timeRange": self.timeRange,
-            "limit": self.limit,
-        }
-        if isinstance(self.realmIds, list):
-            form_data['realmId'] = self.realmIds
-        api_req = self.acer.client.post(apis['article_feed'], data=form_data)
-        api_data = api_req.json()
-        if api_data.get('result') == 0:
-            self.cursor = api_data.get('cursor')
-            new_data = api_data.get('data', [])
-            self.article_data.extend(new_data)
-            if obj is True:
-                return [self.acer.AcArticle(x['articleId'], x) for x in new_data]
-            return new_data
-        return None
-
-    def clean_cache(self):
-        self.article_data = list()
-        return True
-
-
-
-

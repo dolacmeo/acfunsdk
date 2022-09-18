@@ -21,6 +21,10 @@ class AcRank:
         self.date_range = date_range if date_range in self.date_ranges else self.date_ranges[0]
         self.get_data()
 
+    def __repr__(self):
+        this_id = self.sub_cid or self.cid or "ALL"
+        return f"AcRank(#{this_id} {self.date_range})"
+
     def get_data(self):
         param = {
             "channelId": self.cid,
@@ -31,6 +35,9 @@ class AcRank:
         api_req = self.acer.client.get(apis['rank_list'], params=param)
         if api_req.json().get('result') == 0:
             self.rank_data = api_req.json().get('rankList')
+
+    def channel(self):
+        return self.acer.acfun.AcChannel(self.sub_cid or self.cid)
 
     def contents(self):
         if self.rank_data is None:

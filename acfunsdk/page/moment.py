@@ -2,29 +2,33 @@
 import json
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import thin_string, limit_string, match1
-from acfunsdk.exceptions import *
 
 __author__ = 'dolacmeo'
 
 
-class Moment:
+class AcMoment:
+    resource_type = 10
     raw_data = dict()
     like_count = 0
     banana_count = 0
     comment_count = 0
     linked = None
 
-    def __init__(self, acer, raw_data: dict):
+    def __init__(self, acer, am_num: [int, str]):
         self.acer = acer
-        self.raw_data = raw_data
-        if self.rtype == 3:
-            self.linked = self.acer.acfun.AcArticle(self.rid)
-        elif self.rtype == 2:
-            self.linked = self.acer.acfun.AcVideo(self.rid)
+        self.am_num = int(am_num)
+        self.loading()
+        if self.rtype in range(1, 5):
+            self.linked = self.acer.acfun.resource(self.rtype, self.rid)
         elif self.rtype == 10:
             rsource = self.raw_data.get('repostSource')
             if rsource is not None:
-                self.linked = Moment(self.acer, self.raw_data.get('repostSource'))
+                self.linked = AcMoment(self.acer, self.raw_data.get('repostSource'))
+
+    def loading(self):
+        page_req = self.acer.client.get(f"{routes['moment']}{self.am_num}")
+        json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
+        self.raw_data = json.loads(json_text).get('moment', {}).get('moment')
 
     @property
     def tag_rtype(self):
@@ -63,18 +67,22 @@ class Moment:
             return f"AcMoment(@{name}: {img_count}{text}{link})".encode(errors='replace').decode()
         return f"AcMoment()"
 
+    @property
+    def referer(self):
+        return f"{routes['moment']}{self.am_num}"
+
     def up(self):
-        return self.acer.acfun.AcUp(self.raw_data.get('user'))
+        user = self.raw_data.get('user')
+        return self.acer.acfun.AcUp(user.get("id"))
 
     def comment(self):
-        return self.acer.acfun.AcComment(self.rid, self.rtype, self)
+        return self.acer.acfun.AcComment(self.resource_type, self.rid)
 
-    @need_login
     def banana(self, count: int):
-        return self.acer.throw_banana(self.rid, self.rtype, count)
+        return self.acer.throw_banana(self.rid, self.resource_type, count)
 
 
-class AcMoment:
+class MyMoment:
     cursor = "0"
     limit = 10
     moment_data = list()
@@ -89,7 +97,6 @@ class AcMoment:
     def __init__(self, acer):
         self.acer = acer
 
-    @need_login
     def set_tab(self, tab: str = 'all'):
         new = self.rts.get(tab, 0)
         if new != self.resourceTypes:
@@ -99,7 +106,6 @@ class AcMoment:
             return True
         return False
 
-    @need_login
     def feed(self, limit: int = 10, refresh: bool = False):
         if refresh is True:
             self.cursor = "0"
@@ -115,11 +121,4 @@ class AcMoment:
         if api_data.get('result') == 0:
             self.cursor = api_data.get('pcursor', self.cursor)
             self.moment_data.extend(api_data.get('feedList', []))
-        return [Moment(self.acer, x) for x in api_data.get('feedList', [])]
-
-    def get(self, am_num: [str, int]):
-        page_req = self.acer.client.get(f"{routes['moment']}{am_num}")
-        json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
-        page_data = json.loads(json_text).get('moment', {}).get('moment')
-        return Moment(self.acer, page_data)
-
+        return [AcMoment(self.acer, x) for x in api_data.get('feedList', [])]

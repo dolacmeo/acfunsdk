@@ -1,5 +1,6 @@
 # coding=utf-8
 import re
+import httpx
 from urllib import parse
 from acfunsdk import source
 from .index import AcIndex
@@ -11,7 +12,7 @@ from .article import AcArticle, AcWen
 from .bangumi import AcBangumi, AcBangumiList
 from .video import AcVideo
 from .album import AcAlbum
-from .moment import AcMoment
+from .moment import AcMoment, MyMoment
 from .live import AcLive, AcLiveUp
 from .doodle import AcDoodle
 from .comment import AcComment
@@ -30,6 +31,7 @@ class AcFun:
     AcInfo = AcInfo
     AcReport = AcReport
     AcAcademy = AcAcademy
+    AcHelp = AcHelp
     resource_type_map = {
         "1": "AcBangumi",  # 番剧
         "2": "AcVideo",  # 视频稿件
@@ -38,7 +40,18 @@ class AcFun:
         "5": "AcUp",  # 用户
         "6": "AcComment",  # 评论
         # "8": "私信",
-        "10": "AcMomen",  # 动态
+        "10": "AcMoment",  # 动态
+    }
+    routes_type_map = {
+        "bangumi": "AcBangumi",  # 番剧
+        "video": "AcVideo",  # 视频稿件
+        "share": "AcVideo",  # 视频稿件
+        "article": "AcArticle",  # 文章稿件
+        "album": "AcAlbum",  # 合辑
+        "up": "AcUp",  # 用户
+        "live": "AcLiveUp",  # 用户直播
+        "moment": "AcMoment",  # 用户动态
+        "doodle": "AcDoodle",  # 涂鸦页面
     }
 
     def __init__(self, acer):
@@ -65,7 +78,7 @@ class AcFun:
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return True
-        print(api_data)
+        print(api_data['error_msg'])
         return False
 
     def AcIndex(self):
@@ -119,20 +132,23 @@ class AcFun:
     def AcDoodle(self, doodle_id: str):
         return AcDoodle(self.acer, doodle_id)
 
-    def AcMomen(self):
-        return AcMoment(self.acer)
+    def AcMoment(self, am_num):
+        return AcMoment(self.acer, am_num)
 
     def AcDownload(self):
         return AcDownload(self.acer)
 
-    def AcHelp(self):
-        return AcHelp()
-
-    def AcComment(self, sid: [str, int], stype: int = 3, referer: [str, None] = None):
-        return AcComment(self.acer, sid, stype, referer)
+    def AcComment(self, rtype: int, rid: int):
+        return AcComment(self.acer, rtype, rid)
 
     def AcDanmaku(self, video_data: dict):
         return AcDanmaku(self.acer, video_data)
+
+    def AcImage(self, src, url=None, name=None):
+        return AcImage(self.acer, src, url, name)
+
+    def AcLink(self, url, title=None):
+        return AcLink(self.acer, url, title)
 
     def resource(self, rtype: int, rid: int):
         assert str(rtype) in self.resource_type_map.keys()
@@ -141,10 +157,15 @@ class AcFun:
     def get(self, url_str: str, title=None):
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")
-        if url_str == source.routes['index']:
+        if url_str in [source.routes['index'], source.routes['index'] + "/"]:
             return self.AcIndex()
-        for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'rank',
-                          'moment', 'live', 'share', 'bangumi_list', 'doodle']:
+        elif url_str in [source.routes['live_index'], source.routes['live_index'] + "/"]:
+            return self.AcLive()
+        for link_name in self.routes_type_map.keys():
+            if url_str.startswith(source.routes[link_name]):
+                ends = url_str[len(source.routes[link_name]):]
+                return getattr(self, self.routes_type_map[link_name])(ends)
+        for link_name in ['rank', 'bangumi_list']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
                 if link_name == 'bangumi_list':
@@ -152,33 +173,21 @@ class AcFun:
                 elif link_name == 'rank':
                     q = parse.parse_qs(parse.urlsplit(url_str).query)
                     kw = {
-                        'cid': None if q['pcid'] == "-1" else int(q['pcid'][0]),
-                        'sub_cid': None if q['cid'] == "-1" else int(q['cid'][0]),
+                        'cid': None if q.get('pcid', "-1") == "-1" else int(q['pcid'][0]),
+                        'sub_cid': None if q.get('cid', "-1") == "-1" else int(q['cid'][0]),
                         'date_range': q.get("range", ['DAY'])[0],
                     }
                     return self.AcRank(**kw)
-                elif link_name == 'album':
-                    return self.AcAlbum(ends)
-                elif link_name == 'up':
-                    return self.AcUp(ends)
-                elif link_name == 'article':
-                    return self.AcArticle(ends)
-                elif link_name == 'bangumi':
-                    return self.AcBangumi(ends)
-                elif link_name == 'video':
-                    return self.AcVideo(ends)
-                elif link_name == 'live':
-                    return self.AcLiveUp(ends)
-                elif link_name == 'moment':
-                    return self.AcMomen().get(ends)
-                elif link_name == 'share':
-                    return self.AcVideo(ends)
-                elif link_name == 'doodle':
-                    return self.AcDoodle(ends)
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
         channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
         if channel_rex:
             return self.AcChannel(channel_rex[0])
+        if "//hd.acfun.cn/s/" in url_str:
+            req3xx = httpx.get(url_str)
+            req_redirect = parse.urlsplit(req3xx.headers.get("Location", ""))
+            w_link = parse.parse_qs(req_redirect.query).get("wLink", [])
+            if len(w_link):
+                return self.get(w_link[0])
         if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
             if parse.urlsplit(url_str).netloc in self.cdn_domain:
                 return AcImage(self.acer, url_str)

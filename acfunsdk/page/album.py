@@ -36,6 +36,9 @@ class AcAlbum:
         self.page_data = json.loads(json_text)
         self._get_all_content()
 
+    def up(self):
+        return self.acer.acfun.AcUp(self.info.get("authorId"))
+
     @property
     def info(self):
         return self.page_data.get('album', {}).get('albumInfo', {})

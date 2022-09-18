@@ -41,13 +41,15 @@ class BlockContent:
         data_list = list()
         for v in self.content_data.get('webContents'):
             if v['mediaType'] == 0:
-                data_list.append(self.acer.acfun.AcVideo(v['mediaId'], v))
+                data_list.append(self.acer.acfun.AcVideo(v['mediaId']))
             elif v['mediaType'] == 1:
-                data_list.append(self.acer.acfun.AcArticle(v['mediaId'], v))
+                data_list.append(self.acer.acfun.AcArticle(v['mediaId']))
+            elif v['mediaType'] == 2:
+                data_list.append(self.acer.acfun.AcBangumi(v['mediaId']))
             elif v['mediaType'] == 4:
                 data_list.append(self.acer.acfun.AcUp(v))
             elif v['mediaType'] == 8:
-                data_list.append(self.acer.acfun.AcImage(v['image'], v['link'], v['title'], self))
+                data_list.append(self.acer.acfun.AcImage(v['image'], v['link'], v['title']))
         return data_list
 
 

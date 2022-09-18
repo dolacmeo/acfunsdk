@@ -6,6 +6,13 @@ from acfunsdk.exceptions import *
 
 
 class AcComment:
+    resource_type_map = {
+        "1": 6,  # 番剧
+        "2": 3,  # 视频稿件
+        "3": 1,  # 文章稿件
+        "10": 4,  # 动态
+    }
+
     sourceId = None
     hot_comments = list()
     root_comments = list()
@@ -13,14 +20,18 @@ class AcComment:
     commentIds = list()
     commentsMap = dict()
 
-    def __init__(self, acer, sid: [str, int], stype: int = 3, referer: [str, None] = None):
+    def __init__(self, acer, rtype: [str, int], rid: [str, int]):
         self.acer = acer
-        self.sourceId = str(sid)
-        self.sourceType = stype
-        self.referer = referer or f"{routes['index']}"
+        self.sourceId = str(rid)
+        self.sourceType = self.resource_type_map[str(rtype)]
+        self.main = self.acer.acfun.resource(rtype, rid)
 
     def __repr__(self):
         return f"AcComment([ac{self.sourceId}] Σ{len(self.root_comments)})"
+
+    @property
+    def referer(self):
+        return self.main.referer
 
     def _get_data(self, page: int = 1, api_name: str = 'comment'):
         assert api_name in ['comment', 'comment_floor']
@@ -163,6 +174,9 @@ class Comment:
 
     def cdata(self, name):
         return self.data.get(name)
+
+    def up(self):
+        return self.acer.acfun.AcUp(self.cdata('userId'))
 
     def __repr__(self):
         content = self.data.get('content', '').replace('\r\n', '↲  ').replace('\n', '↲  ')

@@ -16,16 +16,8 @@ class AcLive:
         self.acer = acer
         self._get_list()
 
-    def login(self):
-        index_req = self.acer.client.get(routes['live_index'])
-        _did = index_req.cookies.get('_did')
-        if self.acer.is_logined:
-            token_req = self.acer.client.post(apis['token'], data={'sid': "acfun.midground.api"})
-            token = token_req.json()
-        else:
-            token_req = self.acer.client.post(apis['token_visitor'], data={'sid': "acfun.api.visitor"})
-            token = token_req.json()
-        return token
+    def __repr__(self):
+        return f"AcLive(直播 - AcFun弹幕视频网)"
 
     def _get_list(self):
         if self.last_update is None or time.time() - self.last_update >= 60:
@@ -72,6 +64,9 @@ class AcLiveUp:
     @property
     def username(self):
         return self.raw.get('user', {}).get('name', '')
+
+    def up(self):
+        return self.acer.acfun.AcUp(self.uid)
 
     def __repr__(self):
         return f"AcLive(#{self.uid} {self.title} @{self.username})".encode(errors='replace').decode()

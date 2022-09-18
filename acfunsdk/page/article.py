@@ -11,6 +11,7 @@ __author__ = 'dolacmeo'
 
 
 class AcArticle:
+    resource_type = 3
     ac_num = None
     page_obj = None
     page_pagelets = []
@@ -22,7 +23,6 @@ class AcArticle:
         if isinstance(ac_num, str) and ac_num.startswith('ac'):
             ac_num = ac_num[2:]
         self.ac_num = str(ac_num)
-        self.referer = f"{routes['article']}{ac_num}"
         self.acer = acer
         if isinstance(article_data, dict):
             self.article_data = article_data
@@ -37,8 +37,8 @@ class AcArticle:
         return f"AcArticle([ac{self.ac_num}]{title}{user_txt})".encode(errors='replace').decode()
 
     @property
-    def share_url(self):
-        return self.referer
+    def referer(self):
+        return f"{routes['article']}{self.ac_num}"
 
     def loading(self):
         req = self.acer.client.get(routes['article'] + self.ac_num)
@@ -112,27 +112,28 @@ class AcArticle:
     def up(self):
         if len(self.article_data.keys()) == 0:
             self.loading()
-        return self.acer.ac_up(self.article_data.get('user', {}), self.acer)
+        user = self.article_data.get('user', {})
+        return self.acer.acfun.AcUp(user.get('id'))
 
     def comment(self):
         if len(self.article_data.keys()) == 0:
             self.loading()
-        return self.acer.acfun.AcComment(self.ac_num, 1, self.referer)
+        return self.acer.acfun.AcComment(self.ac_num, self.resource_type)
 
     def like(self):
-        return self.acer.like_add(self.ac_num, 3)
+        return self.acer.like_add(self.ac_num, self.resource_type)
 
     def like_cancel(self):
-        return self.acer.like_delete(self.ac_num, 3)
+        return self.acer.like_delete(self.ac_num, self.resource_type)
 
     def favorite_add(self):
-        return self.acer.favourite.add(self.ac_num, 3)
+        return self.acer.favourite.add(self.ac_num, self.resource_type)
 
     def favorite_cancel(self):
-        return self.acer.favourite.cancel(self.ac_num, 3)
+        return self.acer.favourite.cancel(self.ac_num, self.resource_type)
 
     def banana(self, count: int):
-        return self.acer.throw_banana(self.ac_num, 3, count)
+        return self.acer.throw_banana(self.ac_num, self.resource_type, count)
 
 
 class AcWen:

@@ -36,6 +36,18 @@ def sizeof_fmt(num, suffix="B"):
     return f"{num:.1f} Yi{suffix}"
 
 
+def match_info(text):
+    rex = re.compile(r"(?P<title>.*)\r"
+                     r"UP:(?P<up>.*)\r"
+                     r"发布于(?P<createTime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
+                     r"\xa0/\xa0点击:(?P<viewCount>\d+)"
+                     r"\xa0/\xa0评论:(?P<commentCount>\d+)")
+    result = rex.fullmatch(text)
+    if result is None:
+        return None
+    return result.groupdict()
+
+
 def match1(text, *patterns):
     """Scans through a string for substrings matched some patterns (first-subgroups only).
 

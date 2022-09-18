@@ -53,7 +53,7 @@ def acer_get_byid():
     demo_bangumi = acer.AcBangumi(5023295)
     print(demo_bangumi)
     # 个人页: https://www.acfun.cn/u/39088
-    demo_up = acer.AcUp(dict(userId=39088))
+    demo_up = acer.AcUp(39088)
     print(demo_up)
     # 动  态: https://www.acfun.cn/moment/am2797962
     demo_moment = acer.moment.get(2797962)

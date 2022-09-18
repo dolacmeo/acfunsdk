@@ -20,31 +20,32 @@ AcFun_danmaku_bg = [
 
 class AcLink:
 
-    def __init__(self, acer, url, title, container=None):
+    def __init__(self, acer, url, title=None):
         self.acer = acer
         self.title = title
         self.url = url_complete(url)
-        self.container = container
 
     def __repr__(self):
         show_link = f" >> {self.url}" if self.url else ""
-        return f"AcLink({self.title}{show_link})"
+        return f"AcLink({self.title or ''}{show_link})"
+
+    def container(self):
+        return self.acer.get(self.url)
 
 
 class AcImage:
 
-    def __init__(self, acer, src, url=None, name=None, container=None):
+    def __init__(self, acer, src, url=None, name=None):
         self.acer = acer
         self.src = url_complete(src)
         self.name = name
         self.url = url_complete(url)
-        self.container = container
 
     def __repr__(self):
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcImg({self.name}[{self.src}]{show_link})"
 
-    def link(self):
+    def container(self):
         return self.acer.get(self.url)
 
 

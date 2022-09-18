@@ -20,6 +20,7 @@ class Acer:
 
     is_logined = False
     message = None
+    moment = None
     follow = None
     favourite = None
     danmaku = None
@@ -40,8 +41,9 @@ class Acer:
         self.acfun = AcFun(self)
 
     def __repr__(self):
-        show_name = (" " + self.username) or ''
-        return f"Acer(#{self.uid or 'UNKNOWN'}{show_name})"
+        if self.is_logined:
+            return f"Acer(#{self.uid}@{self.username})"
+        return f"Acer(#UNKNOWN)"
 
     @property
     def uid(self):
@@ -72,6 +74,7 @@ class Acer:
             assert info_data.get('result') == 0
             self.data = info_data.get('info', {})
             self.message = MyMessage(self)
+            self.moment = MyMoment(self)
             self.follow = MyFollow(self)
             self.favourite = MyFavourite(self)
             self.danmaku = MyDanmaku(self)
@@ -128,6 +131,7 @@ class Acer:
         self.data = dict()
         self.tokens = dict()
         self.message = None
+        self.moment = None
         self.follow = None
         self.favourite = None
         self.danmaku = None
@@ -162,8 +166,8 @@ class Acer:
     @need_login
     def throw_banana(self, ac_num, rt: int, count: int):
         api_req = self.client.post(source.apis['throw_banana'], data={
-            "resourceId": ac_num,
             "count": 1 if 1 > count > 5 else count,
+            "resourceId": ac_num,
             "resourceType": rt
         }, headers={'referer': source.routes['index']})
         return api_req.json().get('result') == 0
@@ -203,20 +207,16 @@ class Acer:
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
         api_req = self.client.post(source.apis['history'], data=form_data)
         api_data = api_req.json()
-        if api_data.get('result') != 0:
-            return None
-        histories = api_data.get('histories', [])
-        if obj is True:
-            objs = list()
-            for x in histories:
-                if x.get('resourceType') == 1:
-                    objs.append(self.acfun.AcBangumi(x.get('resourceId')))
-                elif x.get('resourceType') == 2:
-                    objs.append(self.acfun.AcVideo(x.get('resourceId'), x))
-                elif x.get('resourceType') == 3:
-                    objs.append(self.acfun.AcArticle(x.get('resourceId'), x))
-            return objs
-        return histories
+        assert api_data.get('result') == 0
+        if obj is False:
+            return api_data
+        objs = list()
+        for x in api_data.get('histories', []):
+            rtype, rid = x.get('resourceType'), x.get('resourceId')
+            if rtype in range(1, 4):
+                objs.append(self.acfun.resource(rtype, rid))
+        api_data['histories'] = objs
+        return api_data
 
     @need_login
     def history_del_all(self, rtype: Literal["", "1,2", "3"] = ""):

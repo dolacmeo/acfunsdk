@@ -21,7 +21,7 @@ class AcUp:
 
     def __init__(self, acer, uid: [str, int], up_data: [dict, None] = None):
         self.uid = int(uid)
-        self.up_data = up_data
+        self.up_data = dict() if up_data is None else up_data
         self.acer = acer
         self._get_acup()
 

@@ -8,12 +8,12 @@ __author__ = 'dolacmeo'
 
 
 class AcVideo:
+    resource_type = 2
     ac_num = None
     page_obj = None
     page_pagelets = []
     video_data = dict()
     vid = None
-    resourceType = 9
     is_404 = False
 
     def __init__(self, acer, ac_num: [str, int], video_data: [dict, None] = None):
@@ -74,7 +74,7 @@ class AcVideo:
         return self.video_data.get('videoList', [])
 
     def video_scenes(self):
-        form_data = {"resourceId": self.ac_num, "resourceType": 2,
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type,
                      "videoId": self.video_data.get('currentVideoId')}
         api_req = self.acer.client.post(apis['video_scenes'], data=form_data)
         api_data = api_req.json()
@@ -93,7 +93,7 @@ class AcVideo:
         return {"sprite_image": sprite_img, "pos": pos_data}
 
     def video_hotspot(self):
-        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type}
         api_req = self.acer.client.post(apis['video_hotspot'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') != 0:
@@ -117,12 +117,13 @@ class AcVideo:
         return api_data.get("playInfo")
 
     def up(self):
-        return self.acer.acfun.AcUp(self.video_data.get('user', {}))
+        user = self.video_data.get('user', {})
+        return self.acer.acfun.AcUp(user.get("id"))
 
     def staff(self):
         if self.video_data.get('staffContribute') is not True:
             return None
-        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type}
         api_req = self.acer.client.post(apis['getStaff'], data=form_data)
         api_data = api_req.json()
         return api_data
@@ -131,22 +132,22 @@ class AcVideo:
         return self.acer.acfun.AcDanmaku(self.video_data)
 
     def comment(self):
-        return self.acer.acfun.AcComment(self.ac_num, 3, self.referer)
+        return self.acer.acfun.AcComment(self.ac_num, self.resource_type)
 
     def like(self):
-        return self.acer.like_add(self.ac_num, 2)
+        return self.acer.like_add(self.ac_num, self.resource_type)
 
     def like_cancel(self):
-        return self.acer.like_delete(self.ac_num, 2)
+        return self.acer.like_delete(self.ac_num, self.resource_type)
 
     def favorite_add(self, folder_id: [str, None] = None):
-        return self.acer.favourite.add(self.ac_num, self.resourceType, folder_id)
+        return self.acer.favourite.add(self.ac_num, 9, folder_id)
 
     def favorite_cancel(self, folder_id: [str, None] = None):
-        return self.acer.favourite.cancel(self.ac_num, self.resourceType, folder_id)
+        return self.acer.favourite.cancel(self.ac_num, 9, folder_id)
 
     def banana(self, count: int):
-        return self.acer.throw_banana(self.ac_num, 2, count)
+        return self.acer.throw_banana(self.ac_num, self.resource_type, count)
 
     # 一键奥里给！
     def aoligei(self, danmu: bool = False, comment: bool = False):

@@ -91,8 +91,8 @@ class Danmaku:
             return self.data.get(item)
         return super().__getattribute__(item)
 
-    def get_up(self):
-        return self.acer.ac_up({'id': self.userId}, self.acer)
+    def up(self):
+        return self.acer.acfun.AcUp(self.userId)
 
     @need_login
     def like(self):

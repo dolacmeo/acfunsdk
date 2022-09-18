@@ -4,7 +4,7 @@ import time
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from acfunsdk.source import routes, pagelets_from_page, pagelets_from_api, pagelets_big, pagelets_normal
-from acfunsdk.page.utils import get_page_pagelets, match1
+from acfunsdk.page.utils import get_page_pagelets, match1, match_info, url_complete
 
 __author__ = 'dolacmeo'
 
@@ -14,7 +14,9 @@ class AcPagelet:
     pagelet_id = None
     pagelet_obj = None
     pagelet_sp = (
+        'pagelet_header',
         'pagelet_banner',
+        'pagelet_navigation',
         'pagelet_top_area',
         'pagelet_monkey_recommend',
         'pagelet_live',
@@ -37,6 +39,14 @@ class AcPagelet:
         else:
             raise TypeError("pagelet_data allow bs4Tag or dict.")
 
+    def _index_header(self, obj=False):
+        if self.pagelet_id != "pagelet_header":
+            return None
+        data = list()
+        for link in self.pagelet_obj.select(".header-top-con > a,#header-guide a"):
+            data.append({'url': url_complete(link.attrs['href']), 'text': link.text.strip()})
+        return data
+
     def _index_banner(self, obj=False):
         if self.pagelet_id != "pagelet_banner":
             return None
@@ -52,6 +62,34 @@ class AcPagelet:
         if obj is True:
             return self.acer.acfun.AcImage(data['image'], data['url'], data['title'])
         return data
+
+    def _index_navigation(self, obj=False):
+        if self.pagelet_id != "pagelet_navigation":
+            return None
+        nav_links = list()
+        for first in self.pagelet_obj.select(".first-item"):
+            first_a = first.select_one("a.first-link")
+            if obj is True:
+                item = {'item': self.acer.get(url_complete(first_a.attrs['href'])), "children": []}
+            else:
+                item = {
+                    "url": url_complete(first_a.attrs['href']),
+                    "text": first_a.text.strip(),
+                    "children": []
+                }
+            second_items = first.select(".second-item")
+            for second in second_items:
+                second_a = second.select_one("a.second-link")
+                if obj is True:
+                    child = {'item': self.acer.get(url_complete(second_a.attrs['href']))}
+                else:
+                    child = {
+                        "url": url_complete(second_a.attrs['href']),
+                        "text": second_a.text.strip()
+                    }
+                item['children'].append(child)
+            nav_links.append(item)
+        return nav_links
 
     def _index_top_area(self, obj=False):
         if self.pagelet_id != "pagelet_top_area":
@@ -69,11 +107,8 @@ class AcPagelet:
             })
         if obj is True:
             return dict(
-                slider=[self.acer.acfun.AcImage(
-                    s['image'], s['link'], s['title'],
-                    self.acer.get(f"{routes['index']}{s['link']}")
-                ) for s in data['slider']],
-                items=[self.acer.AcVideo(v['mediaid'], dict(title=v['title'])) for v in data['items']]
+                slider=[self.acer.acfun.AcImage(s['image'], s['link'], s['title']) for s in data['slider']],
+                items=[self.acer.acfun.AcVideo(v['mediaid'], dict(title=v['title'])) for v in data['items']]
             )
         return data
 
@@ -82,15 +117,18 @@ class AcPagelet:
             return None
         videos = list()
         for video in self.pagelet_obj.select(".monkey-recommend-videos > .video-list > .monkey-video"):
-            videos.append({
+            v_data = {
                 'mediaid': video.attrs['data-mediaid'],
                 'url': routes['video'] + video.attrs['data-mediaid'],
                 'title': video.select_one('.monkey-video-title').text,
-                'infos': video.select_one('.monkey-video-title').attrs['title'].split('\r'),
                 'cover': video.select_one('.monkey-video-cover').img.attrs['src'],
                 'up': video.select_one('.monkey-up-name').attrs['title'],
-                'up_url': video.select_one('.monkey-up-name').attrs['href'],
-            })
+                'up_url': routes['index'] + video.select_one('.monkey-up-name').attrs['href'],
+            }
+            infos = match_info(video.select_one('.monkey-video-title').attrs['title'])
+            if infos is not None:
+                v_data.update(infos)
+            videos.append(v_data)
         data = dict(items=videos)
         ad_img = self.pagelet_obj.select_one('.activity-box')
         data['ad'] = {
@@ -102,7 +140,8 @@ class AcPagelet:
             return dict(
                 ad=self.acer.acfun.AcImage(data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
                 items=[
-                    self.acer.AcVideo(v['mediaid'], dict(title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))
+                    self.acer.acfun.AcVideo(v['mediaid'], dict(
+                        title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))
                     for v in videos
                 ]
             )
@@ -117,7 +156,6 @@ class AcPagelet:
                 'liveid': video.attrs['data-liveid'],
                 'url': routes['live'] + video.attrs['data-liveid'],
                 'title': video.select_one('.live-video-title').text,
-                'infos': video.select_one('.live-video-title').attrs['title'].split('\r'),
                 'cover': video.select_one('.live-video-cover').img.attrs['src'],
                 'up': video.select_one('.live-video-up-name').attrs['title'],
                 'up_avatar': video.select_one('.live-video-avatar').img.attrs['src'],
@@ -132,7 +170,7 @@ class AcPagelet:
         if obj is True:
             return dict(
                 ad=self.acer.acfun.AcImage(data['ad']['image'], f"{data['ad']['url']}", data['ad']['title']),
-                items=[self.acer.AcLiveUp(v['liveid']) for v in videos]
+                items=[self.acer.acfun.AcLiveUp(v['liveid']) for v in videos]
             )
         return data
 
@@ -147,16 +185,19 @@ class AcPagelet:
         data = dict(d1=list(), d3=list(), d7=list(), article=dict())
         for rank in [('d1', '.day-list'), ('d3', '.three-day-list'), ('d7', '.week-list')]:
             for video in self.pagelet_obj.select(f".rank-left > {rank[1]} > .banana-video"):
-                data[rank[0]].append({
+                v_data = {
                     'mediaid': video.attrs['data-mediaid'],
                     'url': routes['video'] + video.attrs['data-mediaid'],
                     'title': video.select_one('.banana-video-title').text,
-                    'infos': video.select_one('.banana-video-title').attrs['title'].split('\r'),
                     'cover': video.select_one('.banana-video-cover').img.attrs['src'],
                     'up': video.select_one('.banana-up-name').attrs['title'],
-                    'up_url': video.select_one('.banana-up-name').attrs['href'],
+                    'up_url': routes['index'] + video.select_one('.banana-up-name').attrs['href'],
                     'banana_count': video.select_one('.banana-count').text,
-                })
+                }
+                infos = match_info(video.select_one('.banana-video-title').attrs['title'])
+                if infos is not None:
+                    v_data.update(infos)
+                data[rank[0]].append(v_data)
         for article_tab in self.pagelet_obj.select('.rank-right .main-header-item'):
             tab_name = article_tab.select_one('.header-item-link').text
             tab_url = article_tab.select_one('.header-item-link').attrs['href']
@@ -167,32 +208,33 @@ class AcPagelet:
                         'mediaid': article.attrs['data-mediaid'],
                         'url': routes['article'] + article.attrs['data-mediaid'],
                         'title': article.select_one('.main-content-block > a > p.block-title').text,
-                        'infos': article.select_one('.main-content-block > a > p.block-title').attrs['title'].split(
-                            '\r'),
                         'headimg': article.select_one('img.block-img').attrs['src'],
                         'up': article.select_one('span.block-up').a.attrs['title'],
-                        'up_url': article.select_one('span.block-up').a.attrs['href'],
-                        'comment_num': article.select_one('span.icon-comments').text
+                        'up_url': routes['index'] + article.select_one('span.block-up').a.attrs['href'],
+                        'commentCount': article.select_one('span.icon-comments').text
                     }
+                    infos = match_info(article.select_one('.main-content-block > a > p.block-title').attrs['title'])
                 else:
                     this_article = {
                         'mediaid': article.attrs['data-mediaid'],
                         'url': routes['article'] + article.attrs['data-mediaid'],
                         'title': article.a.text,
-                        'infos': article.a.attrs['title'].split('\r'),
                     }
+                    infos = match_info(article.a.attrs['title'])
+                if infos is not None:
+                    this_article.update(infos)
                 data['article'][tab_name]['article'].append(this_article)
         if obj is True:
             obj_data = dict(d1=list(), d3=list(), d7=list(), article=dict())
             for rank in ['d1', 'd3', 'd7']:
                 obj_data[rank] = [
-                    self.acer.AcVideo(
+                    self.acer.acfun.AcVideo(
                         v['mediaid'], dict(title=v['title'], user=dict(id=v['up_url'][3:], name=v['up'])))
                     for v in data[rank]
                 ]
             for tab_name in data['article'].keys():
                 obj_data['article'][tab_name] = [
-                    self.acer.AcArticle(
+                    self.acer.acfun.AcArticle(
                         a['mediaid'],
                         dict(title=a['title'], user=dict(id=a.get('up_url', '   ')[3:], name=a.get('up', ''))))
                     for a in data['article'][tab_name]['article']
@@ -233,7 +275,7 @@ class AcPagelet:
                         'recently': bangumi.a.p.text
                     }
                 if obj is True:
-                    day_list.append(self.acer.AcBangumi(media_data['mediaid']))
+                    day_list.append(self.acer.acfun.AcBangumi(media_data['mediaid']))
                 else:
                     day_list.append(media_data)
             data['schedule'].append(day_list)
@@ -247,7 +289,7 @@ class AcPagelet:
                 'follow': goood.select_one('.block-list-title > p > i.fr').text
             }
             if obj is True:
-                data['recommend'].append(self.acer.AcBangumi(media_data['mediaid']))
+                data['recommend'].append(self.acer.acfun.AcBangumi(media_data['mediaid']))
             else:
                 data['recommend'].append(media_data)
         for block in self.pagelet_obj.select('.area-right .season-rec'):
@@ -258,13 +300,13 @@ class AcPagelet:
                 'cover': block.img.attrs['src']
             }
             if obj is True:
-                data['anli'].append(self.acer.AcBangumi(media_data['mediaid']))
+                data['anli'].append(self.acer.acfun.AcBangumi(media_data['mediaid']))
             else:
                 data['anli'].append(media_data)
         return data
 
     def _index_pagelet_left_info(self, obj=False):
-        data = dict(title=None, icon=None, links=list(), url=None)
+        data = dict(title="", icon="", links=list(), url=None)
         data['title'] = self.pagelet_obj.select_one('.module-left-header span.header-title').text
         data['icon'] = self.pagelet_obj.select_one('.module-left-header img.header-icon').attrs['src']
         for link in self.pagelet_obj.select('.link-container a'):
@@ -289,27 +331,29 @@ class AcPagelet:
                         'mediaid': rank_item.attrs['data-mediaid'],
                         'url': routes['video'] + rank_item.attrs['data-mediaid'],
                         'title': rank_item.select_one('.video-title').text,
-                        'infos': rank_item.select_one('.video-title').attrs['title'].split('\r'),
                         'cover': rank_item.select_one('.block-left > a > img').attrs['src'],
                         'up': rank_item.select_one('.video-up').attrs['title'],
-                        'up_url': rank_item.select_one('.video-up').attrs['href'],
-                        'played_num': rank_item.select_one('.video-info > .icon-view-player').text,
-                        'comment_num': rank_item.select_one('.video-info > .icon-comments').text
+                        'up_url': routes['index'] + rank_item.select_one('.video-up').attrs['href'],
+                        'viewCount': rank_item.select_one('.video-info > .icon-view-player').text,
+                        'commentCount': rank_item.select_one('.video-info > .icon-comments').text
                     }
+                    infos = match_info(rank_item.select_one('.video-title').attrs['title'])
                 else:
                     rank_data = {
                         'mediaid': rank_item.attrs['data-mediaid'],
                         'url': routes['video'] + rank_item.attrs['data-mediaid'],
                         'title': rank_item.a.text,
-                        'infos': rank_item.a.attrs['title'].split('\r'),
                     }
+                    infos = match_info(rank_item.a.attrs['title'])
+                if infos is not None:
+                    rank_data.update(infos)
                 data['rank'][rank_type].append(rank_data)
-        data['rank']['url'] = self.pagelet_obj.select_one('.ranked-list > .more').attrs['href']
+        data['rank']['url'] = routes['index'] + self.pagelet_obj.select_one('.ranked-list > .more').attrs['href']
         if obj is True:
             obj_data = dict(d1=list(), d3=list(), d7=list())
             for k in obj_data.keys():
                 obj_data[k] = [
-                    self.acer.AcVideo(v['mediaid'], dict(title=v['title']))
+                    self.acer.acfun.AcVideo(v['mediaid'], dict(title=v['title']))
                     for v in data['rank'][k]
                 ]
             return dict(rank=obj_data)
@@ -324,24 +368,26 @@ class AcPagelet:
                     'mediaid': video.a.attrs['href'][5:],
                     'url': routes['index'] + video.a.attrs['href'],
                     'title': video.select_one('.title').text,
-                    'infos': video.select_one('.title').attrs['title'].split('\r'),
                     'cover': video.select_one('.cover > img').attrs['src'],
-                    'video_time': video.select_one('.video-time').text,
+                    'duration': video.select_one('.video-time').text,
                 }
+                infos = match_info(video.select_one('.title').attrs['title'])
             else:
                 this_video = video.select_one('.normal-video')
                 v_data = {
                     'mediaid': this_video.attrs['data-mediaid'],
                     'url': routes['video'] + this_video.attrs['data-mediaid'],
                     'title': this_video.select_one('.normal-video-title').text,
-                    'infos': this_video.select_one('.normal-video-title').attrs['title'].split('\r'),
                     'cover': this_video.select_one('.normal-video-cover').img.attrs['src'],
-                    'video_time': this_video.select_one('.video-time').text,
-                    'played_num': this_video.select_one('.normal-video-info > .icon-view-player').text,
-                    'danmu_num': this_video.select_one('.normal-video-info > .icon-danmu').text
+                    'duration': this_video.select_one('.video-time').text,
+                    'viewCount': this_video.select_one('.normal-video-info > .icon-view-player').text,
+                    'danmakuCount': this_video.select_one('.normal-video-info > .icon-danmu').text
                 }
+                infos = match_info(this_video.select_one('.normal-video-title').attrs['title'])
+            if infos is not None:
+                v_data.update(infos)
             if obj is True:
-                data['items'].append(self.acer.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
+                data['items'].append(self.acer.acfun.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
             else:
                 data['items'].append(v_data)
         data.update(self._index_pagelet_left_info(obj))
@@ -355,14 +401,16 @@ class AcPagelet:
                 'mediaid': video.attrs['data-mediaid'],
                 'url': routes['video'] + video.attrs['data-mediaid'],
                 'title': video.select_one('.normal-video-title').text,
-                'infos': video.select_one('.normal-video-title').attrs['title'].split('\r'),
                 'cover': video.select_one('.normal-video-cover').img.attrs['src'],
-                'video_time': video.select_one('.video-time').text,
-                'played_num': video.select_one('.normal-video-info > .icon-view-player').text,
-                'danmu_num': video.select_one('.normal-video-info > .icon-danmu').text
+                'duration': video.select_one('.video-time').text,
+                'viewCount': video.select_one('.normal-video-info > .icon-view-player').text,
+                'danmakuCount': video.select_one('.normal-video-info > .icon-danmu').text
             }
+            infos = match_info(video.select_one('.normal-video-title').attrs['title'])
+            if infos is not None:
+                v_data.update(infos)
             if obj is True:
-                data['items'].append(self.acer.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
+                data['items'].append(self.acer.acfun.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
             else:
                 data['items'].append(v_data)
         ads = self.pagelet_obj.select(".normal-ad-link")
@@ -441,6 +489,9 @@ class AcIndex:
     def __init__(self, acer=None):
         self.acer = acer
         self._get_index()
+
+    def __repr__(self):
+        return "AcIndex(AcFun弹幕视频网)"
 
     def _get_index(self):
         req = self.acer.client.get(routes['index'])

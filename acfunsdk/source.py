@@ -40,7 +40,7 @@ routes = {
     "bangumi": f"{scheme}://{domains['main']}/bangumi/aa",
     "up": f"{scheme}://{domains['main']}/u/",
     'moment': f"{scheme}://{domains['main']}/moment/am",
-    "live_index": f"{scheme}://{domains['live']}/",
+    "live_index": f"{scheme}://{domains['live']}",
     "live": f"{scheme}://{domains['live']}/live/",
     "share": f"{scheme}://{domains['mobile']}/v/?ac=",
     'feeds': f"{scheme}://{domains['main']}/member/feeds",

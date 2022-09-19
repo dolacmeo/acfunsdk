@@ -170,7 +170,6 @@ class Comment:
         self.data = data
         self.ac_num = self.data.get('sourceId')
         self.main_obj = main_obj
-        self.referer = self.main_obj.referer or f"{routes['index']}"
 
     def cdata(self, name):
         return self.data.get(name)
@@ -182,6 +181,10 @@ class Comment:
         content = self.data.get('content', '').replace('\r\n', '↲  ').replace('\n', '↲  ')
         return f"C([{self.cdata('commentId')}]#{self.cdata('floor')} {content} " \
                f"@{self.cdata('userName')}[{self.cdata('userId')}])"
+
+    @property
+    def referer(self):
+        return f"{self.main_obj.referer}#ncid={self.data.get('commentId')}"
 
     @property
     def api_data(self):

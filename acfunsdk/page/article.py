@@ -118,7 +118,7 @@ class AcArticle:
     def comment(self):
         if len(self.article_data.keys()) == 0:
             self.loading()
-        return self.acer.acfun.AcComment(self.ac_num, self.resource_type)
+        return self.acer.acfun.AcComment(self.resource_type, self.ac_num)
 
     def like(self):
         return self.acer.like_add(self.ac_num, self.resource_type)

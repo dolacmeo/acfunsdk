@@ -82,7 +82,7 @@ class AcBangumi:
         return self.acer.acfun.AcDanmaku(self.bangumi_data)
 
     def comment(self):
-        return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", self.resource_type)
+        return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", 6)
 
     def like(self):
         return self.acer.like_add(self.item_id, 18)
@@ -91,13 +91,13 @@ class AcBangumi:
         return self.acer.like_delete(self.item_id, 18)
 
     def favorite_add(self):
-        return self.acer.favourite.add(self.aa_num, self.resource_type)
+        return self.acer.favourite.add(self.aa_num, 1)
 
     def favorite_cancel(self):
-        return self.acer.favourite.cancel(self.aa_num, self.resource_type)
+        return self.acer.favourite.cancel(self.aa_num, 1)
 
     def banana(self):
-        return self.acer.throw_banana(self.item_id, 18, self.resource_type)
+        return self.acer.throw_banana(self.item_id, 18, 1)
 
 
 class AcBangumiList:

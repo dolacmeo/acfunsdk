@@ -162,6 +162,7 @@ class AcComment:
 
 
 class Comment:
+    resource_type = 6
     data = dict()
     ac_num = None
 
@@ -171,8 +172,8 @@ class Comment:
         self.ac_num = self.data.get('sourceId')
         self.main_obj = main_obj
 
-    def cdata(self, name):
-        return self.data.get(name)
+    def cdata(self, name, default=None):
+        return self.data.get(name, default)
 
     def up(self):
         return self.acer.acfun.AcUp(self.cdata('userId'))
@@ -212,3 +213,9 @@ class Comment:
     def delete(self):
         req = self.acer.client.post(apis['comment_delete'], data=self.api_data, headers={'referer': self.referer})
         return req.json().get('result') == 0
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.data.get('commentId'), self.resource_type,
+            self.cdata('userId', "0"),
+            crime, proof, description)

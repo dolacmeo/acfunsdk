@@ -99,6 +99,11 @@ class AcBangumi:
     def banana(self):
         return self.acer.throw_banana(self.item_id, 18, 1)
 
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.aa_num, self.resource_type, "0",
+            crime, proof, description)
+
 
 class AcBangumiList:
     page_obj = None

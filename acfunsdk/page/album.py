@@ -8,6 +8,7 @@ __author__ = 'dolacmeo'
 
 
 class AcAlbum:
+    resource_type = 4
     aa_num = None
     page_obj = None
     page_data = None
@@ -85,3 +86,9 @@ class AcAlbum:
 
     def favorite_cancel(self):
         return self.acer.favourite.cancel(self.aa_num, 4)
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.aa_num, self.resource_type,
+            self.info.get("authorId", "0"),
+            crime, proof, description)

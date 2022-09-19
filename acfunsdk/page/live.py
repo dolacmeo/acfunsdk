@@ -236,6 +236,9 @@ class AcLiveUp:
             print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
         return live_obs_stream
 
+    def report(self):
+        raise RuntimeError("UNFINISHED")
+
     # def record(self, save_path: [str, os.PathLike], quality: int = 1):
     #     live_adapt = self.media_list()
     #     if live_adapt is False:

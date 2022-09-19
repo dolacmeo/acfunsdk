@@ -8,6 +8,7 @@ __author__ = 'dolacmeo'
 
 
 class AcUp:
+    resource_type = 5
     uid = None
     up_data = None
     up_page = None
@@ -125,9 +126,10 @@ class AcUp:
             data.append(self.acer.acfun.AcAlbum(ac_num))
         return data
 
-    def following(self, page=1, limit=10, orderby='newest'):
+    def _follow(self, key, page=1, limit=10, orderby='newest'):
+        assert key in ['following', 'followed']
         data = list()
-        acer_data = self._get_data('following', page, limit, orderby)
+        acer_data = self._get_data(key, page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('li'):
             infos = {
                 "id": item.select_one('div:nth-of-type(2) > a.name').attrs['href'][3:],
@@ -136,13 +138,14 @@ class AcUp:
             data.append(AcUp(self.acer, infos['id']))
         return data
 
+    def following(self, page=1, limit=10, orderby='newest'):
+        return self._follow("following", page, limit, orderby)
+
     def followed(self, page=1, limit=10, orderby='newest'):
-        data = list()
-        acer_data = self._get_data('followed', page, limit, orderby)
-        for item in Bs(acer_data.get('html', ''), 'lxml').select('li'):
-            infos = {
-                "id": item.select_one('div:nth-of-type(2) > a.name').attrs['href'][3:],
-                "name": item.select_one('div:nth-of-type(2) > a.name').text
-            }
-            data.append(AcUp(self.acer, infos['id']))
-        return data
+        return self._follow("followed", page, limit, orderby)
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.uid, self.resource_type,
+            self.uid,
+            crime, proof, description)

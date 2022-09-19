@@ -163,3 +163,9 @@ class AcVideo:
                                '<p><font color="#c4bd97">from  acfunSDK</font></p>')
         print(f" 赞 藏 蕉 弹 评 \n 👍 🔖 🍌 🌠 💬 \n 分享：{self.referer}?shareUid={self.acer.uid}")
         return True
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.ac_num, self.resource_type,
+            self.video_data.get("user", {}).get("id", "0"),
+            crime, proof, description)

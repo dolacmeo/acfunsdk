@@ -81,6 +81,12 @@ class AcMoment:
     def banana(self, count: int):
         return self.acer.throw_banana(self.rid, self.resource_type, count)
 
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.am_num, self.resource_type,
+            self.raw_data.get('user').get('id', "0"),
+            crime, proof, description)
+
 
 class MyMoment:
     cursor = "0"

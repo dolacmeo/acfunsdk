@@ -135,6 +135,12 @@ class AcArticle:
     def banana(self, count: int):
         return self.acer.throw_banana(self.ac_num, self.resource_type, count)
 
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.ac_num, self.resource_type,
+            self.article_data.get("user", {}).get("id", "0"),
+            crime, proof, description)
+
 
 class AcWen:
     realmIds = None

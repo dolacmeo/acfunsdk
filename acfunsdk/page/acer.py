@@ -13,7 +13,7 @@ class MyFansClub:
 
     @property
     def referer(self):
-        return f"{routes['fansclub_medallist']}"
+        return f"{routes['medallist']}"
 
     def medal_list(self):
         api_req = self.acer.client.post(apis['live_medal_list'])
@@ -126,7 +126,7 @@ class MyFavourite:
         return req.json().get('result') == 0
 
     def video_groups(self):
-        api_req = self.acer.client.get(apis['video_favorite_list'])
+        api_req = self.acer.client.get(apis['favorite_list'])
         api_data = api_req.json()
         if api_data.get('result') == 0:
             self.folders = api_data.get('dataList', [])
@@ -136,19 +136,19 @@ class MyFavourite:
 
     def video_group_add(self, name: str):
         form_data = {"name": name}
-        api_req = self.acer.client.post(apis['video_favorite_group_add'], data=form_data,
+        api_req = self.acer.client.post(apis['favorite_group_add'], data=form_data,
                                         headers={"referer": routes['index']})
         return api_req.json().get('result') == 0
 
     def video_group_rename(self, fid: [int, str], name: str):
         form_data = {"folderId": fid, "name": name}
-        api_req = self.acer.client.post(apis['video_favorite_group_update'], data=form_data,
+        api_req = self.acer.client.post(apis['favorite_group_update'], data=form_data,
                                         headers={"referer": routes['index']})
         return api_req.json().get('result') == 0
 
     def video_group_remove(self, fid: [int, str]):
         form_data = {"folderId": fid}
-        api_req = self.acer.client.post(apis['video_favorite_group_delete'], data=form_data,
+        api_req = self.acer.client.post(apis['favorite_group_delete'], data=form_data,
                                         headers={"referer": routes['index']})
         return api_req.json().get('result') == 0
 

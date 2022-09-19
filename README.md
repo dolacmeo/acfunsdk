@@ -1,9 +1,9 @@
-# acfunSDK - **UNOFFICEICAL**
+# acfunsdk - **UNOFFICEICAL**
 
 <br />
 
 <p align="center">
-<a href="https://github.com/dolaCmeo/acfunSDK">
+<a href="https://github.com/dolaCmeo/acfunsdk">
 <img height="100" src="https://s3.dualstack.us-east-2.amazonaws.com/pythondotorg-assets/media/files/python-logo-only.svg" alt="">
 <img height="100" src="https://ali-imgs.acfun.cn/kos/nlav10360/static/common/widget/header/img/acfunlogo.11a9841251f31e1a3316.svg" alt="">
 </a>
@@ -11,9 +11,9 @@
 
 <br />
 
-acfunSDK是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
+acfunsdk是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
-> 声明：`acfunSDK`是python的学习工具，并未破解任何acfun相关内容。代码完全公开，仅用于交流学习。
+> 声明：`acfunsdk`是python的学习工具，并未破解任何acfun相关内容。代码完全公开，仅用于交流学习。
 > 如涉及版权等相关问题，请遵守acfun相关协议及法律法规。如有bug或其他疑问，欢迎发布[issues][Issue]。
 
 - - -
@@ -25,11 +25,6 @@ acfunSDK是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 ```shell
 python -m pip install acfunsdk
 ```
-
-**‼需要`ffmpeg`**  主要用于下载视频。
-> 建议去官网下载 https://ffmpeg.org/download.html
->
-> 可执行文件 `ffmpeg` 需要加入到环境变量，或复制到运行根目录。
 
 - - -
 
@@ -49,7 +44,7 @@ acer.loading(username='13800138000')
 # 每日签到，领香蕉🍌
 acer.signin()
 # 通过链接直接获取内容对象
-# 目前支持 9种类型：
+# 目前支持 9种内容类型：
 # 视  频: https://www.acfun.cn/v/ac4741185
 demo_video = acer.get("https://www.acfun.cn/v/ac4741185")
 print(demo_video)
@@ -106,93 +101,18 @@ print(demo_doodle)
 + 动态对象 [moment_demo.py][moment]
 + 直播对象 [live_demo.py][live]
 
-## 🎁 附赠: AcSaver
-
-+ 离线保存 [AcSaver_demo.py][saver] 
-
 </details>
 
-<details>
-<summary>AcSaver</summary>
-
-> 这是一个依赖acfunSDK的小工具，也算是DEMO。
-> 
-> 主要用于离线收藏保存A站的各种资源。
-> 保存后，可使用浏览器打开对应页面。
-
-
-初始化本地路径
-```python
-saver_path = r"D:\AcSaver"
-
-# 实例化AcSaver父类
-acsaver = acer.AcSaver(saver_path)
-# 实例化后 会在路径下生成 index.html
-
-# github下载静态文件
-# https://github.com/dolaCmeo/acfunSDK/tree/assets
-acsaver.download_assets_from_github()
-
-# 下载所有Ac表情资源
-acsaver.save_emot()
-```
-
-保存文章
-```python
-demo_article = acer.get("https://www.acfun.cn/a/ac32633020")
-demo_article.saver(saver_path).save_all()
-```
-
-保存视频
-```python
-demo_video = acer.get("https://www.acfun.cn/v/ac4741185")
-demo_video.saver(saver_path).save_all()
-```
-
-~~保存番剧(暂未支持)~~
-```python
-
-```
-
-~~录制直播(暂未支持)~~
-```python
-
-```
-
-</details>
 
 <details>
 <summary>依赖库</summary>
 
->内置+修改: 位于 `libs` 文件夹内
->
->+ [`ffmpeg_progress_yield`](https://github.com/slhck/ffmpeg-progress-yield)
->+ [`blackboxprotobuf`](https://pypi.org/project/blackboxprotobuf/)
->+ [`climage`](https://pypi.org/project/climage/)
-
 **依赖: 包含在 `requirements.txt` 中**
 
-基础网络请求及页面解析:
 + [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
 + [`lxml`](https://pypi.org/project/lxml/)`>=4.9`
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
-
-下载及html页面渲染:
-+ [`filetype`](https://pypi.org/project/filetype/)`>=1.1`
-+ [`jinja2`](https://pypi.org/project/jinja2/)`>=3.1`
-
-WebSocket通信及数据处理:
-+ [`websocket-client`](https://pypi.org/project/websocket-client/)`>=1.4`
-+ [`pycryptodome`](https://pypi.org/project/pycryptodome/)`>=3.15`
-+ [`protobuf`](https://pypi.org/project/protobuf/)`==3.20.1`
-+ [`proto-plus`](https://pypi.org/project/proto-plus/)`==1.22.1`
-+ [`psutil`](https://pypi.org/project/psutil/)`>=5.9`
-
-图形化命令行:
-+ [`click`](https://pypi.org/project/click/)`>=8.1`
 + [`rich`](https://pypi.org/project/rich/)`>=12.5`
-+ [`emoji`](https://pypi.org/project/emoji/)`>=2`
-+ [`Pillow`](https://pypi.org/project/Pillow/)`>=9`
 
 </details>
 
@@ -219,21 +139,21 @@ WebSocket通信及数据处理:
 [acfunsdk_page]: https://www.acfun.cn/a/ac37416587
 
 [acfun.cn]: https://www.acfun.cn/
-[Issue]: https://github.com/dolaCmeo/acfunSDK/issues
+[Issue]: https://github.com/dolaCmeo/acfunsdk/issues
 [python]: https://www.python.org/downloads/
 [venv]: https://docs.python.org/zh-cn/3.8/library/venv.html
 
-[acer]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/acer_demo.py
-[index]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/index_reader.py
-[channel]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/channel_reader.py
-[search]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/seach_reader.py
+[acer]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/acer_demo.py
+[index]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/index_reader.py
+[channel]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/channel_reader.py
+[search]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/seach_reader.py
 
-[bangumi]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/bangumi_demo.py
-[video]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/video_demo.py
-[article]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/article_demo.py
-[album]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/album_demo.py
-[member]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/member_demo.py
-[moment]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/moment_demo.py
-[live]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/live_demo.py
+[bangumi]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/bangumi_demo.py
+[video]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/video_demo.py
+[article]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/article_demo.py
+[album]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/album_demo.py
+[member]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/member_demo.py
+[moment]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/moment_demo.py
+[live]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/live_demo.py
 
-[saver]: https://github.com/dolaCmeo/acfunSDK/blob/main/examples/AcSaver_demo.py
+[saver]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/AcSaver_demo.py

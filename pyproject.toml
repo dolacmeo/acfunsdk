@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "acfunSDK"
-version = "0.8.11"
-description = "acfunSDK - UNOFFICEICAL"
+name = "acfunsdk"
+version = "0.9.0"
+description = "acfunsdk - UNOFFICEICAL"
 license = "MIT"
 authors = ["dolacmeo <dolacmeo@gmail.com>"]
 maintainers = []
 readme = "README.md"
 homepage = "https://pypi.org/project/acfunsdk/"
-repository = "https://github.com/dolaCmeo/acfunSDK"
-documentation = "https://github.com/dolaCmeo/acfunSDK"
+repository = "https://github.com/dolaCmeo/acfunsdk"
+documentation = "https://github.com/dolaCmeo/acfunsdk"
 keywords = ["acfun", "sdk", "acfunsdk", "unofficeical"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -52,4 +52,4 @@ name = 'aliyun.mirrors'
 url = "https://mirrors.aliyun.com/pypi/simple/"
 
 [tool.poetry.urls]
-"Bug Tracker" = "https://github.com/dolaCmeo/acfunSDK/issues"
+"Bug Tracker" = "https://github.com/dolaCmeo/acfunsdk/issues"

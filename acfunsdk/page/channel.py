@@ -91,6 +91,18 @@ class AcChannel:
         self._get_channel_info()
 
     @property
+    def ctype(self):
+        if self.is_404:
+            return None
+        if self.is_main:
+            if self.cid != '63':
+                return 'main'
+            return 'wen'
+        if self.parent_data['channelId'] == '63':
+            return 'wen'
+        return 'videos'
+
+    @property
     def referer(self):
         return f"{routes['index']}/v/list{self.cid}/index.htm"
 
@@ -156,13 +168,23 @@ class AcChannel:
             sub_cid = int(self.cid)
         return self.acer.acfun.AcRank(cid, sub_cid, limit, date_range=date_range)
 
+    def articles(self):
+        if self.ctype != 'wen':
+            return None
+        if self.cid == '63':
+            return self.acer.acfun.AcWen()
+        rids = list()
+        for item in self.info.get("realms", []):
+            rids.append(item['realmId'])
+        return self.acer.acfun.AcWen(rids)
+
     def videos(self,
                page: int = 1,
                sortby: [str, None] = None,
                duration: [str, None] = None,
                datein: [str, None] = None,
                obj: bool = True):
-        if self.is_main or self.cid == '63':
+        if self.ctype != 'videos':
             return None
         sortby_list = {
             "rankScore": "综合",

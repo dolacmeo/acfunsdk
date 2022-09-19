@@ -183,7 +183,7 @@ class AcFun:
                     }
                     return self.AcRank(**kw)
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
-        channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm$").findall(url_str)
+        channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
         if channel_rex:
             return self.AcChannel(channel_rex[0])
         if "//hd.acfun.cn/s/" in url_str:

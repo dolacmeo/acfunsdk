@@ -3,10 +3,34 @@ import json
 import time
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
-from acfunsdk.source import routes, pagelets_from_page, pagelets_from_api, pagelets_big, pagelets_normal
+from acfunsdk.source import routes
 from acfunsdk.page.utils import get_page_pagelets, match1, match_info, url_complete
 
 __author__ = 'dolacmeo'
+
+pagelets_name = {
+    "pagelet_header": "顶栏",
+    "pagelet_banner": "Banner",
+    "pagelet_navigation": "导航栏",
+    'pagelet_top_area': "置顶",
+    'pagelet_monkey_recommend': "猴子推荐",
+    'pagelet_live': "直播",
+    'pagelet_spring_festival': "春季节日活动",
+    'pagelet_list_banana': "香蕉榜",
+    "pagelet_douga": "动画",
+    "pagelet_game": "游戏",
+    "pagelet_amusement": "娱乐",
+    "pagelet_bangumi_list": "番剧",
+    "pagelet_life": "生活",
+    "pagelet_tech": "科技",
+    "pagelet_dance": "舞蹈·偶像",
+    "pagelet_music": "音乐",
+    "pagelet_film": "影视",
+    "pagelet_fishpond": "鱼塘",
+    "pagelet_sport": "体育",
+    "pagelet_footer": "页脚",
+    "footer": "页脚",
+}
 
 
 class AcPagelet:
@@ -24,6 +48,18 @@ class AcPagelet:
         'pagelet_list_banana',
         'pagelet_bangumi_list',
     )
+    pagelets_area = (
+        "pagelet_douga",  # 动画
+        "pagelet_game",  # 游戏
+        "pagelet_amusement",  # 娱乐
+        "pagelet_life",  # 生活
+        "pagelet_tech",  # 科技
+        "pagelet_dance",  # 舞蹈·偶像
+        "pagelet_music",  # 音乐
+        "pagelet_film",  # 影视
+        "pagelet_fishpond",  # 鱼塘
+        "pagelet_sport",  # 体育
+    )
 
     def __init__(self, acer, pagelet_data: [Tag, dict]):
         self.acer = acer
@@ -38,6 +74,9 @@ class AcPagelet:
             self.pagelet_obj = Bs(pagelet_data.get('html', ""), "lxml")
         else:
             raise TypeError("pagelet_data allow bs4Tag or dict.")
+
+    def __repr__(self):
+        return f"AcIndex(#{self.pagelet_id} {pagelets_name[self.pagelet_id]})"
 
     def _index_header(self, obj=False):
         if self.pagelet_id != "pagelet_header":
@@ -441,12 +480,36 @@ class AcPagelet:
         elif self.pagelet_id in self.pagelet_sp:
             func_name = self.pagelet_id.replace("pagelet_", "_index_")
             return getattr(self, func_name)(obj)
-        elif self.pagelet_id in pagelets_big + pagelets_normal:
+        elif self.pagelet_id in self.pagelets_area:
             return self._index_pagelet(obj)
         return None
 
 
 class AcIndex:
+    pagelets_from_page = [
+        "pagelet_banner",  # banner
+        "pagelet_navigation",  # 导航栏
+        'pagelet_top_area',  # 置顶
+        'pagelet_monkey_recommend',  # 猴子推荐
+        'pagelet_live',  # 直播
+        'pagelet_spring_festival',  # 春季节日活动
+        'pagelet_list_banana',  # 香蕉榜
+        'footer',  # 页脚
+    ]
+    pagelets_from_api = [
+        "pagelet_header",  # 顶栏
+        "pagelet_douga",  # 动画
+        "pagelet_game",  # 游戏
+        "pagelet_amusement",  # 娱乐
+        "pagelet_bangumi_list",  # 番剧
+        "pagelet_life",  # 生活
+        "pagelet_tech",  # 科技
+        "pagelet_dance",  # 舞蹈·偶像
+        "pagelet_music",  # 音乐
+        "pagelet_film",  # 影视
+        "pagelet_fishpond",  # 鱼塘
+        "pagelet_sport",  # 体育
+    ]
     index_obj = None
     index_pagelets = []
     nav_data = dict()
@@ -475,7 +538,7 @@ class AcIndex:
         return datas
 
     def _get_pagelet_api(self, area):
-        assert area in pagelets_from_api
+        assert area in self.pagelets_from_api
         param = {
             "pagelets": area, "reqID": 0, "ajaxpipe": 1,
             "t": str(time.time_ns())[:13]
@@ -494,9 +557,9 @@ class AcIndex:
     def get(self, area: str, obj=False):
         if area != 'footer' and not area.startswith("pagelet_"):
             area = "pagelet_" + area
-        if area in pagelets_from_page:
+        if area in self.pagelets_from_page:
             raw_data = self._get_pagelet_inner(area)
-        elif area in pagelets_from_api:
+        elif area in self.pagelets_from_api:
             raw_data = self._get_pagelet_api(area)
         else:
             raise ValueError('area not support')

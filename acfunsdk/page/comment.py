@@ -1,6 +1,5 @@
 # coding=utf-8
 import time
-from rich.progress import Progress
 from acfunsdk.source import routes, apis
 from acfunsdk.exceptions import *
 
@@ -59,28 +58,25 @@ class AcComment:
         req = self.acer.client.get(apis['comment_subs'], params=param)
         return req.json()
 
-    def get_all_comment(self):
+    def get_all_comments(self):
         self.hot_comments = list()
         self.root_comments = list()
         self.sub_comments = dict()
         page = 1
         page_max = 10
-        with Progress() as pp:
-            comments = pp.add_task("AcComment", total=page_max)
-            while page <= page_max:
-                api_data = self._get_data(page)
-                if api_data.get('result') != 0:
-                    print(api_data)
-                    break
-                self.hot_comments.extend(api_data.get('hotComments', []))
-                self.root_comments.extend(api_data.get('rootComments', []))
-                self.sub_comments.update(api_data.get('subCommentsMap', {}))
-                page_max = api_data.get('totalPage', page)
-                page = api_data.get('curPage', 1)
-                page += 1
-                pp.update(comments, total=page_max, completed=page)
-            pp.update(comments, total=page_max, completed=page_max)
-            pp.stop()
+        while page <= page_max:
+            api_data = self._get_data(page)
+            if api_data.get('result') != 0:
+                print(api_data)
+                break
+            self.hot_comments.extend(api_data.get('hotComments', []))
+            self.root_comments.extend(api_data.get('rootComments', []))
+            self.sub_comments.update(api_data.get('subCommentsMap', {}))
+            page_max = api_data.get('totalPage', page)
+            page = api_data.get('curPage', 1)
+            if page_max > 9:
+                print(f"loading comments: {page}/{page_max}")
+            page += 1
 
         for rid, sub_data in self.sub_comments.items():
             while sub_data['pcursor'] != "no_more":

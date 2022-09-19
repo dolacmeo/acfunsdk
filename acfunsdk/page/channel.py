@@ -2,7 +2,7 @@
 import json
 import time
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis, ChannelList
+from acfunsdk.source import routes, apis, channel_data
 from acfunsdk.page.utils import match1
 
 __author__ = 'dolacmeo'
@@ -76,7 +76,7 @@ class ChannelBlock:
 
 
 class AcChannel:
-    channel_data = ChannelList
+    channel_data = channel_data
     nav_data = dict()
     channel_obj = None
     is_main = False

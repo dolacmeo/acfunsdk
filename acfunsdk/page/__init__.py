@@ -27,7 +27,7 @@ __author__ = 'dolacmeo'
 
 class AcFun:
     nav_data = dict()
-    channel_data = source.ChannelList
+    channel_data = source.channel_data
     AcInfo = AcInfo
     AcReport = AcReport
     AcAcademy = AcAcademy

@@ -38,7 +38,6 @@ python = "^3.8"
 httpx = "^0.23"
 lxml = "^4.9"
 beautifulsoup4 = "^4.11"
-rich = "^12.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

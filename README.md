@@ -76,33 +76,6 @@ print(demo_doodle)
 
 - - -
 
-<details>
-<summary>DEMOs</summary>
-
-**以下DEMO列举了主要的使用方法，具体请自行研究。**
-
-## 👤 主要对象
-
-+ 主对象acer示例 [acer_demo.py][acer] 
-
-## 📖 综合页面对象
-
-+ 首页对象示例 [index_reader.py][index] 
-+ 频道对象示例 [channel_reader.py][channel] 
-+ 搜索对象示例 [search_reader.py][search] 
-
-## 🔗 内容页面对象
-
-+ 番剧对象 [bangumi_demo.py][bangumi]
-+ 视频对象 [video_demo.py][video]
-+ 文章对象 [article_demo.py][article]
-+ 合集对象 [album_demo.py][album]
-+ UP主对象 [member_demo.py][member]
-+ 动态对象 [moment_demo.py][moment]
-+ 直播对象 [live_demo.py][live]
-
-</details>
-
 
 <details>
 <summary>依赖库</summary>
@@ -112,7 +85,6 @@ print(demo_doodle)
 + [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
 + [`lxml`](https://pypi.org/project/lxml/)`>=4.9`
 + [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
-+ [`rich`](https://pypi.org/project/rich/)`>=12.5`
 
 </details>
 

@@ -50,6 +50,7 @@ class AcLiveUp:
     liveId = None
     enterRoomAttach = None
     availableTickets = []
+    report_data = dict()
 
     def __init__(self, acer, uid: [int, str], raw: [dict, None] = None):
         self.acer = acer
@@ -60,6 +61,8 @@ class AcLiveUp:
         self.AcUp = self.acer.acfun.AcUp(self.uid)
         self.media_data = self.media_list()
         self.is_404 = self.AcUp.is_404
+        self.report_data['host'] = self._get_report_data('liveStream')
+        self.report_data['audience'] = self._get_report_data('liveStreamAudience')
 
     @property
     def title(self):
@@ -75,6 +78,11 @@ class AcLiveUp:
     @property
     def referer(self):
         return f"{routes['live']}{self.uid}"
+
+    @property
+    def past_time(self):
+        p = (time.time_ns() // pow(10, 6)) - self.raw.get("createTime", 0)
+        return p if p > 0 else -1
 
     def __repr__(self):
         return f"AcLive(#{self.uid} {self.title} @{self.username})".encode(errors='replace').decode()
@@ -236,78 +244,63 @@ class AcLiveUp:
             print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
         return live_obs_stream
 
-    def report(self):
-        raise RuntimeError("UNFINISHED")
+    def _get_report_data(self, sub_biz: str):
+        assert sub_biz in ['liveStream', 'liveStreamAudience']
+        api_name = {
+            'liveStream': "live_report_h0",
+            'liveStreamAudience': "live_report_a0"
+        }
+        data = {
+            "subBiz": sub_biz,
+            "kpn": "ACFUN_APP",
+            "kpf": "PC_WEB",
+            "appver": "1.0.0",
+            "userId": self.acer.uid,
+            "did": self.acer.did,
+        }
+        data = self.acer.update_token(data)
+        api_req = self.acer.client.post(apis[api_name[sub_biz]], params=data, json=data)
+        api_data = api_req.json()
+        assert api_data.get("result") == 1
+        config = json.loads(api_data.get('json'))
+        options = list()
+        for x in config['config']['props']['children']:
+            text = x['label']
+            key = x['output']
+            option_id = api_data['reportCodeMap'][key]
+            options.append({'id': option_id, 'key': key, 'text': text})
+        return options
 
-    # def record(self, save_path: [str, os.PathLike], quality: int = 1):
-    #     live_adapt = self.media_list()
-    #     if live_adapt is False:
-    #         return False
-    #     if quality not in range(len(live_adapt)):
-    #         quality = 1
-    #     now_time = time.strftime('%Y%m%dT%H%M%S', time.localtime(time.time()))
-    #     live_obs_stream = live_adapt[quality]['url']
-    #     stream_split = parse.urlsplit(live_obs_stream)
-    #     stream_key = parse.parse_qs(stream_split.query).get('auth_key', [])[0]
-    #     live_obs_stream = f"{stream_split.scheme}://{stream_split.netloc}{stream_split.path}?auth_key={stream_key}"
-    #     if os.path.exists(save_path) is True:
-    #         if os.path.isdir(save_path) is True:
-    #             save_path = os.path.join(save_path, f"AcLive({self.uid})@{now_time}.mp4")
-    #         elif os.path.isfile(save_path) is True:
-    #             print(f"save_path is exist! {save_path}")
-    #             return False
-    #     else:
-    #         if os.path.isdir(save_path) is True:
-    #             print(f"save_path is not exist! {save_path}")
-    #             return False
-    #     if not save_path.endswith('.mp4'):
-    #         save_path += ".mp4"
-    #     ffmpeg = get_usable_ffmpeg()
-    #     if ffmpeg is None:
-    #         print(f"record need ffmpeg")
-    #         return False
-    #     cmd_with_progress = [
-    #         ffmpeg,
-    #         "-progress", "-", "-nostats",
-    #         '-loglevel', '+repeat',
-    #         "-i", f"{live_obs_stream}",
-    #         "-c:v", "copy", "-c:a", "copy",
-    #         f"{save_path}"
-    #     ]
-    #     p = subprocess.Popen(
-    #         cmd_with_progress,
-    #         stdin=subprocess.PIPE,
-    #         stdout=subprocess.PIPE,
-    #         stderr=subprocess.STDOUT,
-    #         universal_newlines=False)
-    #     begin_read = False
-    #     tmp = dict()
-    #     console = Console()
-    #
-    #     def display_tui(data):
-    #         filesize = int(data.get('total_size', 0))
-    #         infos = f" 已录制 {data.get('out_time', '00:00:00.000000')}\r\n " \
-    #                 f" 比特率: {data.get('bitrate', '???')}   " \
-    #                 f"大小: {sizeof_fmt(filesize): >6} "
-    #         record_panel = Panel(Text(infos, justify='center'),
-    #                              title=f"AcLive({self.uid})@{now_time}.mp4",
-    #                              border_style='red', width=50, style="black on white")
-    #         return record_panel
-    #
-    #     with Live(console=console) as live:
-    #         while True:
-    #             if p.stdout is None:
-    #                 continue
-    #             stderr_line = p.stdout.readline().decode("utf-8", errors="replace").strip()
-    #             if stderr_line == "" and p.poll() is not None:
-    #                 break
-    #             if stderr_line == "Press [q] to stop, [?] for help":
-    #                 begin_read = True
-    #                 continue
-    #             if begin_read is True:
-    #                 r = stderr_line.split('=')
-    #                 tmp.update({r[0]: r[1]})
-    #                 live.update(Align.center(display_tui(tmp)))
-    #
-    #     return True
+    def _report_req(self, sub_biz: str, code: int, reason: [str, None] = None):
+        api_name = {
+            'liveStream': "live_report_h1",
+            'liveStreamAudience': "live_report_a1"
+        }
+        data = {
+            "reportCode": code,
+            "reportedObject": f"{self.uid}",
+            "extra": "{\"report_time\":" + str(self.past_time) + "}"
+        }
+        if isinstance(reason, str):
+            data['reportReason'] = {"reason": reason}
+        param = {
+            "subBiz": sub_biz,
+            "kpn": "ACFUN_APP",
+            "kpf": "PC_WEB",
+            "appver": "1.0.0",
+            "userId": self.acer.uid,
+            "did": self.acer.did,
+        }
+        api_req = self.acer.client.post(apis[api_name[sub_biz]], params=param, json=data)
+        api_data = api_req.json()
+        return api_data
 
+    def report_host(self, code: int, reason: [str, None] = None):
+        codes = [i['id'] for i in self.report_data['host']]
+        assert code in codes
+        return self._report_req('liveStream', code, reason)
+
+    def report_audience(self, code: int, reason: [str, None] = None):
+        codes = [i['id'] for i in self.report_data['audience']]
+        assert code in codes
+        return self._report_req('liveStreamAudience', code, reason)

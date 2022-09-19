@@ -4,12 +4,12 @@
 __author__ = 'dolacmeo'
 
 header = {
-    "Referer": "https://www.acfun.cn/",
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                  'AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/104.0.5112.102 Safari/537.36'
+    "Referer":          "https://www.acfun.cn/",
+    "accept-encoding":  "gzip, deflate, br",
+    "accept-language":  "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                        'AppleWebKit/537.36 (KHTML, like Gecko) '
+                        'Chrome/104.0.5112.102 Safari/537.36'
 }
 
 scheme = "https"
@@ -196,6 +196,10 @@ apis = {
     'live_up_contents':  f"{scheme}://{domains['live']}/api/liveExtra/info",
     'live_medal':        f"{scheme}://{domains['live']}/rest/pc-direct/fansClub/live/medalInfo",
     'follow_live_users': f"{scheme}://{domains['main']}/rest/pc-direct/live/followLiveUsers",
+    'live_report_a0':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStreamAudience/file/download",
+    'live_report_a1':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStreamAudience/web/upload",
+    'live_report_h0':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStream/file/download",
+    'live_report_h1':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStream/web/upload",
     # 图片上传
     'image_upload_gettoken': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getToken",
     'image_upload_resume':   "https://upload.kuaishouzt.com/api/upload/resume",
@@ -242,96 +246,7 @@ websocket_links = [
     "wss://klink-newproduct-ws3.kuaishouzt.com",
 ]
 
-pagelets_from_page = [
-    "pagelet_banner",  # banner
-    "pagelet_navigation",  # 导航栏
-    'pagelet_top_area',  # 置顶
-    'pagelet_monkey_recommend',  # 猴子推荐
-    'pagelet_live',  # 直播
-    'pagelet_spring_festival',  # 春季节日活动
-    'pagelet_list_banana',  # 香蕉榜
-    'footer',  # 页脚
-]
-
-pagelets_from_api = [
-    "pagelet_header",  # 顶栏
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-    "pagelet_bangumi_list",  # 番剧
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-]
-
-pagelets_big = [
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-]
-
-pagelets_normal = [
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-]
-
-pagelets = [
-    "pagelet_header",  # 顶栏
-    "pagelet_banner",  # banner
-    "pagelet_navigation",  # 导航栏
-    'pagelet_top_area',  # 置顶
-    'pagelet_monkey_recommend',  # 猴子推荐
-    'pagelet_live',  # 直播
-    'pagelet_spring_festival',  # 春季节日活动
-    'pagelet_list_banana',  # 香蕉榜
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-    "pagelet_bangumi_list",  # 番剧
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-    'footer',  # 页脚
-]
-
-pagelets_name = {
-    "pagelet_header": "顶栏",
-    "pagelet_banner": "Banner",
-    "pagelet_navigation": "导航栏",
-    'pagelet_top_area': "置顶",
-    'pagelet_monkey_recommend': "猴子推荐",
-    'pagelet_live': "直播",
-    'pagelet_spring_festival': "春季节日活动",
-    'pagelet_list_banana': "香蕉榜",
-    "pagelet_douga": "动画",
-    "pagelet_game": "游戏",
-    "pagelet_amusement": "娱乐",
-    "pagelet_bangumi_list": "番剧",
-    "pagelet_life": "生活",
-    "pagelet_tech": "科技",
-    "pagelet_dance": "舞蹈·偶像",
-    "pagelet_music": "音乐",
-    "pagelet_film": "影视",
-    "pagelet_fishpond": "鱼塘",
-    "pagelet_sport": "体育",
-    "pagelet_footer": "页脚",
-    "footer": "页脚",
-}
-
-ChannelList = [
+channel_data = [
     {
         "children": [
             {

@@ -178,8 +178,6 @@ cython_debug/
 
 download/
 acfunsdk/assets/
-acfunsdk/src/protos
-acfunsdk/src/protoc.exe
 ffmpeg.exe
 *.cookies
 scratch.py

@@ -1,8 +1,9 @@
 # coding=utf-8
 import json
 import time
+from urllib import parse
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import apis
+from acfunsdk.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -34,6 +35,15 @@ class AcSearch:
             self.search_type = s_type
         else:
             self.search_type = 'complex'
+
+    @property
+    def referer(self):
+        param = {
+            "keyword": self.keyword,
+            "type": self.search_type,
+            "pCursor": 1,
+        }
+        return f"{routes['search']}?{parse.urlencode(param)}"
 
     def _get_data(self, page: int = 1, sortby: int = 1, channel_id: int = 0):
         if 1 > sortby > 5:
@@ -67,17 +77,17 @@ class AcSearch:
         for item in self.result_obj.select('[class^=search-]'):
             if 'data-up-exposure-log' in item.attrs.keys():
                 json_data = json.loads(item.attrs['data-up-exposure-log'])
-                item_data.append(self.acer.AcUp({'userId': json_data['up_id']}))
+                item_data.append(self.acer.acfun.AcUp(json_data['up_id']))
             else:
                 json_data = json.loads(item.attrs['data-exposure-log'])
                 if 'search-video' in item.attrs['class']:
-                    item_data.append(self.acer.AcVideo(json_data['content_id'], {"title": json_data['title']}))
+                    item_data.append(self.acer.acfun.AcVideo(json_data['content_id'], {"title": json_data['title']}))
                 elif 'search-article' in item.attrs['class']:
-                    item_data.append(self.acer.AcArticle(json_data['content_id'], {"title": json_data['title']}))
+                    item_data.append(self.acer.acfun.AcArticle(json_data['content_id'], {"title": json_data['title']}))
                 elif 'search-album' in item.attrs['class']:
-                    item_data.append(self.acer.AcAlbum(json_data['content_id']))
+                    item_data.append(self.acer.acfun.AcAlbum(json_data['content_id']))
                 elif 'search-bangumi' in item.attrs['class']:
-                    item_data.append(self.acer.AcBangumi(json_data['content_id']))
+                    item_data.append(self.acer.acfun.AcBangumi(json_data['content_id']))
         return item_data
 
 

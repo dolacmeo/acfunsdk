@@ -4,6 +4,7 @@ import httpx
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import match1
+
 __author__ = 'dolacmeo'
 
 
@@ -23,14 +24,17 @@ class AcDoodle:
         self.doodle_id = doodle_id
         if self.doodle_id.endswith(".html"):
             self.doodle_id = self.doodle_id[:-5]
-        self.full_url = f"{routes['doodle']}{self.doodle_id}.html"
         self.loading()
 
     def __repr__(self):
         return f"AcDoodle({self.doodle_title})"
 
+    @property
+    def referer(self):
+        return f"{routes['doodle']}{self.doodle_id}.html"
+
     def loading(self):
-        page_req = httpx.get(self.full_url)
+        page_req = httpx.get(self.referer)
         self.page_obj = Bs(page_req.text, 'lxml')
         self.doodle_title = self.page_obj.select_one('title').text
         json_text = match1(page_req.text, r"(?s)__schema__\s*=\s*'(\{.*?\})';")

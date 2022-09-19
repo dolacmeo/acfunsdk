@@ -4,194 +4,237 @@
 __author__ = 'dolacmeo'
 
 header = {
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                  'AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/104.0.5112.102 Safari/537.36'
+    "Referer":          "https://www.acfun.cn/",
+    "accept-encoding":  "gzip, deflate, br",
+    "accept-language":  "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                        'AppleWebKit/537.36 (KHTML, like Gecko) '
+                        'Chrome/104.0.5112.102 Safari/537.36'
 }
 
 scheme = "https"
 
 domains = {
-    "main": "www.acfun.cn",
-    "msg": "message.acfun.cn",
-    "user": "member.acfun.cn",
-    "live": "live.acfun.cn",
-    "mobile": "m.acfun.cn",
-    "hd": "hd.acfun.cn",
-    "ks_api": "api.kuaishouzt.com",
-    "id_api": "id.app.acfun.cn",
-    "app_cdn": "sec-cdn.gifshow.com",
-    "app_sdk": "acfun-log-sdk.gifshow.com",
-    "app_api": "api-new.app.acfun.cn",
+    "main":     "www.acfun.cn",
+    "msg":      "message.acfun.cn",
+    "user":     "member.acfun.cn",
+    "live":     "live.acfun.cn",
+    "mobile":   "m.acfun.cn",
+    "hd":       "hd.acfun.cn",
+    "ks_api":   "api.kuaishouzt.com",
+    "id_api":   "id.app.acfun.cn",
+    "app_cdn":  "sec-cdn.gifshow.com",
+    "app_sdk":  "acfun-log-sdk.gifshow.com",
+    "app_api":  "api-new.app.acfun.cn",
     "api_ipv6": "api-ipv6.acfunchina.com",
 }
 
 routes = {
-    "index": f"{scheme}://{domains['main']}",
-    "bangumi_list": f"{scheme}://{domains['main']}/bangumilist",
-    "ico": f"{scheme}://{domains['main']}/favicon.ico",
-    "video": f"{scheme}://{domains['main']}/v/ac",
-    "article": f"{scheme}://{domains['main']}/a/ac",
-    "album": f"{scheme}://{domains['main']}/a/aa",
-    "bangumi": f"{scheme}://{domains['main']}/bangumi/aa",
-    "up": f"{scheme}://{domains['main']}/u/",
-    'moment': f"{scheme}://{domains['main']}/moment/am",
-    "live_index": f"{scheme}://{domains['live']}/",
-    "live": f"{scheme}://{domains['live']}/live/",
-    "share": f"{scheme}://{domains['mobile']}/v/?ac=",
-    'feeds': f"{scheme}://{domains['main']}/member/feeds",
-    'im': f"{scheme}://{domains['msg']}/im",
-    "emot": f"{scheme}://{domains['main']}/emot/",
-    "app": f"{scheme}://{domains['main']}/app/",
-    "doodle": f"{scheme}://{domains['hd']}/doodle/",
+    "ico":              f"{scheme}://{domains['main']}/favicon.ico",
+    "index":            f"{scheme}://{domains['main']}",
+    "help":             f"{scheme}://{domains['main']}/about/help",
+    "info":             f"{scheme}://{domains['main']}/info",
+    "search":           f"{scheme}://{domains['main']}/search",
+    "bangumi_list":     f"{scheme}://{domains['main']}/bangumilist",
+    "rank":             f"{scheme}://{domains['main']}/rank/list/",
+    "live_index":       f"{scheme}://{domains['live']}",
+    "app":              f"{scheme}://{domains['main']}/app/",
+    "emot":             f"{scheme}://{domains['main']}/emot/",
+    "member":           f"{scheme}://{domains['main']}/member/",
+    'feeds':            f"{scheme}://{domains['main']}/member/feeds",
+    "member_following": f"{scheme}://{domains['main']}/member/feeds/following",
+    "member_favourite": f"{scheme}://{domains['main']}/member/favourite",
+    "member_album":     f"{scheme}://{domains['main']}/member/album",
+    "member_mall":      f"{scheme}://{domains['main']}/member/mall",
+    "medallist":        f"{scheme}://{domains['main']}/medallist",
+    'im':               f"{scheme}://{domains['msg']}/im",
+    "up_index":         f"{scheme}://{domains['user']}",
+    "danmaku_manage":   f"{scheme}://{domains['user']}/inter-active/danmaku-manage",
+    "bangumi":          f"{scheme}://{domains['main']}/bangumi/aa",
+    "video":            f"{scheme}://{domains['main']}/v/ac",
+    "article":          f"{scheme}://{domains['main']}/a/ac",
+    "album":            f"{scheme}://{domains['main']}/a/aa",
+    "up":               f"{scheme}://{domains['main']}/u/",
+    'moment':           f"{scheme}://{domains['main']}/moment/am",
+    "live":             f"{scheme}://{domains['live']}/live/",
+    "doodle":           f"{scheme}://{domains['hd']}/doodle/",
+    "share":            f"{scheme}://{domains['mobile']}/v/?ac=",
 }
 
 apis = {
-    'cdn_domain': f"{scheme}://{domains['main']}/rest/pc-direct/image/cdnDomain",
-    'check_username': f"{scheme}://{domains['main']}/rest/pc-direct/user/checkNameUnique",
-    'search_user': f"{scheme}://{domains['main']}/rest/pc-direct/search/user",
-    'message': f"{scheme}://{domains['msg']}/",
-    'token_visitor': f"{scheme}://{domains['id_api']}/rest/app/visitor/login",
-    'token': f"{scheme}://{domains['id_api']}/rest/web/token/get",
-    'nav': f"{scheme}://{domains['main']}/rest/pc-direct/page/queryNavigators",
-    'emot': f"{scheme}://{domains['main']}/rest/pc-direct/emotion/getUserEmotion",
-    'login': f"{scheme}://{domains['id_api']}/rest/web/login/signin",
-    'logout': f"{scheme}://{domains['id_api']}/rest/web/logout",
-    'signIn': f"{scheme}://{domains['main']}/rest/pc-direct/user/signIn",
-    'personalInfo': f"{scheme}://{domains['main']}/rest/pc-direct/user/personalInfo",
-    'personalBasicInfo': f"{scheme}://{domains['main']}/rest/pc-direct/user/personalBasicInfo",
-    'acoinBalance': f"{scheme}://{domains['main']}/rest/pc-direct/pay/wallet/acoinBalance",
-    'userInfo': f"{scheme}://{domains['main']}/rest/pc-direct/user/userInfo",
-    'getStaff': f"{scheme}://{domains['main']}//rest/pc-direct/staff/getStaff",
-    'updateSignature': f"{scheme}://{domains['main']}/rest/pc-direct/user/updateSignature",
-    'channel_list': f"{scheme}://{domains['user']}/common/api/getChannelList",
-    'rank_list': f"{scheme}://{domains['main']}/rest/pc-direct/rank/channel",
-    'album_list': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/list",
-    'search': f"{scheme}://{domains['main']}/search",
-    'search_keywords': f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
-    'history': f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
-    'unread': f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
-
-    'video_ksplay': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
-    'video_scenes': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
-    'video_quality': f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST
-
-    'get_users': f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
-    'follow': f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",
-    'follow_fans': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getFollows",
-    'follow_groups': f"{scheme}://{domains['main']}/rest/pc-direct/relation/getGroups",
-    'follow_group': f"{scheme}://{domains['main']}/rest/pc-direct/relation/group",
-    'favorite_add': f"{scheme}://{domains['main']}/rest/pc-direct/favorite",
-    'favorite_remove': f"{scheme}://{domains['main']}/rest/pc-direct/unFavorite",
-    'favorite_video': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/dougaList",
-    'favorite_article': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/articleList",
-    'favorite_bangumi': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/bangumiList",
-    'favorite_album': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/albumList",
-
-    'like_add': f"{scheme}://kuaishouzt.com/rest/zt/interact/add",
-    'like_delete': f"{scheme}://kuaishouzt.com/rest/zt/interact/delete",
-
-    'video_favorite_list': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/list",
-    'video_favorite_group_add': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/add",
-    'video_favorite_group_update': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/update",
-    'video_favorite_group_delete': f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/delete",
-    'throw_banana': f"{scheme}://{domains['main']}/rest/pc-direct/banana/throwBanana",
-
-    'follow_feed': f"{scheme}://{domains['main']}/rest/pc-direct/feed/followFeedV2",
-    'video_feed': f"{scheme}://{domains['main']}/rest/pc-direct/feed/webPush",
-    'article_feed': f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",
-    'follow_live_users': f"{scheme}://{domains['main']}/rest/pc-direct/live/followLiveUsers",
-
-    'comment': f"{scheme}://{domains['main']}/rest/pc-direct/comment/list",
-    'comment_floor': f"{scheme}://{domains['main']}/rest/pc-direct/comment/listByFloor",
-    'comment_subs': f"{scheme}://{domains['main']}/rest/pc-direct/comment/sublist",
-    'comment_add': f"{scheme}://{domains['main']}/rest/pc-direct/comment/add",
-    'comment_delete': f"{scheme}://{domains['main']}/rest/pc-direct/comment/delete",
-    'comment_like': f"{scheme}://{domains['main']}/rest/pc-direct/comment/like",
-    'comment_unlike': f"{scheme}://{domains['main']}/rest/pc-direct/comment/unlike",
-    'danmaku': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/list",
-    'danmaku_add': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/add",
-    'danmaku_get': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/pollByPosition",
-    'danmaku_like': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/like",
-    'danmaku_like_cancel': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/like/cancel",
-    'danmaku_block_add': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/blockWords/add",
+    # 杂项
+    'cdn_domain':    f"{scheme}://{domains['main']}/rest/pc-direct/image/cdnDomain",
+    'nav':           f"{scheme}://{domains['main']}/rest/pc-direct/page/queryNavigators",
+    'emot':          f"{scheme}://{domains['main']}/rest/pc-direct/emotion/getUserEmotion",
+    'feedback':      f"{scheme}://{domains['main']}/rest/pc-direct/feedback/userFeedback",
+    'app_download':  f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
+    'face_catcher':  f"{scheme}://{domains['main']}/face/api/getKconf",
+    'app':           f"{scheme}://{domains['mobile']}/app/download",
+    'message':       f"{scheme}://{domains['msg']}/",
+    'qrcode':        "https://ksurl.cn/createqrcode",
+    # 基础接口
+    'rank_list':            f"{scheme}://{domains['main']}/rest/pc-direct/rank/channel",
+    'search':               f"{scheme}://{domains['main']}/search",
+    'search_keywords':      f"{scheme}://{domains['main']}/rest/pc-direct/homePage/searchDefault",
+    'history_del_all':      f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/deleteAll",
+    'history':              f"{scheme}://{domains['main']}/rest/pc-direct/browse/history/list",
+    'report':               f"{scheme}://{domains['main']}/rest/pc-direct/exposures/spam",
+    'getStaff':             f"{scheme}://{domains['main']}/rest/pc-direct/staff/getStaff",
+    'video_ksplay':         f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
+    'video_scenes':         f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
+    'video_quality':        f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST
+    'report_task':          f"{scheme}://{domains['api_ipv6']}/rest/app/task/reportTaskAction",
+    'article_feed':         f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",
+    'follow_feed':          f"{scheme}://{domains['main']}/rest/pc-direct/feed/followFeedV2",
+    'video_feed':           f"{scheme}://{domains['main']}/rest/pc-direct/feed/webPush",
+    # 用户相关
+    'login':                f"{scheme}://{domains['id_api']}/rest/web/login/signin",
+    'logout':               f"{scheme}://{domains['id_api']}/rest/web/logout",
+    'token':                f"{scheme}://{domains['id_api']}/rest/web/token/get",
+    'token_visitor':        f"{scheme}://{domains['id_api']}/rest/app/visitor/login",
+    'bind_ksaccount':       f"{scheme}://{domains['id_api']}/rest/web/central/ksaccount/status",
+    'signIn':               f"{scheme}://{domains['main']}/rest/pc-direct/user/signIn",
+    'check_username':       f"{scheme}://{domains['main']}/rest/pc-direct/user/checkNameUnique",
+    'get_users':            f"{scheme}://{domains['main']}/rest/pc-direct/user/getUserCardList",  # POST form:ids
+    'personalBasicInfo':    f"{scheme}://{domains['main']}/rest/pc-direct/user/personalBasicInfo",
+    'personalInfo':         f"{scheme}://{domains['main']}/rest/pc-direct/user/personalInfo",
+    'userInfo':             f"{scheme}://{domains['main']}/rest/pc-direct/user/userInfo",
+    'updateSignature':      f"{scheme}://{domains['main']}/rest/pc-direct/user/updateSignature",
+    'acoinBalance':         f"{scheme}://{domains['main']}/rest/pc-direct/pay/wallet/acoinBalance",
+    'search_user':          f"{scheme}://{domains['main']}/rest/pc-direct/search/user",
+    'academy_tea':          f"{scheme}://{domains['user']}/academy/api/acerTeaList",
+    'checkLiveAuth':        f"{scheme}://{domains['user']}/common/api/checkLiveAuth",
+    'checkUserPermission':  f"{scheme}://{domains['user']}/common/api/checkUserPermission",
+    'channel_list':         f"{scheme}://{domains['user']}/common/api/getChannelList",
+    'getLiveTypeList':      f"{scheme}://{domains['user']}/common/api/getLiveTypeList",
+    'showFans':             f"{scheme}://{domains['user']}/common/api/showFansClubApplyEntrance",
+    'dataCenter_content':   f"{scheme}://{domains['user']}/dataCenter/api/contentData",
+    'dataCenter_live':      f"{scheme}://{domains['user']}/dataCenter/api/liveData",
+    'dataCenter_overview':  f"{scheme}://{domains['user']}/dataCenter/api/overview",
+    'ban_danmaku':          f"{scheme}://{domains['user']}/interActive/api/getForbiddenWords",
+    'ban_danmaku_add':      f"{scheme}://{domains['user']}/interActive/api/addForbiddenWords",
+    'ban_danmaku_del':      f"{scheme}://{domains['user']}/interActive/api/delForbiddenWords",
+    'checkFansClubAuth':    f"{scheme}://{domains['user']}/interActive/api/checkFansClubAuth",
+    'protect_danmaku':      f"{scheme}://{domains['user']}/interActive/api/updateDanmakuRank",
+    'delete_danmaku':       f"{scheme}://{domains['user']}/interActive/api/deleteDanmaku",
+    'search_danmaku':       f"{scheme}://{domains['user']}/interActive/api/searchDanmaku",
+    'search_danmaku_adv':   f"{scheme}://{domains['user']}/interActive/api/searchDanmakuAdvanced",
+    'danmaku_setup':        f"{scheme}://{domains['user']}/interActive/api/setAdvancedAvailable",
+    'danmaku_videos':       f"{scheme}://{domains['user']}/interActive/api/getDougaList",
+    'danmaku_config':       f"{scheme}://{domains['user']}/interActive/api/getAdvancedAvailable",
+    'member_posted':        f"{scheme}://{domains['user']}/list/api/queryContributeList",
+    'getUserLiveCut':       f"{scheme}://{domains['user']}/liveToll/api/getUserLiveCut",
+    'shop_list':            f"{scheme}://{domains['main']}/rest/pc-direct/shop/productList",
+    'shop_user_item':       f"{scheme}://{domains['main']}/rest/pc-direct/shop/userItem",
+    'shop_user_item_use':   f"{scheme}://{domains['main']}/rest/pc-direct/shop/useItem",
+    'shop_user_item_unuse': f"{scheme}://{domains['main']}/rest/pc-direct/shop/unUseItem",
+    'unread':               f"{scheme}://{domains['main']}/rest/pc-direct/clock/r",
+    # 投蕉
+    'throw_banana':         f"{scheme}://{domains['main']}/rest/pc-direct/banana/throwBanana",
+    # 评论
+    'comment':              f"{scheme}://{domains['main']}/rest/pc-direct/comment/list",
+    'comment_floor':        f"{scheme}://{domains['main']}/rest/pc-direct/comment/listByFloor",
+    'comment_subs':         f"{scheme}://{domains['main']}/rest/pc-direct/comment/sublist",
+    'comment_add':          f"{scheme}://{domains['main']}/rest/pc-direct/comment/add",
+    'comment_delete':       f"{scheme}://{domains['main']}/rest/pc-direct/comment/delete",
+    'comment_like':         f"{scheme}://{domains['main']}/rest/pc-direct/comment/like",
+    'comment_unlike':       f"{scheme}://{domains['main']}/rest/pc-direct/comment/unlike",
+    # 弹幕
+    'danmaku':              f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/list",
+    'danmaku_get':          f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/pollByPosition",
+    'danmaku_add':          f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/add",
+    'danmaku_like':         f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/like",
+    'danmaku_like_cancel':  f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/like/cancel",
+    'danmaku_block_add':    f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/blockWords/add",
     'danmaku_block_delete': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/blockWords/delete",
-    'danmaku_report': f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/report",
-
-    'member_posted': f"{scheme}://{domains['user']}/list/api/queryContributeList",
-    'checkUserPermission': f"{scheme}://{domains['user']}/common/api/checkUserPermission",
-    'dataCenter_overview': f"{scheme}://{domains['user']}/dataCenter/api/overview",
-    'dataCenter_content': f"{scheme}://{domains['user']}/dataCenter/api/contentData",
-    'dataCenter_live': f"{scheme}://{domains['user']}/dataCenter/api/liveData",
-
-    'checkLiveAuth': f"{scheme}://{domains['user']}/common/api/checkLiveAuth",
-    'getLiveTypeList': f"{scheme}://{domains['user']}/common/api/getLiveTypeList",
-    'getUserLiveCut': f"{scheme}://{domains['user']}/liveToll/api/getUserLiveCut",
-    'showFansClubApplyEntrance': f"{scheme}://{domains['user']}/common/api/showFansClubApplyEntrance",
-    'checkFansClubAuth': f"{scheme}://{domains['user']}/interActive/api/checkFansClubAuth",
-    'bind_ksaccount': f"{scheme}://{domains['id_api']}/rest/web/central/ksaccount/status",
-    'live_obs_status': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/status",
-    'live_obs_config': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/config",
-    'live_play': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/startPlay",
-    'live_watching': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/watchingList",
-    'live_danmaku': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/comment",
-    'live_gift_list': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/list",
-    'live_send_gift': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/send",
-    'live_like': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/like",
-    'live_balance': f"{scheme}://{domains['ks_api']}/rest/zt/live/web/pay/wallet/balance",
-    'live_list': f"{scheme}://{domains['live']}/api/channel/list",
-    'live_info': f"{scheme}://{domains['live']}/api/live/info",
-    'live_up_contents': f"{scheme}://{domains['live']}/api/liveExtra/info",
-
-    'app_download': f"{scheme}://{domains['main']}/rest/pc-direct/download/channel/packageUrl?channel=default",
-    'face_catcher': f"{scheme}://{domains['main']}/face/api/getKconf",
-
+    'danmaku_report':       f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/report",
+    # 收藏
+    'favorite_add':         f"{scheme}://{domains['main']}/rest/pc-direct/favorite",
+    'favorite_remove':      f"{scheme}://{domains['main']}/rest/pc-direct/unFavorite",
+    'favorite_album_list':  f"{scheme}://{domains['main']}/rest/pc-direct/favorite/albumList",
+    'favorite_list':        f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/list",
+    'favorite_group_add':   f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/add",
+    'favorite_group_delete':f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/delete",
+    'favorite_group_update':f"{scheme}://{domains['main']}/rest/pc-direct/favorite/folder/update",
+    'favorite_album':       f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/albumList",
+    'favorite_article':     f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/articleList",
+    'favorite_bangumi':     f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/bangumiList",
+    'favorite_video':       f"{scheme}://{domains['main']}/rest/pc-direct/favorite/resource/dougaList",
+    # 关注
+    'follow':               f"{scheme}://{domains['main']}/rest/pc-direct/relation/follow",
+    'follow_fans':          f"{scheme}://{domains['main']}/rest/pc-direct/relation/getFollows",
+    'follow_groups':        f"{scheme}://{domains['main']}/rest/pc-direct/relation/getGroups",
+    'follow_group':         f"{scheme}://{domains['main']}/rest/pc-direct/relation/group",
+    # 合集
+    'my_album_add':         f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/add",
+    'my_album_content_add': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/add",
+    'my_album_content_del': f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/delete",
+    'album_list':           f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/list",
+    'my_album_contents':    f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/content/list",
+    'my_album_del':         f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/delete",
+    'my_album_update':      f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/modify",
+    'my_album_list':        f"{scheme}://{domains['main']}/rest/pc-direct/arubamu/my/list",
+    # 守护团
+    'live_medal_wear_off':  f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/cancelWear",
+    'live_medal_info':      f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/extraInfo",
+    'live_medal_list':      f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/list",
+    'live_medal_wear_on':   f"{scheme}://{domains['main']}/rest/pc-direct/fansClub/fans/medal/wear",
+    # 直播相关
+    'live_danmaku':      f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/comment",
+    'live_like':         f"{scheme}://{domains['ks_api']}/rest/zt/live/web/audience/action/like",
+    'live_gift_list':    f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/list",
+    'live_send_gift':    f"{scheme}://{domains['ks_api']}/rest/zt/live/web/gift/send",
+    'live_obs_config':   f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/config",
+    'live_obs_status':   f"{scheme}://{domains['ks_api']}/rest/zt/live/web/obs/status",
+    'live_balance':      f"{scheme}://{domains['ks_api']}/rest/zt/live/web/pay/wallet/balance",
+    'live_play':         f"{scheme}://{domains['ks_api']}/rest/zt/live/web/startPlay",
+    'live_watching':     f"{scheme}://{domains['ks_api']}/rest/zt/live/web/watchingList",
+    'like_add':          f"{scheme}://kuaishouzt.com/rest/zt/interact/add",
+    'like_delete':       f"{scheme}://kuaishouzt.com/rest/zt/interact/delete",
+    'live_list':         f"{scheme}://{domains['live']}/api/channel/list",
+    'live_info':         f"{scheme}://{domains['live']}/api/live/info",
+    'live_up_contents':  f"{scheme}://{domains['live']}/api/liveExtra/info",
+    'live_medal':        f"{scheme}://{domains['live']}/rest/pc-direct/fansClub/live/medalInfo",
+    'follow_live_users': f"{scheme}://{domains['main']}/rest/pc-direct/live/followLiveUsers",
+    'live_report_a0':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStreamAudience/file/download",
+    'live_report_a1':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStreamAudience/web/upload",
+    'live_report_h0':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStream/file/download",
+    'live_report_h1':    f"https://report.m.zt.kuaishou.com/rest/zt/report/ACFUN_APP/liveStream/web/upload",
+    # 图片上传
     'image_upload_gettoken': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getToken",
-    'image_upload_resume': "https://upload.kuaishouzt.com/api/upload/resume",
+    'image_upload_resume':   "https://upload.kuaishouzt.com/api/upload/resume",
     'image_upload_fragment': "https://upload.kuaishouzt.com/api/upload/fragment",
     'image_upload_complete': "https://upload.kuaishouzt.com/api/upload/complete",
-    'image_upload_geturl': f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
-    'im_image_upload': "https://sixinpic.kuaishou.com/rest/v2/app/upload",
-
-    'doodle_comment': "https://zt.gifshow.com/rest/zt/comment/list",
-    'doodle_vote': f"{scheme}://{domains['hd']}/block/activity/auth/vote/list",
-
-    'report_task': f"{scheme}://{domains['api_ipv6']}/rest/app/task/reportTaskAction",
-    'qrcode': "https://ksurl.cn/createqrcode",
-
-    'feedback_config': "https://feedback.kuaishou.com/rest/cs/feedback/config/pc",
-    'feedback_tab': "https://feedback.kuaishou.com/rest/cs/feedback/faq/tab",
+    'image_upload_geturl':   f"{scheme}://{domains['main']}/rest/pc-direct/image/upload/getUrlAfterUpload",
+    'im_image_upload':       "https://sixinpic.kuaishou.com/rest/v2/app/upload",
+    # 反馈
+    'feedback_config':   "https://feedback.kuaishou.com/rest/cs/feedback/config/pc",
     'feedback_children': "https://feedback.kuaishou.com/rest/cs/feedback/faq/children",
     'feedback_question': "https://feedback.kuaishou.com/rest/cs/feedback/faq/question",
-
-    'academy_tea': f"{scheme}://{domains['user']}/academy/api/acerTeaList",
+    'feedback_tab':      "https://feedback.kuaishou.com/rest/cs/feedback/faq/tab",
+    # 涂鸦
+    'doodle_vote':      f"{scheme}://{domains['hd']}/block/activity/auth/vote/list",
+    'doodle_comment':   "https://zt.gifshow.com/rest/zt/comment/list",
 }
 
 app_apis = {
-    # 'startup': f"{scheme}://{domains['app_sdk']}/rest/log/sdk/startup",
+    'startup': f"{scheme}://{domains['app_sdk']}/rest/log/sdk/startup",
     'safetyid': f"{scheme}://{domains['app_cdn']}/safetyid",
     'api_startup': f"{scheme}://{domains['app_api']}/rest/app/system/startup",
-    # 'nav_bar': f"{scheme}://{domains['app_api']}/rest/app/configuration/navigationBar",
+    'nav_bar': f"{scheme}://{domains['app_api']}/rest/app/configuration/navigationBar",
     'config': f"{scheme}://{domains['app_api']}/rest/app/abTest/config",
-    # 'search_recommend': f"{scheme}://{domains['api_ipv6']}/rest/app/search/recommend",
-
-    # 'selection_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/selection/feed",
-    # 'tag_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/tag/feed",
-    # 'operations': f"{scheme}://{domains['api_ipv6']}/rest/app/operation/getOperations",
-    # 'uper_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/user/related/category/uperFeed",
-
-    # 'unread_count': f"{scheme}://{domains['api_ipv6']}/rest/app/clock/r",
-
+    'search_recommend': f"{scheme}://{domains['api_ipv6']}/rest/app/search/recommend",
+    'selection_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/selection/feed",
+    'tag_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/tag/feed",
+    'operations': f"{scheme}://{domains['api_ipv6']}/rest/app/operation/getOperations",
+    'uper_feed': f"{scheme}://{domains['api_ipv6']}/rest/app/user/related/category/uperFeed",
+    'unread_count': f"{scheme}://{domains['api_ipv6']}/rest/app/clock/r",
     # 用户APP签到 header需要sign form: access_token
-    # 'app_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/signIn",
-    # 'has_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/hasSignedIn",
-    # 'get_signin_infos': f"{scheme}://{domains['api_ipv6']}/rest/app/user/getSignInInfos",
-
+    'app_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/signIn",
+    'has_signin': f"{scheme}://{domains['api_ipv6']}/rest/app/user/hasSignedIn",
+    'get_signin_infos': f"{scheme}://{domains['api_ipv6']}/rest/app/user/getSignInInfos",
     # 任务中心 header需要sign
-    # 'task_panel': f"{scheme}://{domains['api_ipv6']}/rest/app/task/taskPanel",
-
+    'task_panel': f"{scheme}://{domains['api_ipv6']}/rest/app/task/taskPanel",
 }
 
 websocket_links = [
@@ -203,96 +246,7 @@ websocket_links = [
     "wss://klink-newproduct-ws3.kuaishouzt.com",
 ]
 
-pagelets_from_page = [
-    "pagelet_banner",  # banner
-    "pagelet_navigation",  # 导航栏
-    'pagelet_top_area',  # 置顶
-    'pagelet_monkey_recommend',  # 猴子推荐
-    'pagelet_live',  # 直播
-    'pagelet_spring_festival',  # 春季节日活动
-    'pagelet_list_banana',  # 香蕉榜
-    'footer',  # 页脚
-]
-
-pagelets_from_api = [
-    "pagelet_header",  # 顶栏
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-    "pagelet_bangumi_list",  # 番剧
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-]
-
-pagelets_big = [
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-]
-
-pagelets_normal = [
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-]
-
-pagelets = [
-    "pagelet_header",  # 顶栏
-    "pagelet_banner",  # banner
-    "pagelet_navigation",  # 导航栏
-    'pagelet_top_area',  # 置顶
-    'pagelet_monkey_recommend',  # 猴子推荐
-    'pagelet_live',  # 直播
-    'pagelet_spring_festival',  # 春季节日活动
-    'pagelet_list_banana',  # 香蕉榜
-    "pagelet_douga",  # 动画
-    "pagelet_game",  # 游戏
-    "pagelet_amusement",  # 娱乐
-    "pagelet_bangumi_list",  # 番剧
-    "pagelet_life",  # 生活
-    "pagelet_tech",  # 科技
-    "pagelet_dance",  # 舞蹈·偶像
-    "pagelet_music",  # 音乐
-    "pagelet_film",  # 影视
-    "pagelet_fishpond",  # 鱼塘
-    "pagelet_sport",  # 体育
-    'footer',  # 页脚
-]
-
-pagelets_name = {
-    "pagelet_header": "顶栏",
-    "pagelet_banner": "Banner",
-    "pagelet_navigation": "导航栏",
-    'pagelet_top_area': "置顶",
-    'pagelet_monkey_recommend': "猴子推荐",
-    'pagelet_live': "直播",
-    'pagelet_spring_festival': "春季节日活动",
-    'pagelet_list_banana': "香蕉榜",
-    "pagelet_douga": "动画",
-    "pagelet_game": "游戏",
-    "pagelet_amusement": "娱乐",
-    "pagelet_bangumi_list": "番剧",
-    "pagelet_life": "生活",
-    "pagelet_tech": "科技",
-    "pagelet_dance": "舞蹈·偶像",
-    "pagelet_music": "音乐",
-    "pagelet_film": "影视",
-    "pagelet_fishpond": "鱼塘",
-    "pagelet_sport": "体育",
-    "pagelet_footer": "页脚",
-    "footer": "页脚",
-}
-
-ChannelList = [
+channel_data = [
     {
         "children": [
             {

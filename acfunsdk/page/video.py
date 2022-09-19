@@ -1,23 +1,19 @@
 # coding=utf-8
-import os
 import json
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import ms2time, \
-    get_channel_info, get_page_pagelets, acfun_video_downloader, \
-    AcDanmaku, match1
-from acfunsdk.saver import VideoSaver
+from acfunsdk.page.utils import ms2time, get_channel_info, get_page_pagelets, match1
 
 __author__ = 'dolacmeo'
 
 
 class AcVideo:
+    resource_type = 2
     ac_num = None
     page_obj = None
     page_pagelets = []
     video_data = dict()
     vid = None
-    resourceType = 9
     is_404 = False
 
     def __init__(self, acer, ac_num: [str, int], video_data: [dict, None] = None):
@@ -73,15 +69,12 @@ class AcVideo:
             self.video_data['staffInfos'] = staff_data.get('staffInfos')
             self.video_data['upInfo'] = staff_data.get('upInfo')
 
-    def saver(self, dest_path=None):
-        return VideoSaver(self.acer, self, dest_path)
-
     @property
     def video_list(self):
         return self.video_data.get('videoList', [])
 
     def video_scenes(self):
-        form_data = {"resourceId": self.ac_num, "resourceType": 2,
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type,
                      "videoId": self.video_data.get('currentVideoId')}
         api_req = self.acer.client.post(apis['video_scenes'], data=form_data)
         api_data = api_req.json()
@@ -100,7 +93,7 @@ class AcVideo:
         return {"sprite_image": sprite_img, "pos": pos_data}
 
     def video_hotspot(self):
-        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type}
         api_req = self.acer.client.post(apis['video_hotspot'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') != 0:
@@ -113,57 +106,48 @@ class AcVideo:
         self.loading()
         return True
 
-    def get_ksPlayJson(self, videoId: [str, int, None] = None):
+    def get_ksPlayJson(self, video_id: [str, int, None] = None):
         param = {"resourceId": self.ac_num, "resourceType": 2}
-        if videoId is not None:
-            param['videoId'] = videoId
+        if video_id is not None:
+            param['videoId'] = video_id
         api_req = self.acer.client.get(apis['video_ksplay'], params=param)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
         return api_data.get("playInfo")
 
-    def download(self, num=1, quality=None):
-        self.set_video(num)
-        video_download_path = os.path.join(self.acer.BASE_PATH, f"ac{self.ac_num}")
-        saved = acfun_video_downloader(self.acer.client, self.video_data, video_download_path, quality)
-        if saved is False:
-            return False
-        with open(os.path.join(video_download_path, f"ac{self.ac_num}.json"), 'w') as jfile:
-            json.dump(self.video_data, jfile)
-        return True
-
     def up(self):
-        return self.acer.AcUp(self.video_data.get('user', {}))
+        user = self.video_data.get('user', {})
+        return self.acer.acfun.AcUp(user.get("id"))
 
     def staff(self):
         if self.video_data.get('staffContribute') is not True:
             return None
-        form_data = {"resourceId": self.ac_num, "resourceType": 2}
+        form_data = {"resourceId": self.ac_num, "resourceType": self.resource_type}
         api_req = self.acer.client.post(apis['getStaff'], data=form_data)
         api_data = api_req.json()
         return api_data
 
     def danmaku(self):
-        return AcDanmaku(self.acer, self.video_data)
+        return self.acer.acfun.AcDanmaku(self.video_data)
 
     def comment(self):
-        return self.acer.AcComment(self.ac_num, 3, self.referer)
+        return self.acer.acfun.AcComment(self.ac_num, 3)
 
     def like(self):
-        return self.acer.like(self.ac_num, 2)
+        return self.acer.like_add(self.ac_num, 2)
 
     def like_cancel(self):
-        return self.acer.like_cancel(self.ac_num, 2)
+        return self.acer.like_delete(self.ac_num, 2)
 
     def favorite_add(self, folder_id: [str, None] = None):
-        return self.acer.favourite.add(self.ac_num, self.resourceType, folder_id)
+        return self.acer.favourite.add(self.ac_num, 9, folder_id)
 
     def favorite_cancel(self, folder_id: [str, None] = None):
-        return self.acer.favourite.cancel(self.ac_num, self.resourceType, folder_id)
+        return self.acer.favourite.cancel(self.ac_num, 9, folder_id)
 
     def banana(self, count: int):
-        return self.acer.throw_banana(self.ac_num, 2, count)
+        return self.acer.throw_banana(self.ac_num, self.resource_type, count)
 
     # 一键奥里给！
     def aoligei(self, danmu: bool = False, comment: bool = False):
@@ -179,3 +163,9 @@ class AcVideo:
                                '<p><font color="#c4bd97">from  acfunSDK</font></p>')
         print(f" 赞 藏 蕉 弹 评 \n 👍 🔖 🍌 🌠 💬 \n 分享：{self.referer}?shareUid={self.acer.uid}")
         return True
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.ac_num, self.resource_type,
+            self.video_data.get("user", {}).get("id", "0"),
+            crime, proof, description)

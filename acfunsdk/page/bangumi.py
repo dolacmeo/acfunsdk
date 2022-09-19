@@ -5,12 +5,13 @@ import math
 from urllib import parse
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import get_channel_info, get_page_pagelets, AcDanmaku, match1
+from acfunsdk.page.utils import get_channel_info, get_page_pagelets, match1
 
 __author__ = 'dolacmeo'
 
 
 class AcBangumi:
+    resource_type = 1
     aa_num = None
     page_obj = None
     page_pagelets = []
@@ -29,13 +30,18 @@ class AcBangumi:
         self.loading()
         if self.is_404 is False:
             self.set_video()
-            self.page_url = f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
 
     def __repr__(self):
         if self.is_404:
             return f"AcBangumi([ac{self.aa_num}]咦？世界线变动了。看看其他内容吧~)"
         title = self.bangumi_data.get('showTitle', self.bangumi_data.get('bangumiTitle', ""))
         return f"AcBangumi([ac{self.aa_num}_{self.item_id}]{title})".encode(errors='replace').decode()
+
+    @property
+    def referer(self):
+        if self.item_id is None:
+            return f"{routes['bangumi']}{self.aa_num}"
+        return f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
 
     def loading(self):
         req = self.acer.client.get(routes['bangumi'] + self.aa_num)
@@ -70,20 +76,19 @@ class AcBangumi:
             'videoId': self.vid, 'itemId': self.item_id,
             'showTitle': f"{this_episode['bangumiTitle']} {this_episode['episodeName']} {this_episode['title']}"
         })
-        self.page_url = f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
         return True
 
     def danmaku(self):
-        return AcDanmaku(self.acer, self.bangumi_data)
+        return self.acer.acfun.AcDanmaku(self.bangumi_data)
 
     def comment(self):
-        return self.acer.AcComment(f"{self.aa_num}_{self.vid}", 6, self.page_url)
+        return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", 6)
 
     def like(self):
-        return self.acer.like(self.item_id, 18)
+        return self.acer.like_add(self.item_id, 18)
 
     def like_cancel(self):
-        return self.acer.like_cancel(self.item_id, 18)
+        return self.acer.like_delete(self.item_id, 18)
 
     def favorite_add(self):
         return self.acer.favourite.add(self.aa_num, 1)
@@ -94,6 +99,11 @@ class AcBangumi:
     def banana(self):
         return self.acer.throw_banana(self.item_id, 18, 1)
 
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.aa_num, self.resource_type, "0",
+            crime, proof, description)
+
 
 class AcBangumiList:
     page_obj = None
@@ -103,6 +113,13 @@ class AcBangumiList:
     def __init__(self, acer):
         self.acer = acer
         self.loading()
+
+    def __repr__(self):
+        return f"AcBangumiList(番剧列表 - AcFun弹幕视频网)"
+
+    @property
+    def referer(self):
+        return f"{routes['bangumi_list']}"
 
     def loading(self):
         index_req = self.acer.client.get(routes['bangumi_list'])

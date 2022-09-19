@@ -8,6 +8,7 @@ __author__ = 'dolacmeo'
 
 
 class AcAlbum:
+    resource_type = 4
     aa_num = None
     page_obj = None
     page_data = None
@@ -20,6 +21,10 @@ class AcAlbum:
             aa_num = aa_num[2:]
         self.aa_num = str(aa_num)
         self.loading()
+
+    @property
+    def referer(self):
+        return f"{routes['album']}{self.aa_num}"
 
     def __repr__(self):
         if self.is_404:
@@ -35,6 +40,9 @@ class AcAlbum:
         json_text = match1(req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
         self.page_data = json.loads(json_text)
         self._get_all_content()
+
+    def up(self):
+        return self.acer.acfun.AcUp(self.info.get("authorId"))
 
     @property
     def info(self):
@@ -68,9 +76,9 @@ class AcAlbum:
         data_list = list()
         for content in self.content_data:
             if content['resourceTypeValue'] == 2:
-                data_list.append(self.acer.AcVideo(content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcVideo(content['resourceId'], content))
             elif content['resourceTypeValue'] == 3:
-                data_list.append(self.acer.AcArticle(content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
     def favorite_add(self):
@@ -78,3 +86,9 @@ class AcAlbum:
 
     def favorite_cancel(self):
         return self.acer.favourite.cancel(self.aa_num, 4)
+
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.aa_num, self.resource_type,
+            self.info.get("authorId", "0"),
+            crime, proof, description)

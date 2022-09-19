@@ -1,6 +1,7 @@
 # coding=utf-8
 from typing import Literal
-from acfunsdk.source import apis
+from urllib import parse
+from acfunsdk.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -21,6 +22,19 @@ class AcRank:
         self.date_range = date_range if date_range in self.date_ranges else self.date_ranges[0]
         self.get_data()
 
+    def __repr__(self):
+        this_id = self.sub_cid or self.cid or "ALL"
+        return f"AcRank(#{this_id} {self.date_range})"
+
+    @property
+    def referer(self):
+        param = {
+            "pcid": self.cid or "-1",
+            "cid": self.sub_cid or "-1",
+            "range": self.date_range
+        }
+        return f"{routes['rank']}?{parse.urlencode(param)}"
+
     def get_data(self):
         param = {
             "channelId": self.cid,
@@ -32,15 +46,18 @@ class AcRank:
         if api_req.json().get('result') == 0:
             self.rank_data = api_req.json().get('rankList')
 
+    def channel(self):
+        return self.acer.acfun.AcChannel(self.sub_cid or self.cid)
+
     def contents(self):
         if self.rank_data is None:
             return None
         data_list = list()
         for content in self.rank_data:
             if content['contentType'] == 2:
-                data_list.append(self.acer.AcVideo(content['dougaId'], content))
+                data_list.append(self.acer.acfun.AcVideo(content['dougaId'], content))
             elif content['contentType'] == 3:
-                data_list.append(self.acer.AcArticle(content['resourceId'], content))
+                data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
     def ups(self):
@@ -48,5 +65,5 @@ class AcRank:
             return None
         data_list = list()
         for content in self.rank_data:
-            data_list.append(self.acer.AcUp({"userId": content['userId'], "name": content['userName']}))
+            data_list.append(self.acer.acfun.AcUp(content['userId']))
         return data_list

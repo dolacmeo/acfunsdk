@@ -88,8 +88,11 @@ class AcChannel:
         self.acer = acer
         self.cid = str(cid)
         self.info = nav_info
-        self.link = f"/v/list{self.cid}/index.htm"
         self._get_channel_info()
+
+    @property
+    def referer(self):
+        return f"{routes['index']}/v/list{self.cid}/index.htm"
 
     @property
     def _main_channels(self):
@@ -120,7 +123,7 @@ class AcChannel:
         if not self.is_main:
             print("Is sub channels, just use videos.")
             return False
-        page_req = self.acer.client.get(f"{routes['index']}{self.link}")
+        page_req = self.acer.client.get(self.referer)
         self.channel_obj = Bs(page_req.text, 'lxml')
         json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
         if json_text is None:
@@ -190,7 +193,7 @@ class AcChannel:
             ",20100101": "更早",
         }
         assert datein in datein_list or datein is None
-        api_req = self.acer.client.get(f"{routes['index']}{self.link}", params={
+        api_req = self.acer.client.get(self.referer, params={
             "sortField": "rankScore" if sortby is None else sortby,
             "duration": "all" if duration is None else duration,
             "date": "default" if datein is None else datein,

@@ -11,6 +11,10 @@ class MyFansClub:
     def __init__(self, acer):
         self.acer = acer
 
+    @property
+    def referer(self):
+        return f"{routes['fansclub_medallist']}"
+
     def medal_list(self):
         api_req = self.acer.client.post(apis['live_medal_list'])
         api_data = api_req.json()
@@ -37,6 +41,10 @@ class MyFollow:
     def __init__(self, acer):
         self.acer = acer
         pass
+
+    @property
+    def referer(self):
+        return f"{routes['member_following']}"
 
     def groups(self):
         api_req = self.acer.client.get(apis['follow_groups'])
@@ -96,6 +104,10 @@ class MyFavourite:
     def __init__(self, acer):
         self.acer = acer
         self.video_groups()
+
+    @property
+    def referer(self):
+        return f"{routes['member_favourite']}"
 
     def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
         form_data = {"resourceId": obj_id, "resourceType": rtype}
@@ -178,6 +190,10 @@ class MyAlbum:
     def __init__(self, acer):
         self.acer = acer
 
+    @property
+    def referer(self):
+        return f"{routes['member_album']}"
+
     def list(self, page: int = 1, size: int = 10):
         param = {"size": size, "page": page, "status": 0, "sort": 0}
         api_req = self.acer.client.get(apis["my_album_list"], params=param)
@@ -252,6 +268,10 @@ class MyContribute:
 
     def __init__(self, acer):
         self.acer = acer
+
+    @property
+    def referer(self):
+        return f"{routes['up_index']}"
 
     def _get_my_posted(self,
                        rtype: int,
@@ -346,6 +366,10 @@ class MyDanmaku:
     def __init__(self, acer):
         self.acer = acer
 
+    @property
+    def referer(self):
+        return f"{routes['danmaku_manage']}"
+
     def advance_config(self):
         api_req = self.acer.client.post(apis['danmaku_config'])
         api_data = api_req.json()
@@ -436,6 +460,10 @@ class BananaMall:
 
     def __init__(self, acer):
         self.acer = acer
+
+    @property
+    def referer(self):
+        return f"{routes['member_mall']}"
 
     def shop_list(self, page: int = 1, size: int = 30, stype: Literal[1, 2, 3] = 1, asc: bool = False):
         form = {"pageNo": page, "pageSize": size, "sortType": stype, "asc": asc}

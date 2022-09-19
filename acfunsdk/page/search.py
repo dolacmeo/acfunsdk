@@ -1,8 +1,9 @@
 # coding=utf-8
 import json
 import time
+from urllib import parse
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import apis
+from acfunsdk.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -34,6 +35,15 @@ class AcSearch:
             self.search_type = s_type
         else:
             self.search_type = 'complex'
+
+    @property
+    def referer(self):
+        param = {
+            "keyword": self.keyword,
+            "type": self.search_type,
+            "pCursor": 1,
+        }
+        return f"{routes['search']}?{parse.urlencode(param)}"
 
     def _get_data(self, page: int = 1, sortby: int = 1, channel_id: int = 0):
         if 1 > sortby > 5:

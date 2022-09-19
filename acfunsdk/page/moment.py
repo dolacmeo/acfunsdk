@@ -97,6 +97,16 @@ class MyMoment:
     def __init__(self, acer):
         self.acer = acer
 
+    @property
+    def referer(self):
+        rtypes = {
+            "0": "?tab=all",
+            "2": "?tab=video",
+            "3": "?tab=article",
+        }
+        query = rtypes.get(str(self.resourceTypes), "")
+        return f"{routes['feeds']}{query}"
+
     def set_tab(self, tab: str = 'all'):
         new = self.rts.get(tab, 0)
         if new != self.resourceTypes:

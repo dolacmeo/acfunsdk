@@ -21,6 +21,10 @@ class AcAlbum:
         self.aa_num = str(aa_num)
         self.loading()
 
+    @property
+    def referer(self):
+        return f"{routes['album']}{self.aa_num}"
+
     def __repr__(self):
         if self.is_404:
             return f"AcAlbum([aa{self.aa_num}] 404)"

@@ -48,6 +48,17 @@ routes = {
     "emot": f"{scheme}://{domains['main']}/emot/",
     "app": f"{scheme}://{domains['main']}/app/",
     "doodle": f"{scheme}://{domains['hd']}/doodle/",
+    "member": f"{scheme}://{domains['main']}/member/",
+    "search": f"{scheme}://{domains['main']}/search",
+    "fansclub_medallist": f"{scheme}://{domains['main']}/medallist",
+    "member_following": f"{scheme}://{domains['main']}/member/feeds/following",
+    "member_favourite": f"{scheme}://{domains['main']}/member/favourite",
+    "member_album": f"{scheme}://{domains['main']}/member/album",
+    "member_mall": f"{scheme}://{domains['main']}/member/mall",
+    "up_index": f"{scheme}://{domains['user']}",
+    "danmaku_manage": f"{scheme}://{domains['user']}/inter-active/danmaku-manage",
+    "help": f"{scheme}://{domains['main']}/about/help",
+    "info": f"{scheme}://{domains['main']}/info",
 }
 
 apis = {

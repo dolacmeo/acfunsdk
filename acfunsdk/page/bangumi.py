@@ -112,6 +112,10 @@ class AcBangumiList:
     def __repr__(self):
         return f"AcBangumiList(番剧列表 - AcFun弹幕视频网)"
 
+    @property
+    def referer(self):
+        return f"{routes['bangumi_list']}"
+
     def loading(self):
         index_req = self.acer.client.get(routes['bangumi_list'])
         self.page_obj = Bs(index_req.text, 'lxml')

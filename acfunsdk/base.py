@@ -20,13 +20,13 @@ class Acer:
 
     is_logined = False
     message = None
+    fansclub = None
     moment = None
     follow = None
     favourite = None
-    danmaku = None
-    contribute = None
-    fansclub = None
     album = None
+    contribute = None
+    danmaku = None
     bananamall = None
 
     def __init__(self, **kwargs):
@@ -44,6 +44,10 @@ class Acer:
         if self.is_logined:
             return f"Acer(#{self.uid}@{self.username})"
         return f"Acer(#UNKNOWN)"
+
+    @property
+    def referer(self):
+        return f"{source.routes['member']}"
 
     @property
     def uid(self):
@@ -74,13 +78,13 @@ class Acer:
             assert info_data.get('result') == 0
             self.data = info_data.get('info', {})
             self.message = MyMessage(self)
+            self.fansclub = MyFansClub(self)
             self.moment = MyMoment(self)
             self.follow = MyFollow(self)
             self.favourite = MyFavourite(self)
-            self.danmaku = MyDanmaku(self)
-            self.contribute = MyContribute(self)
-            self.fansclub = MyFansClub(self)
             self.album = MyAlbum(self)
+            self.contribute = MyContribute(self)
+            self.danmaku = MyDanmaku(self)
             self.bananamall = BananaMall(self)
             self.signin()  # 自动签到
         else:
@@ -131,13 +135,13 @@ class Acer:
         self.data = dict()
         self.tokens = dict()
         self.message = None
+        self.fansclub = None
         self.moment = None
         self.follow = None
         self.favourite = None
-        self.danmaku = None
-        self.contribute = None
-        self.fansclub = None
         self.album = None
+        self.contribute = None
+        self.danmaku = None
         self.bananamall = None
         return True
 
@@ -172,8 +176,7 @@ class Acer:
         }, headers={'referer': source.routes['index']})
         return api_req.json().get('result') == 0
 
-    @need_login
-    def like_add(self, obj_id: str, object_type: int):
+    def _like(self, on_off: bool, obj_id: str, object_type: int):
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
@@ -184,23 +187,17 @@ class Acer:
             "userId": self.uid,
         }
         form_data = self.update_token(form_data)
-        req = self.client.post(source.apis['like_add'], data=form_data)
+        x = "like_add" if on_off is True else "like_delete"
+        req = self.client.post(source.apis[x], data=form_data)
         return req.json().get('result') == 1
 
     @need_login
+    def like_add(self, obj_id: str, object_type: int):
+        return self._like(True, obj_id, object_type)
+
+    @need_login
     def like_delete(self, obj_id: str, object_type: int):
-        form_data = {
-            "kpn": "ACFUN_APP",
-            "kpf": "PC_WEB",
-            "subBiz": "mainApp",
-            "interactType": 1,
-            "objectType": object_type,
-            "objectId": obj_id,
-            "userId": self.uid,
-        }
-        form_data = self.update_token(form_data)
-        req = self.client.post(source.apis['like_delete'], data=form_data)
-        return req.json().get('result') == 1
+        return self._like(False, obj_id, object_type)
 
     @need_login
     def history(self, page: int = 1, limit: int = 10, obj: bool = False):

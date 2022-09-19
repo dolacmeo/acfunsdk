@@ -160,6 +160,10 @@ class AcWen:
         self.onlyOriginal = onlyOriginal
         self.limit = limit
 
+    @property
+    def referer(self):
+        return f"{routes['index']}/v/list63/index.htm"
+
     def feed(self, obj: bool = True):
         if self.cursor == 'no_more':
             return None

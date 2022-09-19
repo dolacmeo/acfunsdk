@@ -16,6 +16,10 @@ class AcLive:
         self.acer = acer
         self._get_list()
 
+    @property
+    def referer(self):
+        return f"{routes['live_index']}"
+
     def __repr__(self):
         return f"AcLive(直播 - AcFun弹幕视频网)"
 
@@ -67,6 +71,10 @@ class AcLiveUp:
 
     def up(self):
         return self.acer.acfun.AcUp(self.uid)
+
+    @property
+    def referer(self):
+        return f"{routes['live']}{self.uid}"
 
     def __repr__(self):
         return f"AcLive(#{self.uid} {self.title} @{self.username})".encode(errors='replace').decode()

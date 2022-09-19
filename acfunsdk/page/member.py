@@ -39,6 +39,10 @@ class AcUp:
     def __repr__(self):
         return f"Acer([{self.uid}] @{self.name})".encode(errors='replace').decode()
 
+    @property
+    def referer(self):
+        return f"{routes['up']}{self.uid}"
+
     def loading(self):
         if self.is_404 is True:
             return None

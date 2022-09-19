@@ -69,6 +69,10 @@ class AcFun:
                 if j['cid'] != 0:
                     self.nav_data.update({str(j['cid']): {y: j[y] for y in j if y != 'children'}})
 
+    @property
+    def referer(self):
+        return f"{source.routes['index']}"
+
     def search_user(self, keyword: str, page: int = 1):
         api_req = self.acer.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
         return api_req.json()

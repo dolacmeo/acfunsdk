@@ -1,6 +1,7 @@
 # coding=utf-8
 from typing import Literal
-from acfunsdk.source import apis
+from urllib import parse
+from acfunsdk.source import routes, apis
 
 __author__ = 'dolacmeo'
 
@@ -24,6 +25,15 @@ class AcRank:
     def __repr__(self):
         this_id = self.sub_cid or self.cid or "ALL"
         return f"AcRank(#{this_id} {self.date_range})"
+
+    @property
+    def referer(self):
+        param = {
+            "pcid": self.cid or "-1",
+            "cid": self.sub_cid or "-1",
+            "range": self.date_range
+        }
+        return f"{routes['rank']}?{parse.urlencode(param)}"
 
     def get_data(self):
         param = {

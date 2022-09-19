@@ -123,9 +123,24 @@ class SystemMsg(Message):
 
 class MyMessage:
     req_count = 0
+    means = {
+        'new_comment': '评论',
+        'at_notify': '@我',
+        'new_comment_like': '点赞',
+        'new_gift': '礼物',
+        'new_content_notify': '站内公告',
+        'new_system_notify': '系统通知',
+    }
 
     def __init__(self, acer):
         self.acer = acer
+
+    def __repr__(self):
+        msg = list()
+        for k, v in self.unread.items():
+            if v > 0:
+                msg.append(f"{self.means[k]}[{v}]")
+        return f"MyMessage({''.join(msg)})"
 
     @property
     def unread(self):

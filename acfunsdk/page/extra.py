@@ -57,6 +57,10 @@ class AcHelp:
     def __init__(self):
         self.loading()
 
+    @property
+    def referer(self):
+        return f"{routes['help']}"
+
     def loading(self):
         tab_req = httpx.post(apis['feedback_tab'], json={"appType": "acfun_m"})
         tab_data = tab_req.json()
@@ -85,6 +89,8 @@ class AcHelp:
 
 
 class AcInfo:
+    referer = f"{routes['info']}"
+
     about = {
         "url": "https://www.acfun.cn/info#page=about",
         "title": "关于AcFun弹幕视频网",
@@ -243,6 +249,10 @@ class AcDownload:
 
     def __init__(self, acer):
         self.acer = acer
+
+    @property
+    def referer(self):
+        return f"{routes['app']}"
 
     def _app_page_obj(self):
         if self._app_page_raw is None:

@@ -359,10 +359,9 @@ class AcPagelet:
             return dict(rank=obj_data)
         return data
 
-    def _index_pagelet_big(self, obj=False):
+    def _index_pagelet(self, obj=False):
         data = dict(items=list())
-        data['url'] = routes['index'] + self.pagelet_obj.select_one('.header-right-more').attrs['href']
-        for video in self.pagelet_obj.select(".module-left > div:nth-child(2) > div"):
+        for video in self.pagelet_obj.select('div[class^="video-list-"] > div'):
             if 'big-image' in video['class']:
                 v_data = {
                     'mediaid': video.a.attrs['href'][5:],
@@ -390,38 +389,6 @@ class AcPagelet:
                 data['items'].append(self.acer.acfun.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
             else:
                 data['items'].append(v_data)
-        data.update(self._index_pagelet_left_info(obj))
-        data.update(self._index_pagelet_right_rank(obj))
-        return data
-
-    def _index_pagelet_normal(self, obj=False):
-        data = dict(items=list())
-        for video in self.pagelet_obj.select(".normal-video-container > .normal-video"):
-            v_data = {
-                'mediaid': video.attrs['data-mediaid'],
-                'url': routes['video'] + video.attrs['data-mediaid'],
-                'title': video.select_one('.normal-video-title').text,
-                'cover': video.select_one('.normal-video-cover').img.attrs['src'],
-                'duration': video.select_one('.video-time').text,
-                'viewCount': video.select_one('.normal-video-info > .icon-view-player').text,
-                'danmakuCount': video.select_one('.normal-video-info > .icon-danmu').text
-            }
-            infos = match_info(video.select_one('.normal-video-title').attrs['title'])
-            if infos is not None:
-                v_data.update(infos)
-            if obj is True:
-                data['items'].append(self.acer.acfun.AcVideo(v_data['mediaid'], dict(title=v_data['title'])))
-            else:
-                data['items'].append(v_data)
-        ads = self.pagelet_obj.select(".normal-ad-link")
-        if len(ads):
-            data['ads'] = list()
-        for ad in ads:
-            data['ads'].append({
-                "url": routes['index'] + ad.attrs['href'],
-                "title": ad.attrs['data-title'],
-                "image": ad.select_one('img').attrs['src']
-            })
         data.update(self._index_pagelet_left_info(obj))
         data.update(self._index_pagelet_right_rank(obj))
         return data
@@ -474,10 +441,8 @@ class AcPagelet:
         elif self.pagelet_id in self.pagelet_sp:
             func_name = self.pagelet_id.replace("pagelet_", "_index_")
             return getattr(self, func_name)(obj)
-        elif self.pagelet_id in pagelets_big:
-            return self._index_pagelet_big(obj)
-        elif self.pagelet_id in pagelets_normal:
-            return self._index_pagelet_normal(obj)
+        elif self.pagelet_id in pagelets_big + pagelets_normal:
+            return self._index_pagelet(obj)
         return None
 
 

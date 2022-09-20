@@ -10,19 +10,16 @@ class AcArticle(AcDetail):
     def __init__(self, acer, rid: [str, int]):
         if isinstance(rid, str) and rid.startswith('ac'):
             rid = rid[2:]
-        self.resource_id = str(rid)
-        self.acer = acer
         super().__init__(acer, 3, rid)
 
     @property
-    @not_404
     def title(self):
+        if self.is_404:
+            return self._msg['404']
         return self.raw_data.get('contentTitle', self.raw_data.get('title', ""))
 
     def __repr__(self):
-        if self.is_404 is True:
-            return f"AcArticle([ac{self.resource_id}]咦？世界线变动了。看看其他内容吧~)"
-        user_name = self.up_name or self.up_uid
+        user_name = self._up_name or self._up_uid
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
         return f"AcArticle([ac{self.resource_id}]{self.title}{user_txt})".encode(errors='replace').decode()
 

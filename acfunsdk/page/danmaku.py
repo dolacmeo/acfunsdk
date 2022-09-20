@@ -9,13 +9,11 @@ class AcDanmaku:
     ac_num = None
     vid = None
     danmaku_data = list()
-    video_data = dict()
 
-    def __init__(self, acer, video_data: dict):
-        self.video_data = video_data
-        self.ac_num = self.video_data.get('dougaId', self.video_data.get('bangumiId'))
-        self.vid = self.video_data.get('currentVideoId', self.video_data.get('videoId'))
+    def __init__(self, acer, video_id: int, parent):
         self.acer = acer
+        self.vid = video_id
+        self.parent = parent
         self._get_all_danmaku()
 
     def __repr__(self):
@@ -47,7 +45,7 @@ class AcDanmaku:
             page += 1
 
     def list(self):
-        return [Danmaku(x, self.acer, self.video_data) for x in self.danmaku_data]
+        return [Danmaku(self.acer, self.vid, x, self.parent) for x in self.danmaku_data]
 
     @need_login
     def add(self, words, ms, color=16777215, mode=1, size=25):
@@ -57,11 +55,11 @@ class AcDanmaku:
             "color": color,
             "position": ms,
             "body": words,
-            "type": "bangumi" if "bangumiTitle" in self.video_data else "douga",
+            "type": "bangumi" if self.parent._objname == "AcBangumi" else "douga",
             "videoId": self.vid,
-            "id": self.ac_num,
-            "subChannelId": self.video_data.get('subChannelId'),
-            "subChannelName": self.video_data.get('subChannelName'),
+            "id": self.parent.resource_id,
+            "subChannelId": self.parent.raw_data.get('subChannelId'),
+            "subChannelName": self.parent.raw_data.get('subChannelName'),
             "roleId": ""
         }
         req = self.acer.client.post(apis['danmaku_add'], data=danmaku, headers={"referer": f"{routes['index']}"})
@@ -75,21 +73,30 @@ class Danmaku:
     vid = None
     isLike = None
 
-    def __init__(self, data: dict, acer=None, video_data: [dict, None] = None):
-        self.data = data
+    def __init__(self, acer, video_id: int, data: dict, parent):
         self.acer = acer
-        if isinstance(video_data, dict):
-            self.video_data = video_data
-            self.vid = self.video_data.get('currentVideoId')
-            self.ac_num = self.video_data.get('dougaId')
+        self.vid = video_id
+        self.data = data
+        self.parent = parent
+
+    @property
+    def userId(self):
+        return self.data.get('userId')
+
+    @property
+    def position(self):
+        return self.data.get('position')
+
+    @property
+    def body(self):
+        return self.data.get('body')
+
+    @property
+    def danmakuId(self):
+        return self.data.get('danmakuId')
 
     def __repr__(self):
         return f"DM([{ms2time(self.position)}]#{self.danmakuId} {self.body} @{self.userId})"
-
-    def __getattr__(self, item):
-        if item in self.data.keys():
-            return self.data.get(item)
-        return super().__getattribute__(item)
 
     def up(self):
         return self.acer.acfun.AcUp(self.userId)
@@ -145,9 +152,9 @@ class Danmaku:
             "danmakuId": self.danmakuId,
             "body": self.body,
             "type": "douga",
-            "id": self.ac_num,
+            "id": self.parent.resource_id,
             "videoId": self.vid,
-            "subChannelId": self.video_data.get('channel', {}).get('id'),
-            "subChannelName": self.video_data.get('channel', {}).get('name'),
+            "subChannelId": self.parent.raw_data.get('subChannelId'),
+            "subChannelName": self.parent.raw_data.get('subChannelName'),
         })
         return req.json().get('result') == 0

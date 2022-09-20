@@ -1,7 +1,9 @@
 # coding=utf-8
+import os
 import re
 import json
 import base64
+import subprocess
 from uuid import uuid4
 from datetime import timedelta
 from bs4 import BeautifulSoup as Bs
@@ -48,6 +50,110 @@ acpage_regex = {
 }
 
 
+class VideoItem:
+    raw_data = None
+
+    def __init__(self, acer, video_id: int, sub_title: str, referer: str, parent):
+        self.acer = acer
+        self.vid = video_id
+        self.sub_title = sub_title
+        self.referer = referer
+        self.parent = parent
+        self.loading()
+
+    def __repr__(self):
+        return f"{self.parent}"
+
+    def _get_data_from_quick_view(self):
+        param = {"quickViewId": "videoInfo_new", "ajaxpipe": 1}
+        page_req = self.acer.client.get(self.referer, params=param)
+        assert page_req.text.endswith("/*<!-- fetch-stream -->*/")
+        page_data = json.loads(page_req.text[:-25])
+        v_script = match1(page_data['html'].replace(" ", ""), r"videoInfo=((?=\{)[^\s]*(?<=\}));?")
+        video_data = json.loads(v_script)
+        return video_data.get("currentVideoInfo")
+
+    def _get_data_from_api(self):
+        param = {
+            "resourceId": self.parent.resource_id,
+            "resourceType": self.parent.resource_type,
+            "videoId": self.vid
+        }
+        api_req = self.acer.client.get(apis['video_ksplay'], params=param)
+        api_data = api_req.json()
+        assert api_data.get('result') == 0
+        return api_data.get("playInfo")
+
+    @property
+    def quality(self):
+        return self.raw_data.get("transcodeInfos", [])
+
+    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True):
+        if isinstance(quality, int):
+            assert quality in range(len(self.quality))
+        elif isinstance(quality, str):
+            q_map = {x["qualityType"]: i for i, x in enumerate(self.quality)}
+            assert quality in q_map.keys()
+            quality = q_map[quality]
+        else:
+            return None
+        code_type = "ksPlayJsonHevc" if hevc is True else "ksPlayJson"
+        play_data = json.loads(self.raw_data.get(code_type, ""))
+        this_quality = play_data.get("adaptationSet", [{}])[0].get("representation")[quality]
+        return this_quality['url'], this_quality['backupUrl']
+
+    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = 0, hevc: bool = True):
+        assert os.path.exists(potplayer_path)
+        url = self.m3u8_url(quality, hevc)
+        hevc_mark = "_HEVC" if hevc is True else ""
+        title = f"-{self.sub_title}" if len(self.sub_title) else ""
+        player_title = f'"{self.parent}{title}-{self.quality[quality]["qualityType"]}{hevc_mark}"'.replace(" ", '')
+        cmds = [potplayer_path, url[0], "/title", emoji_cleanup(player_title)]
+        return subprocess.Popen(cmds, stdout=subprocess.PIPE)
+
+    @property
+    def scenes(self):
+        form_data = {
+            "resourceId": self.parent.resource_id,
+            "resourceType": self.parent.resource_type,
+            "videoId": self.vid
+        }
+        api_req = self.acer.client.post(apis['video_scenes'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        if api_data.get("spriteVtt") is None:
+            return None
+        pos_data = list()
+        sprite_data = api_data.get("spriteVtt", "").split("\n\n")[1:]
+        sprite_img = sprite_data[0].split("\n")[1].split("#")[0]
+        for line in sprite_data:
+            pos, img_url = line.split("\n")
+            pos_s, pos_e = pos.split(" --> ")
+            _, xywh = img_url.split("#xywh=")
+            pos_data.append([pos_s, pos_e, xywh])
+        return {"sprite_image": sprite_img, "pos": pos_data}
+
+    @property
+    def hotspot(self):
+        form_data = {
+            "resourceId": self.parent.resource_id,
+            "resourceType": self.parent.resource_type
+        }
+        api_req = self.acer.client.post(apis['video_hotspot'], data=form_data)
+        api_data = api_req.json()
+        if api_data.get('result') != 0:
+            return None
+        return api_data.get("hotSpotDistribution")
+
+    def loading(self):
+        self.raw_data = self._get_data_from_api()
+
+    @property
+    def danmaku(self):
+        return self.acer.acfun.AcDanmaku(self.vid, self.parent)
+
+
 class AcDetail:
     resource_type = None
     resource_id = None
@@ -56,11 +162,22 @@ class AcDetail:
     page_text = None
     page_obj = None
     pagelets = list()
+    __funcs = {
+        "AcBangumi": ['get_video', 'comment', 'like', 'favorite', 'banana'],
+        "AcVideo":   ['up', 'up_uid', 'up_name', 'get_video', 'comment', 'like', 'favorite', 'banana'],
+        "AcArticle": ['up', 'up_uid', 'up_name', 'comment', 'like', 'favorite', 'banana'],
+        "AcAlbum":   ['up', 'up_uid', 'up_name', 'favorite'],
+        "AcMoment":  ['up', 'up_uid', 'up_name', 'comment', 'like', 'banana'],
+        "AcDoodle":  ['comment']
+    }
+    _msg = {
+        "404": "咦？世界线变动了。看看其他内容吧~"
+    }
 
-    def __init__(self, acer, rtype, rid):
+    def __init__(self, acer, rtype: [str, int], rid: [str, int]):
         self.acer = acer
-        self.resource_type = rtype
-        self.resource_id = rid
+        self.resource_type = int(rtype)
+        self.resource_id = int(rid)
         self.loading()
 
     @property
@@ -82,7 +199,6 @@ class AcDetail:
         return f"{self._objname}([#{self.resource_id}]{self.title})"
 
     def loading(self):
-        print(self.referer)
         req = self.acer.client.get(self.referer)
         self.is_404 = req.status_code // 100 != 2
         if self.is_404:
@@ -96,66 +212,59 @@ class AcDetail:
             self.raw_data = dict(data=json.loads(script_bangumidata), list=json.loads(script_bangumilist))
         elif len(rex):
             self.raw_data = json.loads(match1(req.text, *rex))
-        if callable(self.loading_more):
-            self.loading_more()
+        if self._objname in self.__funcs.keys():
+            for k in self.__funcs[self._objname]:
+                self.__setattr__(k, getattr(self, f"_{k}"))
+        self.loading_more()
 
     def loading_more(self):
         pass
 
     @property
     @not_404
-    def up_uid(self):
+    def _up_uid(self):
         user = self.raw_data.get('user', {})
         return user.get("id")
 
     @property
     @not_404
-    def up_name(self):
+    def _up_name(self):
         user = self.raw_data.get('user', {})
         return user.get("name", "")
 
     @not_404
-    def up(self):
-        if self._objname not in ['AcVideo', 'AcArticle', 'AcAlbum', 'AcMoment']:
-            raise AttributeError("这东西没有UP主啊！")
-        return self.acer.acfun.AcUp(self.up_uid)
+    def _up(self):
+        return self.acer.acfun.AcUp(self._up_uid)
 
     @not_404
-    def danmaku(self):
-        if self._objname not in ['AcBangumi', 'AcVideo']:
-            raise AttributeError("这东西没有弹幕啊！")
-        return self.acer.acfun.AcDanmaku(self.raw_data)
+    def _get_video(self, video_id: int, sub_title: str, referer: str):
+        return VideoItem(self.acer, video_id, sub_title, referer, self)
 
     @not_404
-    def comment(self):
-        if self._objname not in ['AcBangumi', 'AcVideo', 'AcArticle', 'AcMoment']:
-            raise AttributeError("这东西没有评论啊！")
+    def _comment(self):
         return self.acer.acfun.AcComment(self.resource_type, self.resource_id)
 
     @not_404
-    def like_add(self):
-        return self.acer.like_add(self.resource_type, self.resource_id)
-
-    @not_404
-    def like_cancel(self):
+    def _like(self, on_off: bool):
+        if on_off is True:
+            return self.acer.like_add(self.resource_type, self.resource_id)
         return self.acer.like_delete(self.resource_type, self.resource_id)
 
     @not_404
-    def favorite_add(self):
-        return self.acer.favourite.add(self.resource_type, self.resource_id)
-
-    @not_404
-    def favorite_cancel(self):
+    def _favorite(self, on_off: bool):
+        if on_off is True:
+            return self.acer.favourite.add(self.resource_type, self.resource_id)
         return self.acer.favourite.cancel(self.resource_type, self.resource_id)
 
     @not_404
-    def banana(self, count: int):
+    def _banana(self, count: int):
+        assert 1 >= count >= 5
         return self.acer.throw_banana(self.resource_type, self.resource_id, count)
 
     @not_404
     def report(self, crime: str, proof: str, description: str):
         return self.acer.acfun.AcReport.submit(
-            self.referer, self.resource_type, self.resource_id, self.up_uid,
+            self.referer, self.resource_type, self.resource_id, self._up_uid,
             crime, proof, description)
 
 
@@ -244,6 +353,28 @@ def matchall(text, patterns):
         ret += match
 
     return ret
+
+
+def emoji_cleanup(text):
+    # Ref: https://gist.github.com/Alex-Just/e86110836f3f93fe7932290526529cd1#gistcomment-3208085
+    # Ref: https://en.wikipedia.org/wiki/Unicode_block
+    EMOJI_PATTERN = re.compile(
+        "(["
+        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        "\U0001F300-\U0001F5FF"  # symbols & pictographs
+        "\U0001F600-\U0001F64F"  # emoticons
+        "\U0001F680-\U0001F6FF"  # transport & map symbols
+        "\U0001F700-\U0001F77F"  # alchemical symbols
+        "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+        "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        "\U0001FA00-\U0001FA6F"  # Chess Symbols
+        "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        "\U00002702-\U000027B0"  # Dingbats
+        "])"
+    )
+    text = re.sub(EMOJI_PATTERN, r'', text)
+    return text
 
 
 def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):

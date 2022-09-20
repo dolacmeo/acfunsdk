@@ -82,6 +82,7 @@ apis = {
     'getStaff':             f"{scheme}://{domains['main']}/rest/pc-direct/staff/getStaff",
     'video_ksplay':         f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/ksPlayJson",
     'video_scenes':         f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/spriteVtt",
+    'video_hotspot':        f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/hotSpotDistribution",
     'video_quality':        f"{scheme}://{domains['main']}/rest/pc-direct/play/playInfo/qualityConfig",  # POST
     'report_task':          f"{scheme}://{domains['api_ipv6']}/rest/app/task/reportTaskAction",
     'article_feed':         f"{scheme}://{domains['main']}/rest/pc-direct/article/feed",

@@ -49,7 +49,7 @@ class ReplyMsg(Message):
         return self.acer.get(self.raw_data.get('content_url'))
 
     def replay(self):
-        comments = self.content().comment()
+        comments = self.content()._comment()
         return comments.find(self.raw_data.get('ncid'))
 
 

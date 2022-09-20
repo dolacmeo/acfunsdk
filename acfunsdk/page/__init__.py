@@ -124,8 +124,8 @@ class AcFun:
     def AcComment(self, rtype: int, rid: int):
         return AcComment(self.acer, rtype, rid)
 
-    def AcDanmaku(self, video_data: dict):
-        return AcDanmaku(self.acer, video_data)
+    def AcDanmaku(self, video_id: int, parent):
+        return AcDanmaku(self.acer, video_id, parent)
 
     def AcImage(self, src, url=None, name=None):
         return AcImage(self.acer, src, url, name)

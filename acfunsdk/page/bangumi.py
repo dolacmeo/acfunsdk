@@ -5,59 +5,37 @@ import math
 from urllib import parse
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import get_channel_info, get_page_pagelets, match1
+from acfunsdk.page.utils import AcDetail, not_404, get_channel_info
 
 __author__ = 'dolacmeo'
 
 
-class AcBangumi:
-    resource_type = 1
-    aa_num = None
-    page_obj = None
-    page_pagelets = []
-    bangumi_data = None
-    bangumi_list = None
-    vid = None
-    item_id = None
-    resourceType = 6
-    is_404 = False
+class AcBangumi(AcDetail):
 
-    def __init__(self, acer, aa_num: [str, int]):
-        if isinstance(aa_num, str) and aa_num.startswith('aa'):
-            aa_num = aa_num[2:]
-        self.aa_num = str(aa_num)
-        self.acer = acer
-        self.loading()
-        if self.is_404 is False:
-            self.set_video()
+    def __init__(self, acer, rid: [str, int]):
+        if isinstance(rid, str) and rid.startswith('aa'):
+            rid = rid[2:]
+        if "_36188_" in rid:
+            rid, _ = map(int, rid.split('_36188_'))
+        super().__init__(acer, 1, rid)
 
-    def __repr__(self):
-        if self.is_404:
-            return f"AcBangumi([ac{self.aa_num}]咦？世界线变动了。看看其他内容吧~)"
-        title = self.bangumi_data.get('showTitle', self.bangumi_data.get('bangumiTitle', ""))
-        return f"AcBangumi([ac{self.aa_num}_{self.item_id}]{title})".encode(errors='replace').decode()
+    def loading_more(self):
+        self.raw_data.update(get_channel_info(self.page_text))
+
+    def video(self, index: int = 0):
+        assert index in range(len(self.episode_data))
+        vid = self.episode_data[index]
+        ends = f"_36188_{vid['videoId']}" if index > 0 else ""
+        title = "" if len(self.episode_data) == 1 else vid['episodeName']
+        return self.get_video(vid['videoId'], title, f"{self.referer}{ends}")
 
     @property
-    def referer(self):
-        if self.item_id is None:
-            return f"{routes['bangumi']}{self.aa_num}"
-        return f"{routes['bangumi']}{self.aa_num}_36188_{self.item_id}"
+    def bangumi_data(self):
+        return self.raw_data.get("data")
 
-    def loading(self):
-        req = self.acer.client.get(routes['bangumi'] + self.aa_num)
-        self.is_404 = req.status_code // 100 != 2
-        if self.is_404:
-            return False
-        self.page_obj = Bs(req.text, 'lxml')
-        script_bangumidata, script_bangumilist = match1(req.text,
-                                                        r"(?s)bangumiData\s*=\s*(\{.*?\});",
-                                                        r"(?s)bangumiList\s*=\s*(\{.*?\});")
-        self.bangumi_data = json.loads(script_bangumidata)
-        self.bangumi_list = json.loads(script_bangumilist)
-        self.bangumi_data.update(get_channel_info(req.text))
-        self.item_id = self.bangumi_data.get("itemId")
-        self.vid = self.bangumi_data.get("videoId")
-        self.page_pagelets = get_page_pagelets(self.page_obj)
+    @property
+    def bangumi_list(self):
+        return self.raw_data.get("list")
 
     @property
     def season_data(self):
@@ -67,43 +45,14 @@ class AcBangumi:
     def episode_data(self):
         return self.bangumi_list.get('items', [])
 
-    def set_video(self, num=1):
-        if num > len(self.episode_data):
-            return False
-        this_episode = self.episode_data[num - 1]
-        self.vid = this_episode['videoId']
-        self.item_id = this_episode['itemId']
-        self.bangumi_data.update({
-            'videoId': self.vid, 'itemId': self.item_id,
-            'showTitle': f"{this_episode['bangumiTitle']} {this_episode['episodeName']} {this_episode['title']}"
-        })
-        return True
+    @property
+    def title(self):
+        if self.is_404:
+            return self._msg['404']
+        return self.bangumi_data.get('bangumiTitle')
 
-    def danmaku(self):
-        return self.acer.acfun.AcDanmaku(self.bangumi_data)
-
-    def comment(self):
-        return self.acer.acfun.AcComment(f"{self.aa_num}_{self.vid}", 6)
-
-    def like(self):
-        return self.acer.like_add(self.item_id, 18)
-
-    def like_cancel(self):
-        return self.acer.like_delete(self.item_id, 18)
-
-    def favorite_add(self):
-        return self.acer.favourite.add(self.aa_num, 1)
-
-    def favorite_cancel(self):
-        return self.acer.favourite.cancel(self.aa_num, 1)
-
-    def banana(self):
-        return self.acer.throw_banana(self.item_id, 18, 1)
-
-    def report(self, crime: str, proof: str, description: str):
-        return self.acer.acfun.AcReport.submit(
-            self.referer, self.aa_num, self.resource_type, "0",
-            crime, proof, description)
+    def __repr__(self):
+        return f"AcBangumi([aa{self.resource_id}]{self.title})".encode(errors='replace').decode()
 
 
 class AcBangumiList:

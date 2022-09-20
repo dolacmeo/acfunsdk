@@ -1,11 +1,162 @@
 # coding=utf-8
 import re
+import json
 import base64
 from uuid import uuid4
 from datetime import timedelta
+from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
+from acfunsdk.exceptions import not_404
 
 __author__ = 'dolacmeo'
+
+resource_type_map = {
+    "1": "AcBangumi",  # 番剧
+    "2": "AcVideo",  # 视频稿件
+    "3": "AcArticle",  # 文章稿件
+    "4": "AcAlbum",  # 合辑
+    "5": "AcUp",  # 用户
+    "6": "AcComment",  # 评论
+    # "8": "私信",
+    "10": "AcMoment",  # 动态
+}
+
+routes_type_map = {
+    "bangumi": "AcBangumi",  # 番剧
+    "video": "AcVideo",  # 视频稿件
+    "article": "AcArticle",  # 文章稿件
+    "album": "AcAlbum",  # 合辑
+    "up": "AcUp",  # 用户
+    "live": "AcLiveUp",  # 用户直播
+    "moment": "AcMoment",  # 用户动态
+    "doodle": "AcDoodle",  # 涂鸦页面
+}
+
+type_routes_map = {v: k for k, v in routes_type_map.items()}
+
+acpage_regex = {
+    "AcBangumi": [
+        r"(?s)bangumiData\s*=\s*(\{.*?\});",
+        r"(?s)bangumiList\s*=\s*(\{.*?\});"
+    ],  # 番剧
+    "AcVideo": [r"(?s)videoInfo\s*=\s*(\{.*?\});"],  # 视频稿件
+    "AcArticle": [r"(?s)articleInfo\s*=\s*(\{.*?\});"],  # 文章稿件
+    "AcAlbum": [r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});"],  # 合辑
+    "AcMoment": [r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});"],  # 动态
+    "AcDoodle": [r"(?s)__schema__\s*=\s*'(\{.*?\})';"],  # 涂鸦页面
+    "AcUp": [],  # 用户
+}
+
+
+class AcDetail:
+    resource_type = None
+    resource_id = None
+    is_404 = False
+    raw_data = dict()
+    page_text = None
+    page_obj = None
+    pagelets = list()
+
+    def __init__(self, acer, rtype, rid):
+        self.acer = acer
+        self.resource_type = rtype
+        self.resource_id = rid
+        self.loading()
+
+    @property
+    def _objname(self):
+        return self.__class__.__name__
+
+    @property
+    def referer(self):
+        route_name = type_routes_map[self._objname]
+        return f"{routes[route_name]}{self.resource_id}"
+
+    @property
+    def title(self):
+        return ""
+
+    def __repr__(self):
+        if self.is_404:
+            return f"{self._objname}([#{self.resource_id}]咦？世界线变动了。看看其他内容吧~)"
+        return f"{self._objname}([#{self.resource_id}]{self.title})"
+
+    def loading(self):
+        print(self.referer)
+        req = self.acer.client.get(self.referer)
+        self.is_404 = req.status_code // 100 != 2
+        if self.is_404:
+            return False
+        self.page_text = req.text
+        self.page_obj = Bs(req.text, 'lxml')
+        self.pagelets = get_page_pagelets(self.page_obj)
+        rex = acpage_regex.get(self._objname, [])
+        if self._objname == "AcBangumi":
+            script_bangumidata, script_bangumilist = match1(req.text, *rex)
+            self.raw_data = dict(data=json.loads(script_bangumidata), list=json.loads(script_bangumilist))
+        elif len(rex):
+            self.raw_data = json.loads(match1(req.text, *rex))
+        if callable(self.loading_more):
+            self.loading_more()
+
+    def loading_more(self):
+        pass
+
+    @property
+    @not_404
+    def up_uid(self):
+        user = self.raw_data.get('user', {})
+        return user.get("id")
+
+    @property
+    @not_404
+    def up_name(self):
+        user = self.raw_data.get('user', {})
+        return user.get("name", "")
+
+    @not_404
+    def up(self):
+        if self._objname not in ['AcVideo', 'AcArticle', 'AcAlbum', 'AcMoment']:
+            raise AttributeError("这东西没有UP主啊！")
+        return self.acer.acfun.AcUp(self.up_uid)
+
+    @not_404
+    def danmaku(self):
+        if self._objname not in ['AcBangumi', 'AcVideo']:
+            raise AttributeError("这东西没有弹幕啊！")
+        return self.acer.acfun.AcDanmaku(self.raw_data)
+
+    @not_404
+    def comment(self):
+        if self._objname not in ['AcBangumi', 'AcVideo', 'AcArticle', 'AcMoment']:
+            raise AttributeError("这东西没有评论啊！")
+        return self.acer.acfun.AcComment(self.resource_type, self.resource_id)
+
+    @not_404
+    def like_add(self):
+        return self.acer.like_add(self.resource_type, self.resource_id)
+
+    @not_404
+    def like_cancel(self):
+        return self.acer.like_delete(self.resource_type, self.resource_id)
+
+    @not_404
+    def favorite_add(self):
+        return self.acer.favourite.add(self.resource_type, self.resource_id)
+
+    @not_404
+    def favorite_cancel(self):
+        return self.acer.favourite.cancel(self.resource_type, self.resource_id)
+
+    @not_404
+    def banana(self, count: int):
+        return self.acer.throw_banana(self.resource_type, self.resource_id, count)
+
+    @not_404
+    def report(self, crime: str, proof: str, description: str):
+        return self.acer.acfun.AcReport.submit(
+            self.referer, self.resource_type, self.resource_id, self.up_uid,
+            crime, proof, description)
 
 
 class B64s:

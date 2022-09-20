@@ -109,16 +109,18 @@ class MyFavourite:
     def referer(self):
         return f"{routes['member_favourite']}"
 
-    def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
+    def add(self, rtype: int, rid: str, fids: [str, None] = None):
+        rtype = {"2": 9}.get(str(rtype), int(rtype))
+        form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
             form_data['addFolderIds'] = str(fids or self.default_fid)
         req = self.acer.client.post(apis['favorite_add'], data=form_data,
                                     headers={"referer": routes['index']})
         return req.json().get('result') == 0
 
-    def cancel(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
+    def cancel(self, rtype: int, rid: str, fids: [str, None] = None):
+        rtype = {"2": 9}.get(str(rtype), int(rtype))
+        form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
             form_data['delFolderIds'] = fids or self.default_fid
         req = self.acer.client.post(apis['favorite_remove'], data=form_data,

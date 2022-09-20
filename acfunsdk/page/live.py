@@ -4,6 +4,7 @@ import time
 import json
 import subprocess
 from acfunsdk.source import scheme, domains, routes, apis
+from acfunsdk.exceptions import need_login
 
 __author__ = 'dolacmeo'
 
@@ -40,6 +41,44 @@ class AcLive:
         return AcLiveUp(self.acer, uid)
 
 
+class AcLiveVisitor:
+    client = None
+    did = None
+    uid = None
+    is_logined = False
+    tokens = dict()
+
+    def __init__(self, acer):
+        self.acer = acer
+        self.is_logined = self.acer.is_logined
+        self.client = self.acer.client
+        self.loading()
+
+    def loading(self):
+        if self.is_logined is True:
+            self.did = self.acer.did
+            self.uid = self.acer.uid
+            self.tokens = self.acer.tokens
+        else:
+            did_req = self.client.get(apis['app'])
+            self.did = did_req.cookies.get('_did')
+            token_req = self.client.post(apis['token_visitor'],
+                                         data={"sid": "acfun.api.visitor"})
+            token_data = token_req.json()
+            self.uid = token_data.get("userId"),
+            self.tokens = {
+                "ssecurity": token_data.get("acSecurity", ''),
+                "visitor_st": token_data.get("acfun.api.visitor_st", ''),
+            }
+
+    def update_token(self, data: dict):
+        if self.is_logined:
+            data.update({"acfun.midground.api_st": self.tokens['api_st']})
+        else:
+            data.update({"acfun.api.visitor_st": self.tokens['visitor_st']})
+        return data
+
+
 class AcLiveUp:
     uid = None
     raw = None
@@ -59,10 +98,12 @@ class AcLiveUp:
         if self.raw is None:
             self.infos()
         self.AcUp = self.acer.acfun.AcUp(self.uid)
-        self.media_data = self.media_list()
         self.is_404 = self.AcUp.is_404
-        self.report_data['host'] = self._get_report_data('liveStream')
-        self.report_data['audience'] = self._get_report_data('liveStreamAudience')
+        self.visitor = AcLiveVisitor(self.acer)
+        if self.visitor.is_logined:
+            self.media_data = self.media_list()
+            self.report_data['host'] = self._get_report_data('liveStream')
+            self.report_data['audience'] = self._get_report_data('liveStreamAudience')
 
     @property
     def title(self):
@@ -106,10 +147,10 @@ class AcLiveUp:
             "subBiz": "mainApp",
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
-            "userId": self.acer.uid,
-            "did": self.acer.client.cookies.get('_did'),
+            "userId": self.visitor.uid,
+            "did": self.visitor.did,
         }
-        param = self.acer.update_token(param)
+        param = self.visitor.update_token(param)
         api_req = self.acer.client.post(apis[api_name], params=param, data=form_data,
                                         headers={'referer': f"{scheme}://{domains['live']}/"})
         return api_req.json()
@@ -244,6 +285,7 @@ class AcLiveUp:
             print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
         return live_obs_stream
 
+    @need_login
     def _get_report_data(self, sub_biz: str):
         assert sub_biz in ['liveStream', 'liveStreamAudience']
         api_name = {
@@ -255,10 +297,10 @@ class AcLiveUp:
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "appver": "1.0.0",
-            "userId": self.acer.uid,
-            "did": self.acer.did,
+            "userId": self.visitor.uid,
+            "did": self.visitor.did,
         }
-        data = self.acer.update_token(data)
+        data = self.visitor.update_token(data)
         api_req = self.acer.client.post(apis[api_name[sub_biz]], params=data, json=data)
         api_data = api_req.json()
         assert api_data.get("result") == 1
@@ -288,18 +330,20 @@ class AcLiveUp:
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "appver": "1.0.0",
-            "userId": self.acer.uid,
-            "did": self.acer.did,
+            "userId": self.visitor.uid,
+            "did": self.visitor.did,
         }
         api_req = self.acer.client.post(apis[api_name[sub_biz]], params=param, json=data)
         api_data = api_req.json()
         return api_data
 
+    @need_login
     def report_host(self, code: int, reason: [str, None] = None):
         codes = [i['id'] for i in self.report_data['host']]
         assert code in codes
         return self._report_req('liveStream', code, reason)
 
+    @need_login
     def report_audience(self, code: int, reason: [str, None] = None):
         codes = [i['id'] for i in self.report_data['audience']]
         assert code in codes

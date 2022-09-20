@@ -168,22 +168,23 @@ class Acer:
         return api_data.get('result') == 0
 
     @need_login
-    def throw_banana(self, ac_num, rt: int, count: int):
+    def throw_banana(self, rtype, rid, count: int):
         api_req = self.client.post(source.apis['throw_banana'], data={
             "count": 1 if 1 > count > 5 else count,
-            "resourceId": ac_num,
-            "resourceType": rt
+            "resourceId": rid,
+            "resourceType": rtype
         }, headers={'referer': source.routes['index']})
         return api_req.json().get('result') == 0
 
-    def _like(self, on_off: bool, obj_id: str, object_type: int):
+    def _like(self, on_off: bool, otype, oid):
+        otype = {"1": 18}.get(str(otype), int(otype))  # 番剧
         form_data = {
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "subBiz": "mainApp",
             "interactType": 1,
-            "objectType": object_type,
-            "objectId": obj_id,
+            "objectType": otype,
+            "objectId": oid,
             "userId": self.uid,
         }
         form_data = self.update_token(form_data)
@@ -192,12 +193,12 @@ class Acer:
         return req.json().get('result') == 1
 
     @need_login
-    def like_add(self, obj_id: str, object_type: int):
-        return self._like(True, obj_id, object_type)
+    def like_add(self, otype, oid):
+        return self._like(True, otype, oid)
 
     @need_login
-    def like_delete(self, obj_id: str, object_type: int):
-        return self._like(False, obj_id, object_type)
+    def like_delete(self, otype, oid):
+        return self._like(False, otype, oid)
 
     @need_login
     def history(self, page: int = 1, limit: int = 10, obj: bool = False):

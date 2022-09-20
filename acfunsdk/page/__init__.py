@@ -20,7 +20,7 @@ from .danmaku import AcDanmaku
 from .message import MyMessage
 from .acer import MyFansClub, MyFollow, MyFavourite, MyAlbum, MyContribute, MyDanmaku, BananaMall
 from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReport, AcDownload
-from .utils import B64s
+from .utils import B64s, match1, get_page_pagelets, resource_type_map, routes_type_map
 
 __author__ = 'dolacmeo'
 
@@ -32,27 +32,6 @@ class AcFun:
     AcReport = AcReport
     AcAcademy = AcAcademy
     AcHelp = AcHelp
-    resource_type_map = {
-        "1": "AcBangumi",  # 番剧
-        "2": "AcVideo",  # 视频稿件
-        "3": "AcArticle",  # 文章稿件
-        "4": "AcAlbum",  # 合辑
-        "5": "AcUp",  # 用户
-        "6": "AcComment",  # 评论
-        # "8": "私信",
-        "10": "AcMoment",  # 动态
-    }
-    routes_type_map = {
-        "bangumi": "AcBangumi",  # 番剧
-        "video": "AcVideo",  # 视频稿件
-        "share": "AcVideo",  # 视频稿件
-        "article": "AcArticle",  # 文章稿件
-        "album": "AcAlbum",  # 合辑
-        "up": "AcUp",  # 用户
-        "live": "AcLiveUp",  # 用户直播
-        "moment": "AcMoment",  # 用户动态
-        "doodle": "AcDoodle",  # 涂鸦页面
-    }
 
     def __init__(self, acer):
         self.acer = acer
@@ -115,14 +94,14 @@ class AcFun:
     def AcUp(self, uid):
         return AcUp(self.acer, uid)
 
-    def AcLiveUp(self, uid, raw=None):
-        return AcLiveUp(self.acer, uid, raw)
+    def AcLiveUp(self, uid):
+        return AcLiveUp(self.acer, uid)
 
-    def AcArticle(self, ac_num, data=None):
-        return AcArticle(self.acer, ac_num, data)
+    def AcArticle(self, ac_num):
+        return AcArticle(self.acer, ac_num)
 
-    def AcVideo(self, ac_num, data=None):
-        return AcVideo(self.acer, ac_num, data)
+    def AcVideo(self, ac_num):
+        return AcVideo(self.acer, ac_num)
 
     def AcBangumi(self, aa_num):
         return AcBangumi(self.acer, aa_num)
@@ -155,8 +134,8 @@ class AcFun:
         return AcLink(self.acer, url, title)
 
     def resource(self, rtype: int, rid: int):
-        assert str(rtype) in self.resource_type_map.keys()
-        return getattr(self, self.resource_type_map[str(rtype)])(rid)
+        assert str(rtype) in resource_type_map.keys()
+        return getattr(self, resource_type_map[str(rtype)])(rid)
 
     def get(self, url_str: str, title=None):
         if url_str.startswith("http://"):
@@ -165,10 +144,10 @@ class AcFun:
             return self.AcIndex()
         elif url_str in [source.routes['live_index'], source.routes['live_index'] + "/"]:
             return self.AcLive()
-        for link_name in self.routes_type_map.keys():
+        for link_name in routes_type_map.keys():
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]
-                return getattr(self, self.routes_type_map[link_name])(ends)
+                return getattr(self, routes_type_map[link_name])(ends)
         for link_name in ['rank', 'bangumi_list']:
             if url_str.startswith(source.routes[link_name]):
                 ends = url_str[len(source.routes[link_name]):]

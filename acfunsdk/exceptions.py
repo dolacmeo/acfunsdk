@@ -3,6 +3,7 @@ from functools import wraps
 
 __all__ = (
     'need_login',
+    'not_404',
     'AcExploded',
     'NotInCar',
     'ShuiNi',
@@ -21,6 +22,16 @@ def need_login(f):
             logined = self.acer.is_logined
         if logined is False:
             raise NotInCar("先登录啊！")
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
+def not_404(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if self.__class__.__name__ in ["AcBangumi", "AcVideo", "AcArticle", "AcAlbum", "AcUp", "AcMoment"]:
+            if self.is_404 is True:
+                raise ShuiNi("水逆 (你想要的并不存在)")
         return f(self, *args, **kwargs)
     return wrapper
 

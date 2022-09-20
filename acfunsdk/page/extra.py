@@ -159,7 +159,7 @@ class AcReport:
     email = "ac-report@kuaishou.com"
 
     @staticmethod
-    def submit(url: str, rid: str, rtype: str, uid: str, crime: str, proof: str, description: str):
+    def submit(url: str, rtype: str, rid: str, uid: str, crime: str, proof: str, description: str):
         assert int(rtype) in [1, 2, 3, 4, 5, 6, 8, 10]
         crimes = ['色情', '血腥', '暴力', '猎奇', '政治', '辱骂', '广告', '挖坟', '剧透', '其他',
                   '话题不符', '少儿不宜', '未成年不良信息']

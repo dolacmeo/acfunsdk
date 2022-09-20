@@ -18,7 +18,7 @@ acfunsdk是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
 - - -
 
-**Python** : 开发环境为 `Python 3.8.10`， 本体请自行[下载安装][python]。
+**Python** : `Python>=3.7`， 本体请自行[下载安装][python]。
 
 ## [从PyPI安装](https://pypi.org/project/acfunsdk/)
 
@@ -83,8 +83,8 @@ print(demo_doodle)
 **依赖: 包含在 `requirements.txt` 中**
 
 + [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
-+ [`lxml`](https://pypi.org/project/lxml/)`>=4.9`
-+ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.11`
++ [`lxml`](https://pypi.org/project/lxml/)`>=4`
++ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4`
 
 </details>
 

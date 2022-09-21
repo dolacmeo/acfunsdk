@@ -1,6 +1,6 @@
 # coding=utf-8
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404, ms2time, get_channel_info
+from acfunsdk.page.utils import AcDetail, not_404, get_channel_info
 
 __author__ = 'dolacmeo'
 
@@ -10,8 +10,8 @@ class AcVideo(AcDetail):
     def __init__(self, acer, rid: [str, int]):
         if isinstance(rid, str) and rid.startswith('ac'):
             rid = rid[2:]
-        if "_" in rid:
-            rid, _ = map(int, rid.split('_'))
+            if "_" in rid:
+                rid, _ = map(int, rid.split('_'))
         super().__init__(acer, 2, rid)
 
     def _staff(self):

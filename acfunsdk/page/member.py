@@ -38,7 +38,7 @@ class AcUp:
         return self.up_data.get('userName', self.up_data.get('name'))
 
     def __repr__(self):
-        return f"Acer([{self.uid}] @{self.name})".encode(errors='replace').decode()
+        return f"Acer([#{self.uid}] @{self.name})".encode(errors='replace').decode()
 
     @property
     def referer(self):

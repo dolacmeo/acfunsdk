@@ -36,6 +36,16 @@ routes_type_map = {
 
 type_routes_map = {v: k for k, v in routes_type_map.items()}
 
+resource_type_str_map = {
+    "1": "番剧",  # AcBangumi
+    "2": "视频",  # AcVideo
+    "3": "文章",  # AcArticle
+    "4": "合辑",  # AcAlbum
+    "5": "用户",  # AcUp
+    "6": "评论",  # AcComment
+    "10": "动态",  # AcMoment
+}
+
 acpage_regex = {
     "AcBangumi": [
         r"(?s)bangumiData\s*=\s*(\{.*?\});",
@@ -166,7 +176,7 @@ class AcDetail:
         "AcBangumi": ['get_video', 'comment', 'like', 'favorite', 'banana'],
         "AcVideo":   ['up', 'up_uid', 'up_name', 'get_video', 'comment', 'like', 'favorite', 'banana'],
         "AcArticle": ['up', 'up_uid', 'up_name', 'comment', 'like', 'favorite', 'banana'],
-        "AcAlbum":   ['up', 'up_uid', 'up_name', 'favorite'],
+        "AcAlbum":   ['favorite'],
         "AcMoment":  ['up', 'up_uid', 'up_name', 'comment', 'like', 'banana'],
         "AcDoodle":  ['comment']
     }
@@ -212,6 +222,9 @@ class AcDetail:
             self.raw_data = dict(data=json.loads(script_bangumidata), list=json.loads(script_bangumilist))
         elif len(rex):
             self.raw_data = json.loads(match1(req.text, *rex))
+        if "ssrContext" in self.raw_data.keys():
+            route_name = type_routes_map[self._objname]
+            self.raw_data = self.raw_data.get(route_name)
         if self._objname in self.__funcs.keys():
             for k in self.__funcs[self._objname]:
                 self.__setattr__(k, getattr(self, f"_{k}"))
@@ -467,3 +480,13 @@ def url_complete(url):
         elif not url.startswith('http'):
             url = f"{routes['index']}{url}"
     return url
+
+
+def get_dict_value_in_path(data: dict, path: [str, list], default=None):
+    if isinstance(path, str):
+        path = path.split('.')
+    inside = data
+    for i, x in enumerate(path):
+        v = default if i == len(path) - 1 else {}
+        inside = inside.get(x, v)
+    return inside

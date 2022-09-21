@@ -1,91 +1,61 @@
 # coding=utf-8
 import json
 from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import thin_string, limit_string, match1
+from acfunsdk.page.utils import AcDetail, not_404, resource_type_str_map, thin_string, limit_string
 
 __author__ = 'dolacmeo'
 
 
-class AcMoment:
-    resource_type = 10
-    raw_data = dict()
-    like_count = 0
-    banana_count = 0
-    comment_count = 0
-    linked = None
+class AcMoment(AcDetail):
 
-    def __init__(self, acer, am_num: [int, str]):
+    def __init__(self, acer, rid: [str, int]):
+        if isinstance(rid, str) and rid.startswith('am'):
+            rid = rid[2:]
         self.acer = acer
-        self.am_num = int(am_num)
-        self.loading()
-        if self.rtype in range(1, 5):
-            self.linked = self.acer.acfun.resource(self.rtype, self.rid)
-        elif self.rtype == 10:
-            rsource = self.raw_data.get('repostSource')
-            if rsource is not None:
-                self.linked = AcMoment(self.acer, self.raw_data.get('repostSource'))
+        super().__init__(acer, 10, rid)
 
-    def loading(self):
-        page_req = self.acer.client.get(f"{routes['moment']}{self.am_num}")
-        json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
-        self.raw_data = json.loads(json_text).get('moment', {}).get('moment')
+    def loading_more(self):
+        self.raw_data = self.raw_data.get("moment", {})
 
     @property
-    def tag_rtype(self):
-        return self.raw_data.get('tagResourceType')
+    def title(self):
+        if self.is_404:
+            return self._msg['404']
+        text = self.raw_data.get("replaceUbbText", "")
+        return thin_string(text)
 
     @property
-    def rtype(self):
-        return self.raw_data.get('resourceType')
+    def moment_data(self):
+        return self.raw_data.get('moment')
 
     @property
-    def rid(self):
-        return self.raw_data.get('resourceId')
+    def source_data(self):
+        return self.raw_data.get('repostSource')
 
     @property
-    def mtype(self):
-        return self.raw_data.get('momentType')
+    def source_obj(self):
+        if not isinstance(self.source_data, dict):
+            return None
+        return self.acer.acfun.resource(self.source_data['resourceType'], self.source_data['resourceId'])
 
     @property
-    def text_without_ubb(self):
-        return self.raw_data.get("replaceUbbText")
+    def source_describe(self):
+        if not isinstance(self.source_data, dict):
+            return None
+        rtype = resource_type_str_map[str(self.source_data['resourceType'])]
+        rid = self.source_data['resourceId']
+        content = limit_string(self.source_data.get("discoveryResourceFeedShowContent", ""), 10)
+        content = ("#" + content) if len(content) else ""
+        up_data = self.source_data['user']
+        up_name = up_data['userName']
+        return f"⋙{rtype}@{up_name}{content}"
 
     def __repr__(self):
-        if self.tag_rtype is None and self.rtype == 10:
-            return f"AcMoment({limit_string(self.text_without_ubb, 7)} {self.linked})"
-        if self.tag_rtype in [1, 2, 10]:
-            name = self.raw_data.get('user', {}).get('userName', '')
-            return f"AcMoment(@{name} | {str(self.linked)})".encode(errors='replace').decode()
-        elif self.tag_rtype == 3:
-            name = self.raw_data.get('user', {}).get('userName', '')
-            text = self.raw_data.get('moment', {}).get('replaceUbbText', '')
-            # text = re.sub('\[emot=acfun,\d+/]', '', thin_string(text))
-            text = thin_string(text)
-            img_count = self.raw_data.get('discoveryResourceFeedShowImageCount', 0)
-            img_count = f"【图x{img_count}】" if img_count > 0 else ""
-            link = "" if self.linked is None else f" | {str(self.linked)}"
-            return f"AcMoment(@{name}: {img_count}{text}{link})".encode(errors='replace').decode()
-        return f"AcMoment()"
-
-    @property
-    def referer(self):
-        return f"{routes['moment']}{self.am_num}"
-
-    def up(self):
-        user = self.raw_data.get('user')
-        return self.acer.acfun.AcUp(user.get("id"))
-
-    def comment(self):
-        return self.acer.acfun.AcComment(self.resource_type, self.rid)
-
-    def banana(self, count: int):
-        return self.acer.throw_banana(self.rid, self.resource_type, count)
-
-    def report(self, crime: str, proof: str, description: str):
-        return self.acer.acfun.AcReport.submit(
-            self.referer, self.am_num, self.resource_type,
-            self.raw_data.get('user').get('id', "0"),
-            crime, proof, description)
+        up_data = self.moment_data['user']
+        up_name = up_data['name']
+        txt_show = limit_string(self.title, 10)
+        with_img = f"∮图x{len(self.moment_data['imgs'])}" if 'imgs' in self.moment_data else ""
+        return f"AcMoment(@{up_name}#{txt_show}{with_img}{self.source_describe or ''})"
 
 
 class MyMoment:
@@ -122,7 +92,7 @@ class MyMoment:
             return True
         return False
 
-    def feed(self, limit: int = 10, refresh: bool = False):
+    def feed(self, limit: int = 10, obj: bool = False, refresh: bool = False):
         if refresh is True:
             self.cursor = "0"
             self.moment_data = list()
@@ -137,4 +107,9 @@ class MyMoment:
         if api_data.get('result') == 0:
             self.cursor = api_data.get('pcursor', self.cursor)
             self.moment_data.extend(api_data.get('feedList', []))
-        return [AcMoment(self.acer, x) for x in api_data.get('feedList', [])]
+        if obj is False:
+            return api_data.get('feedList', [])
+        result = list()
+        for x in api_data.get('feedList', []):
+            result.append(self.acer.acfun.resource(x['resourceType'], x['resourceId']))
+        return result

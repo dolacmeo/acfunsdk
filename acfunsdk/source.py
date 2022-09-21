@@ -59,6 +59,7 @@ routes = {
     "live":             f"{scheme}://{domains['live']}/live/",
     "doodle":           f"{scheme}://{domains['hd']}/doodle/",
     "share":            f"{scheme}://{domains['mobile']}/v/?ac=",
+    "share_live":       f"{scheme}://{domains['mobile']}/live/detail/"
 }
 
 apis = {

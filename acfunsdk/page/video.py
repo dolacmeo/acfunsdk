@@ -1,4 +1,5 @@
 # coding=utf-8
+from urllib import parse
 from acfunsdk.source import routes, apis
 from acfunsdk.page.utils import AcDetail, not_404, get_channel_info
 
@@ -39,6 +40,17 @@ class AcVideo(AcDetail):
     @property
     def mobile_url(self):
         return f"https://scan.acfun.cn/vd/{self.resource_id}"
+
+    @property
+    def mobile_qrcode(self):
+        parma = {
+            "content": self.mobile_url,
+            "contentType": "URL",
+            "toShortUrl": False,
+            "width": 100,
+            "height": 100
+        }
+        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     @not_404

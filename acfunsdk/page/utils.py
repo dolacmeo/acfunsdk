@@ -5,6 +5,7 @@ import json
 import base64
 import subprocess
 from uuid import uuid4
+from urllib import parse
 from datetime import timedelta
 from bs4 import BeautifulSoup as Bs
 from acfunsdk.source import routes, apis
@@ -198,6 +199,17 @@ class AcDetail:
     def referer(self):
         route_name = type_routes_map[self._objname]
         return f"{routes[route_name]}{self.resource_id}"
+
+    @property
+    def qrcode(self):
+        parma = {
+            "content": self.referer,
+            "contentType": "URL",
+            "toShortUrl": False,
+            "width": 100,
+            "height": 100
+        }
+        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     def title(self):

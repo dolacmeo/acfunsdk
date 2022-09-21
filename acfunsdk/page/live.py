@@ -3,8 +3,10 @@ import os
 import time
 import json
 import subprocess
+from urllib import parse
 from acfunsdk.source import scheme, domains, routes, apis
 from acfunsdk.exceptions import need_login
+from .utils import emoji_cleanup
 
 __author__ = 'dolacmeo'
 
@@ -79,67 +81,150 @@ class AcLiveVisitor:
         return data
 
 
-class AcLiveUp:
-    uid = None
-    raw = None
-    acws = None
+class LiveItem:
+    raw_data = None
     is_open = False
-    media_data = None
-    is_404 = False
     liveId = None
     enterRoomAttach = None
     availableTickets = []
-    report_data = dict()
+    representation = []
 
-    def __init__(self, acer, uid: [int, str], raw: [dict, None] = None):
+    def __init__(self, acer, uid: int, visitor, parent):
         self.acer = acer
         self.uid = uid
-        self.raw = raw
-        if self.raw is None:
-            self.infos()
-        self.AcUp = self.acer.acfun.AcUp(self.uid)
-        self.is_404 = self.AcUp.is_404
-        self.visitor = AcLiveVisitor(self.acer)
-        if self.visitor.is_logined:
-            self.media_data = self.media_list()
-            self.report_data['host'] = self._get_report_data('liveStream')
-            self.report_data['audience'] = self._get_report_data('liveStreamAudience')
+        self.visitor = visitor
+        self.parent = parent
+        self.loading()
+
+    def loading(self):
+        form_data = {"authorId": self.uid, "pullStreamType": "FLV"}
+        api_data = self.parent._api_action('live_play', form_data)
+        if api_data.get('result') == 129004:
+            self.is_open = False
+            return False
+        elif api_data.get('result') != 1:
+            return False
+        self.is_open = True
+        self.raw_data = api_data['data']
+        self.liveId = api_data['data'].get("liveId")
+        self.availableTickets = api_data['data'].get("availableTickets", [])
+        self.enterRoomAttach = api_data['data'].get("enterRoomAttach")
+        api_data = api_data.get('data', {}).get('videoPlayRes', "")
+        live_data = json.loads(api_data).get('liveAdaptiveManifest', [])[0]
+        self.representation = live_data.get('adaptationSet', {}).get('representation', {})
 
     @property
     def title(self):
-        return self.raw.get('title', '')
+        if self.is_open is False:
+            return "当前主播未开播"
+        return self.raw_data.get("caption")
 
     @property
-    def username(self):
-        return self.raw.get('user', {}).get('name', '')
+    def start_time(self):
+        if self.is_open is False:
+            return "????????"
+        create_time = self.raw_data.get('liveStartTime', 0) // 1000
+        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))
 
-    def up(self):
-        return self.acer.acfun.AcUp(self.uid)
+    def m3u8_url(self, quality: [int, str] = -1, only_url: bool = True):
+        if quality == -1:
+            for x in self.representation:
+                if x['defaultSelect'] is True:
+                    if only_url is True:
+                        return x['url']
+                    return x
+        elif quality in range(len(self.representation)):
+            if only_url is True:
+                return self.representation[quality]['url']
+            return self.representation[quality]
+
+    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = -1):
+        assert os.path.exists(potplayer_path)
+        adapt = self.m3u8_url(quality, False)
+        player_title = f'"{self.start_time}|{self.parent}{self.title}-{adapt["name"]}"'.replace(" ", '')
+        cmds = [potplayer_path, adapt['url'], "/title", emoji_cleanup(player_title)]
+        return subprocess.Popen(cmds, stdout=subprocess.PIPE)
+
+
+class AcLiveUp:
+    uid = None
+    is_404 = False
+    raw_data = dict()
+    report_data = dict()
+    live = None
+
+    def __init__(self, acer, uid: [int, str]):
+        self.acer = acer
+        self.uid = uid
+        self.AcUp = self.acer.acfun.AcUp(self.uid)
+        self.is_404 = self.AcUp.is_404
+        self.visitor = AcLiveVisitor(self.acer)
+        self.loading()
 
     @property
     def referer(self):
         return f"{routes['live']}{self.uid}"
 
     @property
-    def past_time(self):
-        p = (time.time_ns() // pow(10, 6)) - self.raw.get("createTime", 0)
-        return p if p > 0 else -1
+    def qrcode(self):
+        parma = {
+            "content": self.referer,
+            "contentType": "URL",
+            "toShortUrl": False,
+            "width": 100,
+            "height": 100
+        }
+        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+
+    @property
+    def mobile_url(self):
+        return f"{routes['share_live']}{self.uid}"
+
+    @property
+    def mobile_qrcode(self):
+        parma = {
+            "content": self.mobile_url,
+            "contentType": "URL",
+            "toShortUrl": False,
+            "width": 100,
+            "height": 100
+        }
+        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+
+    @property
+    def title(self):
+        return self.raw_data.get('title', '')
+
+    @property
+    def username(self):
+        return self.raw_data.get('user', {}).get('name', '')
+
+    def up(self):
+        return self.acer.acfun.AcUp(self.uid)
 
     def __repr__(self):
         return f"AcLive(#{self.uid} {self.title} @{self.username})".encode(errors='replace').decode()
 
-    def infos(self, key: [str, None] = None):
+    def loading(self):
         param = {"authorId": self.uid}
         api_req = self.acer.client.get(apis['live_info'], params=param)
-        self.raw = api_req.json()
-        if key is not None:
-            return self.raw.get(key)
-        return self.raw
+        self.raw_data = api_req.json()
+        self.live = LiveItem(self.acer, self.uid, self.visitor, self)
+        if self.visitor.is_logined:
+            self.report_data['host'] = self._get_report_data('liveStream')
+            self.report_data['audience'] = self._get_report_data('liveStreamAudience')
 
-    def contents(self):
+    @property
+    def past_time(self):
+        p = (time.time_ns() // pow(10, 6)) - self.raw_data.get("createTime", 0)
+        return p if p > 0 else -1
+
+    def contents(self, obj: bool = False):
         param = {"authorId": self.uid}
         api_req = self.acer.client.get(apis['live_up_contents'], params=param)
         api_data = api_req.json()
+        if obj is False:
+            return api_data
         return [self.acer.acfun.AcVideo(i.get('dougaId')) for i in api_data.get('contributeList', {}).get('feed', [])]
 
     def _api_action(self, api_name: str, form_data: dict):
@@ -160,23 +245,6 @@ class AcLiveUp:
         values = api_data.get("data", {}).get("payWalletTypeToBalance", {})
         return {"acb": values.get('1', 0), "banana": values.get('2', 0)}
 
-    def media_list(self):
-        form_data = {"authorId": self.uid, "pullStreamType": "FLV"}
-        api_data = self._api_action('live_play', form_data)
-        if api_data.get('result') == 129004:
-            self.is_open = False
-            return False
-        elif api_data.get('result') != 1:
-            return False
-        self.is_open = True
-        self.liveId = api_data['data'].get("liveId")
-        self.availableTickets = api_data['data'].get("availableTickets", [])
-        self.enterRoomAttach = api_data['data'].get("enterRoomAttach")
-        api_data = api_data.get('data', {}).get('videoPlayRes', "")
-        live_data = json.loads(api_data).get('liveAdaptiveManifest', [])[0]
-        live_adapt = live_data.get('adaptationSet', {}).get('representation', {})
-        return live_adapt
-
     def medal_info(self):
         api_req = self.acer.client.post(apis['live_medal'], params={"uperId": self.uid})
         api_data = api_req.json()
@@ -184,22 +252,22 @@ class AcLiveUp:
         return api_data
 
     def push_danmaku(self, content: str):
-        if self.is_open is False:
+        if self.live.is_open is False:
             return False
         form_data = {
             "visitorId": self.uid,
-            "liveId": self.raw.get("liveId"),
+            "liveId": self.live.liveId,
             "content": content
         }
         api_data = self._api_action('live_danmaku', form_data)
         return api_data.get('result') == 1
 
     def like(self, times: int, max_retry: int = 10):
-        if self.is_open is False:
+        if self.live.is_open is False:
             return False
         form_data = {
             "visitorId": self.uid,
-            "liveId": self.raw.get("liveId"),
+            "liveId": self.live.liveId,
             "count": 1,
             "durationMs": 800
         }
@@ -214,11 +282,11 @@ class AcLiveUp:
         return True
 
     def gift_list(self):
-        if self.is_open is False:
+        if self.live.is_open is False:
             return False
         form_data = {
             "visitorId": self.uid,
-            "liveId": self.raw.get("liveId"),
+            "liveId": self.live.liveId,
         }
         api_data = self._api_action('live_gift_list', form_data)
         gifts = dict()
@@ -232,7 +300,7 @@ class AcLiveUp:
         return gifts
 
     def send_gift(self, gift_id: int, size: int, times: int = 1, max_retry: int = 10):
-        if self.is_open is False:
+        if self.live.is_open is False:
             return False
         gift_data = self.gift_list()
         # 判断礼物类型是否存在
@@ -253,7 +321,7 @@ class AcLiveUp:
         combo_id = f"{gift_id}_{gift_id}_{time.time():.0f}000"
         form_data = {
             "visitorId": self.uid,
-            "liveId": self.raw.get("liveId"),
+            "liveId": self.live.liveId,
             "giftId": gift_id,
             "batchSize": size,
             "comboKey": combo_id
@@ -267,23 +335,6 @@ class AcLiveUp:
                 retry += 1
             time.sleep(0.1)
         return True
-
-    def playing(self, potplayer: [str, None] = None, quality: int = 1):
-        live_adapt = self.media_list()
-        if live_adapt is False:
-            return False
-        if quality not in range(len(live_adapt)):
-            quality = 1
-        create_time = self.raw.get('createTime', 0) // 1000
-        start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))
-        live_title = " ".join([str(self), live_adapt[quality]['name'], f"🎬 {start_time}"])
-        live_obs_stream = live_adapt[quality]['url']
-        if potplayer is not None and os.path.exists(potplayer):
-            print(f"[{potplayer}] 开始播放......\r\n {live_title}")
-            subprocess.Popen([potplayer, live_obs_stream, "/title", f'"{live_title}"'], stdout=subprocess.PIPE)
-        else:
-            print(f"未设置PotPlayer 请使用串流地址 请自行播放 \r\n {live_obs_stream}")
-        return live_obs_stream
 
     @need_login
     def _get_report_data(self, sub_biz: str):

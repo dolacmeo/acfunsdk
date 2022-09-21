@@ -99,10 +99,11 @@ class VideoItem:
     def quality(self):
         return self.raw_data.get("transcodeInfos", [])
 
-    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True):
+    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True, only_url: bool = True):
         if isinstance(quality, int):
             assert quality in range(len(self.quality))
         elif isinstance(quality, str):
+            quality = quality.lower()
             q_map = {x["qualityType"]: i for i, x in enumerate(self.quality)}
             assert quality in q_map.keys()
             quality = q_map[quality]
@@ -111,15 +112,18 @@ class VideoItem:
         code_type = "ksPlayJsonHevc" if hevc is True else "ksPlayJson"
         play_data = json.loads(self.raw_data.get(code_type, ""))
         this_quality = play_data.get("adaptationSet", [{}])[0].get("representation")[quality]
-        return this_quality['url'], this_quality['backupUrl']
+        if only_url is True:
+            return this_quality['url'], this_quality['backupUrl']
+        return this_quality
 
-    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = 0, hevc: bool = True):
+    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = "1080p", hevc: bool = True):
         assert os.path.exists(potplayer_path)
-        url = self.m3u8_url(quality, hevc)
-        hevc_mark = "_HEVC" if hevc is True else ""
+        adapt = self.m3u8_url(quality, hevc, False)
+        qtype = adapt["qualityType"]
+        quality_mark = f"{qtype}_HEVC" if hevc is True else qtype
         title = f"-{self.sub_title}" if len(self.sub_title) else ""
-        player_title = f'"{self.parent}{title}-{self.quality[quality]["qualityType"]}{hevc_mark}"'.replace(" ", '')
-        cmds = [potplayer_path, url[0], "/title", emoji_cleanup(player_title)]
+        player_title = f'"{self.parent}{title}-{quality_mark}"'.replace(" ", '')
+        cmds = [potplayer_path, adapt['url'], "/title", emoji_cleanup(player_title)]
         return subprocess.Popen(cmds, stdout=subprocess.PIPE)
 
     @property

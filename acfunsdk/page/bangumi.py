@@ -1,11 +1,6 @@
 # coding=utf-8
-import time
-import json
-import math
-from urllib import parse
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404, get_channel_info
+from .utils import json, math, time, parse, Bs
+from .utils import AcSource, AcDetail, not_404, get_channel_info
 
 __author__ = 'dolacmeo'
 
@@ -22,6 +17,7 @@ class AcBangumi(AcDetail):
     def loading_more(self):
         self.raw_data.update(get_channel_info(self.page_text))
 
+    @not_404
     def video(self, index: int = 0):
         assert index in range(len(self.episode_data))
         vid = self.episode_data[index]
@@ -30,18 +26,22 @@ class AcBangumi(AcDetail):
         return self.get_video(vid['videoId'], title, f"{self.referer}{ends}")
 
     @property
+    @not_404
     def bangumi_data(self):
         return self.raw_data.get("data")
 
     @property
+    @not_404
     def bangumi_list(self):
         return self.raw_data.get("list")
 
     @property
+    @not_404
     def season_data(self):
         return self.bangumi_data.get('relatedBangumis', [])
 
     @property
+    @not_404
     def episode_data(self):
         return self.bangumi_list.get('items', [])
 
@@ -69,10 +69,10 @@ class AcBangumiList:
 
     @property
     def referer(self):
-        return f"{routes['bangumi_list']}"
+        return f"{AcSource.routes['bangumi_list']}"
 
     def loading(self):
-        index_req = self.acer.client.get(routes['bangumi_list'])
+        index_req = self.acer.client.get(AcSource.routes['bangumi_list'])
         self.page_obj = Bs(index_req.text, 'lxml')
         firsts = []
         for menu in self.page_obj.select(".ac-menu .ac-menu-filter"):
@@ -131,7 +131,7 @@ class AcBangumiList:
             "pageNum": page,
             "t": str(time.time_ns())[:13]
         }
-        page_req = self.acer.client.get(routes['bangumi_list'], params=param)
+        page_req = self.acer.client.get(AcSource.routes['bangumi_list'], params=param)
         if not page_req.text.endswith("/*<!-- fetch-stream -->*/"):
             return None
         api_data = json.loads(page_req.text[:-25])

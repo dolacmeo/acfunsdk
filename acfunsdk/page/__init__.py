@@ -2,7 +2,7 @@
 import re
 import httpx
 from urllib import parse
-from acfunsdk import source
+from ..source import AcSource
 from .index import AcIndex
 from .channel import AcChannel
 from .rank import AcRank
@@ -27,7 +27,7 @@ __author__ = 'dolacmeo'
 
 class AcFun:
     nav_data = dict()
-    channel_data = source.channel_data
+    channel_data = AcSource.channel_data
     AcInfo = AcInfo
     AcReport = AcReport
     AcAcademy = AcAcademy
@@ -35,12 +35,12 @@ class AcFun:
 
     def __init__(self, acer):
         self.acer = acer
-        self.cdn_domain = self.acer.client.post(source.apis['cdn_domain'], headers={
-            "referer": source.routes['index']}).json().get('domain')
+        self.cdn_domain = self.acer.client.post(AcSource.apis['cdn_domain'], headers={
+            "referer": AcSource.routes['index']}).json().get('domain')
         self._get_nav()
 
     def _get_nav(self):
-        data = self.acer.client.get(source.apis['nav']).json().get("data", [])
+        data = self.acer.client.get(AcSource.apis['nav']).json().get("data", [])
         for i in data:
             if i['cid'] != 0:
                 self.nav_data.update({str(i['cid']): {x: i[x] for x in i if x != 'children'}})
@@ -50,14 +50,14 @@ class AcFun:
 
     @property
     def referer(self):
-        return f"{source.routes['index']}"
+        return f"{AcSource.routes['index']}"
 
     def search_user(self, keyword: str, page: int = 1):
-        api_req = self.acer.client.get(source.apis['search_user'], params={'keyword': keyword, "pCursor": page})
+        api_req = self.acer.client.get(AcSource.apis['search_user'], params={'keyword': keyword, "pCursor": page})
         return api_req.json()
 
     def username_check(self, name: str):
-        api_req = self.acer.client.post(source.apis['check_username'], data={'name': name})
+        api_req = self.acer.client.post(AcSource.apis['check_username'], data={'name': name})
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return True
@@ -140,17 +140,17 @@ class AcFun:
     def get(self, url_str: str, title=None):
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")
-        if url_str in [source.routes['index'], source.routes['index'] + "/"]:
+        if url_str in [AcSource.routes['index'], AcSource.routes['index'] + "/"]:
             return self.AcIndex()
-        elif url_str in [source.routes['live_index'], source.routes['live_index'] + "/"]:
+        elif url_str in [AcSource.routes['live_index'], AcSource.routes['live_index'] + "/"]:
             return self.AcLive()
         for link_name in routes_type_map.keys():
-            if url_str.startswith(source.routes[link_name]):
-                ends = url_str[len(source.routes[link_name]):]
+            if url_str.startswith(AcSource.routes[link_name]):
+                ends = url_str[len(AcSource.routes[link_name]):]
                 return getattr(self, routes_type_map[link_name])(ends)
         for link_name in ['rank', 'bangumi_list']:
-            if url_str.startswith(source.routes[link_name]):
-                ends = url_str[len(source.routes[link_name]):]
+            if url_str.startswith(AcSource.routes[link_name]):
+                ends = url_str[len(AcSource.routes[link_name]):]
                 if link_name == 'bangumi_list':
                     return self.AcBangumiList()
                 elif link_name == 'rank':
@@ -162,7 +162,7 @@ class AcFun:
                     }
                     return self.AcRank(**kw)
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
-        channel_rex = re.compile(rf"^{source.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
+        channel_rex = re.compile(rf"^{AcSource.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
         if channel_rex:
             return self.AcChannel(channel_rex[0])
         if "//hd.acfun.cn/s/" in url_str:

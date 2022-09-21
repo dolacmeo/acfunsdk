@@ -1,7 +1,7 @@
 # coding=utf-8
-from urllib import parse
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404, get_channel_info
+from .utils import parse
+from .utils import AcSource, AcDetail, not_404, get_channel_info
+
 
 __author__ = 'dolacmeo'
 
@@ -19,7 +19,7 @@ class AcVideo(AcDetail):
         if self.raw_data.get('staffContribute') is not True:
             return None
         form_data = {"resourceId": self.resource_id, "resourceType": self.resource_type}
-        api_req = self.acer.client.post(apis['getStaff'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['getStaff'], data=form_data)
         api_data = api_req.json()
         return api_data
 
@@ -50,7 +50,7 @@ class AcVideo(AcDetail):
             "width": 100,
             "height": 100
         }
-        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+        return f"{AcSource.apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     @not_404

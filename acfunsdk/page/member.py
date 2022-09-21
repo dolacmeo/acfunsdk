@@ -1,8 +1,6 @@
 # coding=utf-8
-import json
-import time
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
+from .utils import json, time, Bs
+from .utils import AcSource
 
 __author__ = 'dolacmeo'
 
@@ -27,7 +25,7 @@ class AcUp:
         self._get_acup()
 
     def _get_acup(self):
-        api_req = self.acer.client.get(apis['userInfo'], params={"userId": self.uid})
+        api_req = self.acer.client.get(AcSource.apis['userInfo'], params={"userId": self.uid})
         if api_req.json().get('result') != 0:
             self.is_404 = True
             return None
@@ -42,12 +40,12 @@ class AcUp:
 
     @property
     def referer(self):
-        return f"{routes['up']}{self.uid}"
+        return f"{AcSource.routes['up']}{self.uid}"
 
     def loading(self):
         if self.is_404 is True:
             return None
-        page_req = self.acer.client.get(routes['up'] + self.uid)
+        page_req = self.acer.client.get(AcSource.routes['up'] + self.uid)
         self.up_page = Bs(page_req.text, "lxml")
         self.video_count = self.up_page.select_one(
             '.ac-space-contribute-list > .tags > li[data-index=video]').attrs['data-count']
@@ -86,7 +84,7 @@ class AcUp:
             param.update({"quickViewId": f"ac-space-{viewer}-list", "order": orderby})
         else:
             param.update({"quickViewId": f"ac-space-{viewer}-user-list"})
-        req = self.acer.client.get(routes['up'] + self.uid, params=param)
+        req = self.acer.client.get(AcSource.routes['up'] + self.uid, params=param)
         assert req.text.endswith("/*<!-- fetch-stream -->*/")
         return json.loads(req.text[:-25])
 

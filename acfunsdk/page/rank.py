@@ -1,7 +1,6 @@
 # coding=utf-8
-from typing import Literal
-from urllib import parse
-from acfunsdk.source import routes, apis
+from .utils import parse, Literal
+from .utils import AcSource
 
 __author__ = 'dolacmeo'
 
@@ -33,7 +32,7 @@ class AcRank:
             "cid": self.sub_cid or "-1",
             "range": self.date_range
         }
-        return f"{routes['rank']}?{parse.urlencode(param)}"
+        return f"{AcSource.routes['rank']}?{parse.urlencode(param)}"
 
     def get_data(self):
         param = {
@@ -42,7 +41,7 @@ class AcRank:
             "rankLimit": self.limit,
             "rankPeriod": self.date_range
         }
-        api_req = self.acer.client.get(apis['rank_list'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['rank_list'], params=param)
         if api_req.json().get('result') == 0:
             self.rank_data = api_req.json().get('rankList')
 

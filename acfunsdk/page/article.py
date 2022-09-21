@@ -1,6 +1,5 @@
 # coding=utf-8
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404
+from .utils import AcSource, AcDetail, not_404
 
 __author__ = 'dolacmeo'
 
@@ -31,7 +30,7 @@ class AcArticle(AcDetail):
             ac_num = this_url[5:]
             data = {
                 'title': item.select_one('.contb-title').a.text,
-                'shareUrl': routes['share'] + ac_num,
+                'shareUrl': AcSource.routes['share'] + ac_num,
                 'viewCount': item.select_one('.contb-count .view-count span.count').text,
                 'commentCount': item.select_one('.contb-count .comm-count span.count').text,
                 'user': self.raw_data.get('user', {})
@@ -69,7 +68,7 @@ class AcWen:
 
     @property
     def referer(self):
-        return f"{routes['index']}/v/list63/index.htm"
+        return f"{AcSource.routes['index']}/v/list63/index.htm"
 
     def feed(self, obj: bool = True):
         if self.cursor == 'no_more':
@@ -83,7 +82,7 @@ class AcWen:
         }
         if isinstance(self.realmIds, list):
             form_data['realmId'] = self.realmIds
-        api_req = self.acer.client.post(apis['article_feed'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['article_feed'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') == 0:
             self.cursor = api_data.get('cursor')

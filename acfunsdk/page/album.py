@@ -1,6 +1,5 @@
 # coding=utf-8
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404
+from .utils import AcSource, AcDetail, not_404
 
 __author__ = 'dolacmeo'
 
@@ -50,7 +49,7 @@ class AcAlbum(AcDetail):
             "size": limit,
             "arubamuId": self.resource_id
         }
-        api_req = self.acer.client.get(apis['album_list'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['album_list'], params=param)
         return api_req.json()
 
     def _get_all_content(self):

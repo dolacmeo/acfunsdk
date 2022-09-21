@@ -1,8 +1,8 @@
 # coding=utf-8
-import math
-from .utils import ms2time
-from acfunsdk.source import routes, apis
-from acfunsdk.exceptions import *
+from .utils import math
+from .utils import AcSource, need_login, ms2time
+
+__author__ = 'dolacmeo'
 
 
 class AcDanmaku:
@@ -29,7 +29,7 @@ class AcDanmaku:
             "sortType": f"{sorttype}",
             "asc": asc,
         }
-        req = self.acer.client.get(apis['danmaku'], params=param)
+        req = self.acer.client.get(AcSource.apis['danmaku'], params=param)
         return req.json()
 
     def _get_all_danmaku(self):
@@ -62,7 +62,8 @@ class AcDanmaku:
             "subChannelName": self.parent.raw_data.get('subChannelName'),
             "roleId": ""
         }
-        req = self.acer.client.post(apis['danmaku_add'], data=danmaku, headers={"referer": f"{routes['index']}"})
+        req = self.acer.client.post(AcSource.apis['danmaku_add'],
+                                    data=danmaku, headers={"referer": f"{AcSource.routes['index']}"})
         return req.json().get('result') == 0
 
 
@@ -103,19 +104,19 @@ class Danmaku:
 
     @need_login
     def like(self):
-        req = self.acer.client.post(apis['danmaku_like'], params={"danmakuId": self.danmakuId})
+        req = self.acer.client.post(AcSource.apis['danmaku_like'], params={"danmakuId": self.danmakuId})
         self.isLike = req.json().get('result') == 0
         return self.isLike is True
 
     @need_login
     def like_cancel(self):
-        req = self.acer.client.post(apis['danmaku_like_cancel'], params={"danmakuId": self.danmakuId})
+        req = self.acer.client.post(AcSource.apis['danmaku_like_cancel'], params={"danmakuId": self.danmakuId})
         self.isLike = not (req.json().get('result') == 0)
         return self.isLike is False
 
     @need_login
     def block_words(self, word=None):
-        req = self.acer.client.post(apis['danmaku_block_add'], params={
+        req = self.acer.client.post(AcSource.apis['danmaku_block_add'], params={
             "blockWordsType": 1,
             "blockWords": word or self.body
         })
@@ -123,7 +124,7 @@ class Danmaku:
 
     @need_login
     def block_acer(self):
-        req = self.acer.client.post(apis['danmaku_block_add'], params={
+        req = self.acer.client.post(AcSource.apis['danmaku_block_add'], params={
             "blockWordsType": 2,
             "blockWords": self.userId
         })
@@ -131,7 +132,7 @@ class Danmaku:
 
     @need_login
     def block_words_delete(self):
-        req = self.acer.client.post(apis['danmaku_block_delete'], params={
+        req = self.acer.client.post(AcSource.apis['danmaku_block_delete'], params={
             "blockWordsType": 1,
             "blockWordsList": self.body
         })
@@ -139,7 +140,7 @@ class Danmaku:
 
     @need_login
     def block_acer_delete(self):
-        req = self.acer.client.post(apis['danmaku_block_delete'], params={
+        req = self.acer.client.post(AcSource.apis['danmaku_block_delete'], params={
             "blockWordsType": 2,
             "blockWordsList": self.userId
         })
@@ -147,7 +148,7 @@ class Danmaku:
 
     @need_login
     def report(self):
-        req = self.acer.client.post(apis['danmaku_block_delete'], params={
+        req = self.acer.client.post(AcSource.apis['danmaku_block_delete'], params={
             "reportedUserId": self.userId,
             "danmakuId": self.danmakuId,
             "body": self.body,

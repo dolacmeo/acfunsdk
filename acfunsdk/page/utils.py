@@ -2,14 +2,19 @@
 import os
 import re
 import json
+import time
+import math
+import httpx
 import base64
 import subprocess
 from uuid import uuid4
 from urllib import parse
+from typing import Literal
 from datetime import timedelta
 from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
-from acfunsdk.exceptions import not_404
+from bs4.element import Tag
+from ..source import AcSource
+from ..exceptions import need_login, not_404
 
 __author__ = 'dolacmeo'
 
@@ -90,7 +95,7 @@ class VideoItem:
             "resourceType": self.parent.resource_type,
             "videoId": self.vid
         }
-        api_req = self.acer.client.get(apis['video_ksplay'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['video_ksplay'], params=param)
         api_data = api_req.json()
         assert api_data.get('result') == 0
         return api_data.get("playInfo")
@@ -133,7 +138,7 @@ class VideoItem:
             "resourceType": self.parent.resource_type,
             "videoId": self.vid
         }
-        api_req = self.acer.client.post(apis['video_scenes'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['video_scenes'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -155,7 +160,7 @@ class VideoItem:
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type
         }
-        api_req = self.acer.client.post(apis['video_hotspot'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['video_hotspot'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -202,7 +207,7 @@ class AcDetail:
     @property
     def referer(self):
         route_name = type_routes_map[self._objname]
-        return f"{routes[route_name]}{self.resource_id}"
+        return f"{AcSource.routes[route_name]}{self.resource_id}"
 
     @property
     def qrcode(self):
@@ -213,7 +218,7 @@ class AcDetail:
             "width": 100,
             "height": 100
         }
-        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+        return f"{AcSource.apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     def title(self):
@@ -407,22 +412,22 @@ def emoji_cleanup(text):
 
 
 def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
-    token_req = client.post(apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
+    token_req = client.post(AcSource.apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
     token_data = token_req.json()
     assert token_data.get('result') == 0
-    resume_req = client.get(apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
+    resume_req = client.get(AcSource.apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
     resume_data = resume_req.json()
     assert resume_data.get('result') == 1
-    fragment_req = client.post(apis['image_upload_fragment'], data=image_data,
+    fragment_req = client.post(AcSource.apis['image_upload_fragment'], data=image_data,
                                params=dict(upload_token=token_data['info']['token'], fragment_id=0),
                                headers={"Content-Type": "application/octet-stream"})
     fragment_data = fragment_req.json()
     assert fragment_data.get('result') == 1
-    complete_req = client.post(apis['image_upload_complete'],
+    complete_req = client.post(AcSource.apis['image_upload_complete'],
                                params=dict(upload_token=token_data['info']['token'], fragment_count=1))
     complete_data = complete_req.json()
     assert complete_data.get('result') == 1
-    result_req = client.post(apis['image_upload_geturl'], data=dict(token=token_data['info']['token']))
+    result_req = client.post(AcSource.apis['image_upload_geturl'], data=dict(token=token_data['info']['token']))
     result_data = result_req.json()
     assert result_data.get('result') == 0
     return result_data.get('url')
@@ -494,7 +499,7 @@ def url_complete(url):
         if url.startswith('//'):
             url = f"https:{url}"
         elif not url.startswith('http'):
-            url = f"{routes['index']}{url}"
+            url = f"{AcSource.routes['index']}{url}"
     return url
 
 

@@ -1,7 +1,5 @@
 # coding=utf-8
-import json
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import AcDetail, not_404, resource_type_str_map, thin_string, limit_string
+from .utils import AcSource, AcDetail, resource_type_str_map, thin_string, limit_string
 
 __author__ = 'dolacmeo'
 
@@ -81,7 +79,7 @@ class MyMoment:
             "3": "?tab=article",
         }
         query = rtypes.get(str(self.resourceTypes), "")
-        return f"{routes['feeds']}{query}"
+        return f"{AcSource.routes['feeds']}{query}"
 
     def set_tab(self, tab: str = 'all'):
         new = self.rts.get(tab, 0)
@@ -102,7 +100,7 @@ class MyMoment:
             "count": limit or self.limit,
             "resourceTypes": self.resourceTypes,
         }
-        api_req = self.acer.client.get(apis['follow_feed'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['follow_feed'], params=param)
         api_data = api_req.json()
         if api_data.get('result') == 0:
             self.cursor = api_data.get('pcursor', self.cursor)

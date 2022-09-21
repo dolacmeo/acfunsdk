@@ -1,9 +1,6 @@
 # coding=utf-8
-import json
-import time
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis, channel_data
-from acfunsdk.page.utils import match1
+from .utils import json, time, Bs
+from .utils import AcSource, match1
 
 __author__ = 'dolacmeo'
 
@@ -76,7 +73,7 @@ class ChannelBlock:
 
 
 class AcChannel:
-    channel_data = channel_data
+    channel_data = AcSource.channel_data
     nav_data = dict()
     channel_obj = None
     is_main = False
@@ -104,7 +101,7 @@ class AcChannel:
 
     @property
     def referer(self):
-        return f"{routes['index']}/v/list{self.cid}/index.htm"
+        return f"{AcSource.routes['index']}/v/list{self.cid}/index.htm"
 
     @property
     def _main_channels(self):

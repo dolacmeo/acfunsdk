@@ -1,10 +1,9 @@
 # coding=utf-8
 import os
 import json
-import httpx
 from typing import Literal
 from .page import *
-from .exceptions import *
+from .exceptions import need_login
 
 __author__ = 'dolacmeo'
 
@@ -31,7 +30,7 @@ class Acer:
 
     def __init__(self, **kwargs):
         self.config = kwargs
-        self.client = httpx.Client(headers=source.header)
+        self.client = httpx.Client(headers=AcSource.header)
         if "loading" in kwargs:
             self.loading(kwargs['loading'])
         elif "username" in kwargs and "password" in kwargs:
@@ -47,7 +46,7 @@ class Acer:
 
     @property
     def referer(self):
-        return f"{source.routes['member']}"
+        return f"{AcSource.routes['member']}"
 
     @property
     def uid(self):
@@ -61,11 +60,11 @@ class Acer:
         return self.acfun.get(url_str, title)
 
     def _get_personal(self):
-        live_page_req = self.client.get(source.routes['app'])
+        live_page_req = self.client.get(AcSource.routes['app'])
         assert live_page_req.status_code // 100 == 2
         self.did = live_page_req.cookies.get('_did')
         if self.is_logined:
-            api_req = self.client.post(source.apis['token'], data={"sid": "acfun.midground.api"})
+            api_req = self.client.post(AcSource.apis['token'], data={"sid": "acfun.midground.api"})
             api_data = api_req.json()
             assert api_data.get('result') == 0
             self.tokens = {
@@ -73,7 +72,7 @@ class Acer:
                 "api_st": api_data.get("acfun.midground.api_st", ''),
                 "api_at": api_data.get("acfun.midground.api.at", ''),
             }
-            info_req = self.client.get(source.apis['personalInfo'])
+            info_req = self.client.get(AcSource.apis['personalInfo'])
             info_data = info_req.json()
             assert info_data.get('result') == 0
             self.data = info_data.get('info', {})
@@ -88,7 +87,7 @@ class Acer:
             self.bananamall = BananaMall(self)
             self.signin()  # 自动签到
         else:
-            api_req = self.client.post(source.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
+            api_req = self.client.post(AcSource.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
             api_data = api_req.json()
             assert api_data.get('result') == 0
             self.tokens = {
@@ -117,7 +116,7 @@ class Acer:
             "key": key or "",
             "captcha": captcha or ""
         }
-        api_req = self.client.post(source.apis['login'], data=form_data)
+        api_req = self.client.post(AcSource.apis['login'], data=form_data)
         result = api_req.json()
         self.is_logined = result.get('result', 1) == 0
         if self.is_logined is True:
@@ -129,8 +128,8 @@ class Acer:
         return self.is_logined
 
     def logout(self):
-        self.client.get(source.apis['logout'])
-        self.client = httpx.Client(headers=source.header)
+        self.client.get(AcSource.apis['logout'])
+        self.client = httpx.Client(headers=AcSource.header)
         self.is_logined = False
         self.data = dict()
         self.tokens = dict()
@@ -147,7 +146,7 @@ class Acer:
 
     @need_login
     def acoin(self):
-        req = self.client.get(source.apis['acoinBalance'])
+        req = self.client.get(AcSource.apis['acoinBalance'])
         data = req.json()
         if data.get('result') == 0:
             return data.get('data')
@@ -155,7 +154,7 @@ class Acer:
 
     @need_login
     def setup_signature(self, text: str):
-        api_req = self.client.post(source.apis['updateSignature'], data={'signature': text},
+        api_req = self.client.post(AcSource.apis['updateSignature'], data={'signature': text},
                                    headers={'referer': 'https://www.acfun.cn/member/setting?tab=info'})
         return api_req.json().get('result') == 0
 
@@ -163,17 +162,17 @@ class Acer:
     def signin(self):
         if self.data.get("signIn") is True:
             return True
-        api_req = self.client.get(source.apis['signIn'])
+        api_req = self.client.get(AcSource.apis['signIn'])
         api_data = api_req.json()
         return api_data.get('result') == 0
 
     @need_login
     def throw_banana(self, rtype, rid, count: int):
-        api_req = self.client.post(source.apis['throw_banana'], data={
+        api_req = self.client.post(AcSource.apis['throw_banana'], data={
             "count": 1 if 1 > count > 5 else count,
             "resourceId": rid,
             "resourceType": rtype
-        }, headers={'referer': source.routes['index']})
+        }, headers={'referer': AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
     def _like(self, on_off: bool, otype, oid):
@@ -189,7 +188,7 @@ class Acer:
         }
         form_data = self.update_token(form_data)
         x = "like_add" if on_off is True else "like_delete"
-        req = self.client.post(source.apis[x], data=form_data)
+        req = self.client.post(AcSource.apis[x], data=form_data)
         return req.json().get('result') == 1
 
     @need_login
@@ -203,7 +202,7 @@ class Acer:
     @need_login
     def history(self, page: int = 1, limit: int = 10, obj: bool = False):
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
-        api_req = self.client.post(source.apis['history'], data=form_data)
+        api_req = self.client.post(AcSource.apis['history'], data=form_data)
         api_data = api_req.json()
         assert api_data.get('result') == 0
         if obj is False:
@@ -220,6 +219,6 @@ class Acer:
     def history_del_all(self, rtype: Literal["", "1,2", "3"] = ""):
         # 空 全部;1,2 视频;3 文章
         form_data = {"resourceTypes": rtype or ''}
-        api_req = self.client.post(source.apis['history'], data=form_data)
+        api_req = self.client.post(AcSource.apis['history'], data=form_data)
         api_data = api_req.json()
         return api_data.get('result') == 0

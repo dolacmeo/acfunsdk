@@ -1,12 +1,6 @@
 # coding=utf-8
-import os
-import time
-import json
-import subprocess
-from urllib import parse
-from acfunsdk.source import scheme, domains, routes, apis
-from acfunsdk.exceptions import need_login
-from .utils import emoji_cleanup
+from .utils import os, json, time, subprocess, parse
+from .utils import AcSource, need_login, emoji_cleanup
 
 __author__ = 'dolacmeo'
 
@@ -21,14 +15,14 @@ class AcLive:
 
     @property
     def referer(self):
-        return f"{routes['live_index']}"
+        return f"{AcSource.routes['live_index']}"
 
     def __repr__(self):
         return f"AcLive(直播 - AcFun弹幕视频网)"
 
     def _get_list(self):
         if self.last_update is None or time.time() - self.last_update >= 60:
-            api_req = self.acer.client.get(apis['live_list'])
+            api_req = self.acer.client.get(AcSource.apis['live_list'])
             self.raw_data = api_req.json()
             self.last_update = time.time()
 
@@ -62,9 +56,9 @@ class AcLiveVisitor:
             self.uid = self.acer.uid
             self.tokens = self.acer.tokens
         else:
-            did_req = self.client.get(apis['app'])
+            did_req = self.client.get(AcSource.apis['app'])
             self.did = did_req.cookies.get('_did')
-            token_req = self.client.post(apis['token_visitor'],
+            token_req = self.client.post(AcSource.apis['token_visitor'],
                                          data={"sid": "acfun.api.visitor"})
             token_data = token_req.json()
             self.uid = token_data.get("userId"),
@@ -163,7 +157,7 @@ class AcLiveUp:
 
     @property
     def referer(self):
-        return f"{routes['live']}{self.uid}"
+        return f"{AcSource.routes['live']}{self.uid}"
 
     @property
     def qrcode(self):
@@ -174,11 +168,11 @@ class AcLiveUp:
             "width": 100,
             "height": 100
         }
-        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+        return f"{AcSource.apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     def mobile_url(self):
-        return f"{routes['share_live']}{self.uid}"
+        return f"{AcSource.routes['share_live']}{self.uid}"
 
     @property
     def mobile_qrcode(self):
@@ -189,7 +183,7 @@ class AcLiveUp:
             "width": 100,
             "height": 100
         }
-        return f"{apis['qrcode']}?{parse.urlencode(parma)}"
+        return f"{AcSource.apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     def title(self):
@@ -207,7 +201,7 @@ class AcLiveUp:
 
     def loading(self):
         param = {"authorId": self.uid}
-        api_req = self.acer.client.get(apis['live_info'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['live_info'], params=param)
         self.raw_data = api_req.json()
         self.live = LiveItem(self.acer, self.uid, self.visitor, self)
         if self.visitor.is_logined:
@@ -221,7 +215,7 @@ class AcLiveUp:
 
     def contents(self, obj: bool = False):
         param = {"authorId": self.uid}
-        api_req = self.acer.client.get(apis['live_up_contents'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['live_up_contents'], params=param)
         api_data = api_req.json()
         if obj is False:
             return api_data
@@ -236,8 +230,8 @@ class AcLiveUp:
             "did": self.visitor.did,
         }
         param = self.visitor.update_token(param)
-        api_req = self.acer.client.post(apis[api_name], params=param, data=form_data,
-                                        headers={'referer': f"{scheme}://{domains['live']}/"})
+        api_req = self.acer.client.post(AcSource.apis[api_name], params=param, data=form_data,
+                                        headers={'referer': f"{AcSource.routes['live_index']}"})
         return api_req.json()
 
     def my_balance(self):
@@ -246,7 +240,7 @@ class AcLiveUp:
         return {"acb": values.get('1', 0), "banana": values.get('2', 0)}
 
     def medal_info(self):
-        api_req = self.acer.client.post(apis['live_medal'], params={"uperId": self.uid})
+        api_req = self.acer.client.post(AcSource.apis['live_medal'], params={"uperId": self.uid})
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -352,7 +346,7 @@ class AcLiveUp:
             "did": self.visitor.did,
         }
         data = self.visitor.update_token(data)
-        api_req = self.acer.client.post(apis[api_name[sub_biz]], params=data, json=data)
+        api_req = self.acer.client.post(AcSource.apis[api_name[sub_biz]], params=data, json=data)
         api_data = api_req.json()
         assert api_data.get("result") == 1
         config = json.loads(api_data.get('json'))
@@ -384,7 +378,7 @@ class AcLiveUp:
             "userId": self.visitor.uid,
             "did": self.visitor.did,
         }
-        api_req = self.acer.client.post(apis[api_name[sub_biz]], params=param, json=data)
+        api_req = self.acer.client.post(AcSource.apis[api_name[sub_biz]], params=param, json=data)
         api_data = api_req.json()
         return api_data
 

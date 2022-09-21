@@ -1,9 +1,6 @@
 # coding=utf-8
-import json
-import httpx
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import match1
+from .utils import json, httpx, Bs
+from .utils import AcSource, match1
 
 __author__ = 'dolacmeo'
 
@@ -31,7 +28,7 @@ class AcDoodle:
 
     @property
     def referer(self):
-        return f"{routes['doodle']}{self.doodle_id}.html"
+        return f"{AcSource.routes['doodle']}{self.doodle_id}.html"
 
     def loading(self):
         page_req = httpx.get(self.referer)
@@ -102,7 +99,7 @@ class AcDoodle:
             "sort": 1,
             "title": ""
         }
-        api_req = self.acer.client.post(apis['doodle_vote'], json=data)
+        api_req = self.acer.client.post(AcSource.apis['doodle_vote'], json=data)
         api_data = api_req.json()
         assert api_data.get("result") == 1
         return api_data
@@ -116,7 +113,7 @@ class AcDoodle:
             "kpn": "ACFUN_APP",
             "pcursor": pcursor or "",
         }
-        api_req = self.acer.client.post(apis['doodle_comment'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['doodle_comment'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 1
         return api_data

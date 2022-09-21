@@ -1,9 +1,6 @@
 # coding=utf-8
-import json
-import time
-from urllib import parse
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
+from .utils import json, time, parse, Bs
+from .utils import AcSource
 
 __author__ = 'dolacmeo'
 
@@ -43,7 +40,7 @@ class AcSearch:
             "type": self.search_type,
             "pCursor": 1,
         }
-        return f"{routes['search']}?{parse.urlencode(param)}"
+        return f"{AcSource.routes['search']}?{parse.urlencode(param)}"
 
     def _get_data(self, page: int = 1, sortby: int = 1, channel_id: int = 0):
         if 1 > sortby > 5:
@@ -59,14 +56,14 @@ class AcSearch:
             "channelId": channel_id,
             "t": str(time.time_ns())[:13],
         }
-        api_req = self.acer.client.get(apis['search'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['search'], params=param)
         assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
         self.reqID += 1
         self.result_raw = json.loads(api_req.text[:-25])
         self.result_obj = Bs(self.result_raw.get('html', ''), 'lxml')
 
     def _get_keywords(self):
-        api_req = self.acer.client.get(apis['search_keywords'])
+        api_req = self.acer.client.get(AcSource.apis['search_keywords'])
         api_data = api_req.json()
         if api_data.get('result') == 0:
             self.hot_keywords = api_data

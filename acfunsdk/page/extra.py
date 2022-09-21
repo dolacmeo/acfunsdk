@@ -1,8 +1,6 @@
 # coding=utf-8
-import httpx
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import scheme, routes, apis
-from .utils import url_complete
+from .utils import httpx, Bs
+from .utils import AcSource, url_complete
 
 __author__ = 'dolacmeo'
 
@@ -59,10 +57,10 @@ class AcHelp:
 
     @property
     def referer(self):
-        return f"{routes['help']}"
+        return f"{AcSource.routes['help']}"
 
     def loading(self):
-        tab_req = httpx.post(apis['feedback_tab'], json={"appType": "acfun_m"})
+        tab_req = httpx.post(AcSource.apis['feedback_tab'], json={"appType": "acfun_m"})
         tab_data = tab_req.json()
         assert tab_data.get("result") == 1
         for x in tab_data.get("tabFaqs", []):
@@ -74,14 +72,14 @@ class AcHelp:
     def tab(self, parent_id: str):
         if parent_id not in self.category.keys():
             return None
-        children_req = httpx.post(apis['feedback_children'],
+        children_req = httpx.post(AcSource.apis['feedback_children'],
                                   json={"appType": "acfun_m", "parentId": parent_id})
         children_data = children_req.json()
         assert children_data.get("result") == 1
         return children_data.get("children")
 
     def get(self, question_id: str):
-        question_req = httpx.post(apis['feedback_question'],
+        question_req = httpx.post(AcSource.apis['feedback_question'],
                                   json={"appType": "acfun_m", "questionId": question_id})
         question_data = question_req.json()
         assert question_data.get("result") == 1
@@ -89,7 +87,7 @@ class AcHelp:
 
 
 class AcInfo:
-    referer = f"{routes['info']}"
+    referer = f"{AcSource.routes['info']}"
 
     about = {
         "url": "https://www.acfun.cn/info#page=about",
@@ -177,7 +175,7 @@ class AcReport:
             "proof": proof,
             "description": description,
         }
-        api_req = httpx.post(apis['report'], data=form)
+        api_req = httpx.post(AcSource.apis['report'], data=form)
         return api_req.json().get("result") == 0
 
     @staticmethod
@@ -186,7 +184,7 @@ class AcReport:
         assert len(content) >= 5
         assert len(tel) == 11
         form = {"title": title, "content": content, "tel": tel}
-        api_req = httpx.post(apis['feedback'], data=form)
+        api_req = httpx.post(AcSource.apis['feedback'], data=form)
         return api_req.json().get("result") == 0
 
 
@@ -239,7 +237,7 @@ class AcAcademy:
     @staticmethod
     def acer_teacher():
         form = {"courseType": "2", "pageSize": 40, "page": 1}
-        api_req = httpx.post(apis['academy_tea'], data=form)
+        api_req = httpx.post(AcSource.apis['academy_tea'], data=form)
         api_data = api_req.json()
         return api_data.get("teacherList")
 
@@ -252,17 +250,17 @@ class AcDownload:
 
     @property
     def referer(self):
-        return f"{routes['app']}"
+        return f"{AcSource.routes['app']}"
 
     def _app_page_obj(self):
         if self._app_page_raw is None:
-            page_req = self.acer.client.get(routes['app'])
+            page_req = self.acer.client.get(AcSource.routes['app'])
             self._app_page_raw = Bs(page_req.text, 'lxml')
         return self._app_page_raw
 
     def emots(self):
         urls = list()
-        emot_page = self.acer.client.get(routes['emot'])
+        emot_page = self.acer.client.get(AcSource.routes['emot'])
         emot_obj = Bs(emot_page.text, 'lxml')
         for item in emot_obj.select('.emot-download'):
             title = item.select_one(".emot-name").text
@@ -271,12 +269,12 @@ class AcDownload:
             images = list()
             if details:
                 for img in details.select('img'):
-                    images.append(f"{scheme}:{img.attrs['src']}")
-            urls.append({'title': title, 'url': f"{scheme}:{url}", 'details': images})
+                    images.append(f"{AcSource.scheme}:{img.attrs['src']}")
+            urls.append({'title': title, 'url': f"{AcSource.scheme}:{url}", 'details': images})
         return urls
 
     def Android_apk(self):
-        api_req = self.acer.client.get(apis['app_download'])
+        api_req = self.acer.client.get(AcSource.apis['app_download'])
         api_data = api_req.json()
         return api_data.get('url')
 
@@ -294,7 +292,7 @@ class AcDownload:
         return win_link.attrs['href'], psd_link.attrs['href']
 
     def FaceCatcher_win(self):
-        api_res = self.acer.client.post(apis['face_catcher'], headers={
+        api_res = self.acer.client.post(AcSource.apis['face_catcher'], headers={
             "referer": "https://www.acfun.cn/face-catcher",
             "origin": "https://www.acfun.cn"
         })
@@ -303,7 +301,7 @@ class AcDownload:
 
     def emot_zips(self):
         urls = list()
-        api_res = self.acer.client.post(apis['emot'], headers={
+        api_res = self.acer.client.post(AcSource.apis['emot'], headers={
             "referer": "https://www.acfun.cn/info/",
             "origin": "https://www.acfun.cn"
         })

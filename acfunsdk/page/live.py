@@ -121,6 +121,7 @@ class LiveItem:
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))
 
     def m3u8_url(self, quality: [int, str] = -1, only_url: bool = True):
+        assert self.is_open is True
         if quality == -1:
             for x in self.representation:
                 if x['defaultSelect'] is True:
@@ -133,6 +134,7 @@ class LiveItem:
             return self.representation[quality]
 
     def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = -1):
+        assert self.is_open is True
         assert os.path.exists(potplayer_path)
         adapt = self.m3u8_url(quality, False)
         player_title = f'"{self.start_time}|{self.parent}{self.title}-{adapt["name"]}"'.replace(" ", '')
@@ -203,15 +205,17 @@ class AcLiveUp:
         param = {"authorId": self.uid}
         api_req = self.acer.client.get(AcSource.apis['live_info'], params=param)
         self.raw_data = api_req.json()
-        self.live = LiveItem(self.acer, self.uid, self.visitor, self)
+        if self.past_time > -1:
+            self.live = LiveItem(self.acer, self.uid, self.visitor, self)
         if self.visitor.is_logined:
             self.report_data['host'] = self._get_report_data('liveStream')
             self.report_data['audience'] = self._get_report_data('liveStreamAudience')
 
     @property
     def past_time(self):
-        p = (time.time_ns() // pow(10, 6)) - self.raw_data.get("createTime", 0)
-        return p if p > 0 else -1
+        if "createTime" not in self.raw_data:
+            return -1
+        return (time.time_ns() // pow(10, 6)) - self.raw_data.get("createTime", 0)
 
     def contents(self, obj: bool = False):
         param = {"authorId": self.uid}

@@ -8,10 +8,11 @@ __author__ = 'dolacmeo'
 class AcBangumi(AcDetail):
 
     def __init__(self, acer, rid: [str, int]):
-        if isinstance(rid, str) and rid.startswith('aa'):
-            rid = rid[2:]
-        if "_36188_" in rid:
-            rid, _ = map(int, rid.split('_36188_'))
+        if isinstance(rid, str):
+            if rid.startswith('aa'):
+                rid = rid[2:]
+            if "_36188_" in rid:
+                rid, _ = map(int, rid.split('_36188_'))
         super().__init__(acer, 1, rid)
 
     @not_404

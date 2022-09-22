@@ -393,7 +393,7 @@ class AcScreeningRoom:
             raw_data = self._get_data_from_api(2, item_data['contentId'], item_data['videoId'])
         code_type = "ksPlayJsonHevc" if hevc is True else "ksPlayJson"
         play_data = json.loads(raw_data.get(code_type, ""))
-        adapt = play_data['adaptationSet'][0]['representation']
+        adapt = raw_data['transcodeInfos']
         if isinstance(quality, int):
             assert quality in range(len(adapt))
         elif isinstance(quality, str):
@@ -403,7 +403,7 @@ class AcScreeningRoom:
             quality = q_map[quality]
         else:
             return None
-        this_quality = adapt[quality]
+        this_quality = play_data['adaptationSet'][0]['representation'][quality]
         if only_url is True:
             return this_quality['url'], this_quality['backupUrl']
         return this_quality
@@ -419,3 +419,14 @@ class AcScreeningRoom:
         player_title = f'"{main_title}{sub_title}-{quality_mark}"'.replace(" ", '')
         cmds = [potplayer_path, adapt['url'], "/title", emoji_cleanup(player_title)]
         return subprocess.Popen(cmds, stdout=subprocess.PIPE)
+
+    def danmaku(self, key: str, num: int, ) -> object:
+        assert key in self.raw_data
+        main_data = self.raw_data[key]
+        assert num in range(len(main_data['list']))
+        item_data = main_data['list'][num]
+        if "bangumiId" in item_data:
+            parent = self.acer.acfun.resource(1, item_data['bangumiId'])
+            return self.acer.acfun.AcDanmaku(item_data['videoId'], parent)
+        parent = self.acer.acfun.resource(2, item_data['contentId'])
+        return self.acer.acfun.AcDanmaku(item_data['videoId'], parent)

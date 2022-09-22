@@ -29,8 +29,12 @@ class AcDanmaku:
             "sortType": f"{sorttype}",
             "asc": asc,
         }
-        req = self.acer.client.get(AcSource.apis['danmaku'], params=param)
-        return req.json()
+        api_req = self.acer.client.get(AcSource.apis['danmaku'], params=param)
+        api_data = api_req.json()
+        if api_data.get("result") == 11:
+            api_req = self.acer.client.get(AcSource.apis['danmaku_lab'], params=param)
+            api_data = api_req.json()
+        return api_data
 
     def _get_all_danmaku(self):
         self.danmaku_data = list()

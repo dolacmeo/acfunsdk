@@ -147,6 +147,7 @@ class AcSource:
         'comment_unlike':       f"{scheme}://{domains['main']}/rest/pc-direct/comment/unlike",
         # 弹幕
         'danmaku':              f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/list",
+        'danmaku_lab':          f"{scheme}://{domains['lab']}/rest/pc-direct/new-danmaku/list",
         'danmaku_get':          f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/pollByPosition",
         'danmaku_add':          f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/add",
         'danmaku_like':         f"{scheme}://{domains['main']}/rest/pc-direct/new-danmaku/like",

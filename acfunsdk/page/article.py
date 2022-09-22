@@ -47,6 +47,18 @@ class AcArticle(AcDetail):
                 articles.append(data)
         return articles
 
+    def AcWen(self):
+        if self.is_404:
+            return None
+        rid = self.raw_data.get("realm", {}).get("realmId")
+        return AcWen(self.acer, [rid])
+
+    def AcChannel(self):
+        if self.is_404:
+            return None
+        cid = self.raw_data.get("channel", {}).get('id')
+        return self.acer.acfun.AcChannel(cid)
+
 
 class AcWen:
     realmIds = None

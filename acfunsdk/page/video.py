@@ -1,6 +1,6 @@
 # coding=utf-8
-from .utils import parse
-from .utils import AcSource, AcDetail, not_404, get_channel_info
+from .utils import parse, json, Bs
+from .utils import AcSource, AcDetail, not_404
 
 
 __author__ = 'dolacmeo'
@@ -24,7 +24,6 @@ class AcVideo(AcDetail):
         return api_data
 
     def loading_more(self):
-        self.raw_data.update(get_channel_info(self.page_text))
         staff_data = self._staff()
         if staff_data is not None:
             self.raw_data['staffInfos'] = staff_data.get('staffInfos')
@@ -76,3 +75,24 @@ class AcVideo(AcDetail):
         user_name = self._up_name or self._up_uid
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"
         return f"AcVideo([ac{self.resource_id}]{title}{user_txt})".encode(errors='replace').decode()
+
+    @not_404
+    def recommends(self, obj: bool = False):
+        param = {"pagelets": ",".join(["pagelet_newrecommend"]), "ajaxpipe": 1}
+        api_req = self.acer.client.get(f"{self.referer}", params=param)
+        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        page_data = json.loads(api_req.text[:-25])['html']
+        recommend_raw = Bs(page_data, 'lxml').select_one("#recommendList").text
+        recommend_data = json.loads(recommend_raw)
+        if obj is False:
+            return recommend_data
+        videos = list()
+        for v in recommend_data:
+            videos.append(AcVideo(self.acer, v['dougaFeedView']['dougaId']))
+        return videos
+
+    def AcChannel(self):
+        if self.is_404:
+            return None
+        cid = self.raw_data.get("channel", {}).get('id')
+        return self.acer.acfun.AcChannel(cid)

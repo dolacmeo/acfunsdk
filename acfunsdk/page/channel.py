@@ -110,10 +110,14 @@ class AcChannel:
     def _main_channels(self):
         return {x["channelId"]: x for x in AcSource.channel_data}
 
+    @property
+    def name(self):
+        return self.nav_data.get('name')
+
     def __repr__(self):
         if self.is_404 is True:
             return f"AcChannel(#{self.cid} 404)"
-        return f"AcChannel(#{self.cid} {self.nav_data['name']})"
+        return f"AcChannel(#{self.cid} {self.name})"
 
     def _get_channel_info(self):
         for channel in AcSource.channel_data:

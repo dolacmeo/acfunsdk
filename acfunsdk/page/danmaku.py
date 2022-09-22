@@ -58,8 +58,8 @@ class AcDanmaku:
             "type": "bangumi" if self.parent._objname == "AcBangumi" else "douga",
             "videoId": self.vid,
             "id": self.parent.resource_id,
-            "subChannelId": self.parent.raw_data.get('subChannelId'),
-            "subChannelName": self.parent.raw_data.get('subChannelName'),
+            "subChannelId": self.parent.raw_data.get("channel", {}).get('id'),
+            "subChannelName": self.parent.raw_data.get("channel", {}).get('name'),
             "roleId": ""
         }
         req = self.acer.client.post(AcSource.apis['danmaku_add'],
@@ -155,7 +155,7 @@ class Danmaku:
             "type": "douga",
             "id": self.parent.resource_id,
             "videoId": self.vid,
-            "subChannelId": self.parent.raw_data.get('subChannelId'),
-            "subChannelName": self.parent.raw_data.get('subChannelName'),
+            "subChannelId": self.parent.raw_data.get("channel", {}).get('id'),
+            "subChannelName": self.parent.raw_data.get("channel", {}).get('name'),
         })
         return req.json().get('result') == 0

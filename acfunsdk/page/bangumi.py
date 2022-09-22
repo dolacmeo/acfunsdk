@@ -1,6 +1,6 @@
 # coding=utf-8
 from .utils import json, math, time, parse, Bs, Literal
-from .utils import AcSource, AcDetail, not_404, get_channel_info
+from .utils import AcSource, AcDetail, not_404
 
 __author__ = 'dolacmeo'
 
@@ -13,9 +13,6 @@ class AcBangumi(AcDetail):
         if "_36188_" in rid:
             rid, _ = map(int, rid.split('_36188_'))
         super().__init__(acer, 1, rid)
-
-    def loading_more(self):
-        self.raw_data.update(get_channel_info(self.page_text))
 
     @not_404
     def video(self, index: int = 0):

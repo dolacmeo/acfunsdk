@@ -472,14 +472,6 @@ def warp_mix_chars(_string: str, lens: int = 40, border: [tuple, None] = None):
     return output
 
 
-def get_channel_info(html):
-    rex = re.compile(r'\{subChannelId:(\d+),subChannelName:\"((?:(?!").)*)\"}')
-    result = rex.findall(html)
-    if result is not None:
-        return {"subChannelId": result[0][0], "subChannelName": result[0][1]}
-    return {}
-
-
 def ms2time(ms: int):
     d = timedelta(milliseconds=ms)
     return str(d).split('.')[0]

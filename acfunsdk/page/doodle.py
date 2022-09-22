@@ -6,7 +6,7 @@ __author__ = 'dolacmeo'
 
 
 class AcDoodle:
-    doodle_data = None
+    raw_data = None
     doodle_title = None
     doodle_video = list()
     doodle_bg = list()
@@ -35,20 +35,20 @@ class AcDoodle:
         self.page_obj = Bs(page_req.text, 'lxml')
         self.doodle_title = self.page_obj.select_one('title').text
         json_text = match1(page_req.text, r"(?s)__schema__\s*=\s*'(\{.*?\})';")
-        self.doodle_data = json.loads(json_text.replace(r'\\"', r'\"'))
-        root_id = self.doodle_data['app']['data']['rootContainer']
+        self.raw_data = json.loads(json_text.replace(r'\\"', r'\"'))
+        root_id = self.raw_data['app']['data']['rootContainer']
         main_block = None
-        for item_id in self.doodle_data[root_id]['data']['children']:
-            if self.doodle_data[item_id]['elementInfo']['label'] == 'Block':
+        for item_id in self.raw_data[root_id]['data']['children']:
+            if self.raw_data[item_id]['elementInfo']['label'] == 'Block':
                 main_block = item_id
-                block_bg = self.doodle_data[item_id]['values'].get("styles.background-image", {}).get("value")
+                block_bg = self.raw_data[item_id]['values'].get("styles.background-image", {}).get("value")
                 if block_bg:
                     self.doodle_bg.append(block_bg)
                 break
         if main_block is None:
             return None
-        for k in self.doodle_data[main_block]['data']['children']:
-            ele = self.doodle_data[k]
+        for k in self.raw_data[main_block]['data']['children']:
+            ele = self.raw_data[k]
             ele_name = ele['elementInfo']['label']
             ele_bg = ele['values'].get("styles.background-image", {}).get("value")
             if ele_bg:

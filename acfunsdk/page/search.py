@@ -68,7 +68,7 @@ class AcSearch:
         if api_data.get('result') == 0:
             self.hot_keywords = api_data
 
-    def page(self, num=1, sortby: int = 1, channel_id: int = 0):
+    def page(self, num=1, sortby: int = 1, channel_id: int = 0) -> (list, None):
         self._get_data(num, sortby, channel_id)
         item_data = list()
         for item in self.result_obj.select('[class^=search-]'):

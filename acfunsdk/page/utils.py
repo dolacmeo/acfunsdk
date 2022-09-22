@@ -80,7 +80,7 @@ class VideoItem:
     def __repr__(self):
         return f"{self.parent}"
 
-    def _get_data_from_quick_view(self):
+    def _get_data_from_quick_view(self) -> (dict, None):
         param = {"quickViewId": "videoInfo_new", "ajaxpipe": 1}
         page_req = self.acer.client.get(self.referer, params=param)
         assert page_req.text.endswith("/*<!-- fetch-stream -->*/")
@@ -89,7 +89,7 @@ class VideoItem:
         video_data = json.loads(v_script)
         return video_data.get("currentVideoInfo")
 
-    def _get_data_from_api(self):
+    def _get_data_from_api(self) -> (dict, None):
         param = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type,
@@ -101,10 +101,10 @@ class VideoItem:
         return api_data.get("playInfo")
 
     @property
-    def quality(self):
+    def quality(self) -> list:
         return self.raw_data.get("transcodeInfos", [])
 
-    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True, only_url: bool = True):
+    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True, only_url: bool = True) -> (dict, str, None):
         if isinstance(quality, int):
             assert quality in range(len(self.quality))
         elif isinstance(quality, str):
@@ -132,7 +132,7 @@ class VideoItem:
         return subprocess.Popen(cmds, stdout=subprocess.PIPE)
 
     @property
-    def scenes(self):
+    def scenes(self) -> (dict, None):
         form_data = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type,
@@ -155,7 +155,7 @@ class VideoItem:
         return {"sprite_image": sprite_img, "pos": pos_data}
 
     @property
-    def hotspot(self):
+    def hotspot(self) -> (dict, None):
         form_data = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type
@@ -170,7 +170,7 @@ class VideoItem:
         self.raw_data = self._get_data_from_api()
 
     @property
-    def danmaku(self):
+    def danmaku(self) -> object:
         return self.acer.acfun.AcDanmaku(self.vid, self.parent)
 
 
@@ -275,7 +275,7 @@ class AcDetail:
         return VideoItem(self.acer, video_id, sub_title, referer, self)
 
     @not_404
-    def _comment(self):
+    def _comment(self) -> object:
         return self.acer.acfun.AcComment(self.resource_type, self.resource_id)
 
     @not_404
@@ -322,7 +322,7 @@ class B64s:
         return base64.b64decode(self.raw.translate(self.DE_TRANS))
 
 
-def sizeof_fmt(num, suffix="B"):
+def sizeof_fmt(num, suffix="B") -> str:
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(num) < 1024.0:
             return f"{num:3.1f} {unit}{suffix}"
@@ -330,7 +330,7 @@ def sizeof_fmt(num, suffix="B"):
     return f"{num:.1f} Yi{suffix}"
 
 
-def match_info(text):
+def match_info(text) -> (dict, None):
     rex = re.compile(r"(?P<title>.*)\r"
                      r"UP:(?P<up>.*)\r"
                      r"发布于(?P<createTime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
@@ -389,7 +389,7 @@ def matchall(text, patterns):
     return ret
 
 
-def emoji_cleanup(text):
+def emoji_cleanup(text) -> str:
     # Ref: https://gist.github.com/Alex-Just/e86110836f3f93fe7932290526529cd1#gistcomment-3208085
     # Ref: https://en.wikipedia.org/wiki/Unicode_block
     EMOJI_PATTERN = re.compile(
@@ -411,7 +411,7 @@ def emoji_cleanup(text):
     return text
 
 
-def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
+def image_uploader(client, image_data: bytes, ext: str = 'jpeg') -> str:
     token_req = client.post(AcSource.apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
     token_data = token_req.json()
     assert token_data.get('result') == 0
@@ -433,14 +433,14 @@ def image_uploader(client, image_data: bytes, ext: str = 'jpeg'):
     return result_data.get('url')
 
 
-def limit_string(s, n):
+def limit_string(s, n) -> str:
     s = s[:n]
     if len(s) == n:
         s = s[:-2] + "..."
     return s
 
 
-def thin_string(_string: str, no_break: bool = False):
+def thin_string(_string: str, no_break: bool = False) -> str:
     final_str = list()
     for line in _string.replace('\r', '').split('\n'):
         new_line = ' '.join(line.split()).strip()
@@ -451,7 +451,7 @@ def thin_string(_string: str, no_break: bool = False):
     return " ↲ ".join(final_str)
 
 
-def warp_mix_chars(_string: str, lens: int = 40, border: [tuple, None] = None):
+def warp_mix_chars(_string: str, lens: int = 40, border: [tuple, None] = None) -> (str, list):
     output = list()
     tmp_string = ""
     tmp_count = 0
@@ -472,12 +472,12 @@ def warp_mix_chars(_string: str, lens: int = 40, border: [tuple, None] = None):
     return output
 
 
-def ms2time(ms: int):
+def ms2time(ms: int) -> str:
     d = timedelta(milliseconds=ms)
     return str(d).split('.')[0]
 
 
-def get_page_pagelets(page_obj):
+def get_page_pagelets(page_obj) -> list:
     data = list()
     for item in page_obj.select("[id^=pagelet_]"):
         data.append(item.attrs['id'])
@@ -486,7 +486,7 @@ def get_page_pagelets(page_obj):
     return data
 
 
-def url_complete(url):
+def url_complete(url) -> str:
     if isinstance(url, str):
         if url.startswith('//'):
             url = f"https:{url}"

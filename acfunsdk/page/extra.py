@@ -16,7 +16,7 @@ class AcLink:
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcLink({self.title or ''}{show_link})"
 
-    def container(self):
+    def container(self) -> (object, None):
         return self.acer.get(self.url)
 
 
@@ -32,7 +32,7 @@ class AcImage:
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcImg({self.name}[{self.src}]{show_link})"
 
-    def container(self):
+    def container(self) -> (object, None):
         return self.acer.get(self.url)
 
 

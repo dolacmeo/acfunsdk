@@ -45,15 +45,15 @@ class Acer:
         return f"Acer(#UNKNOWN)"
 
     @property
-    def referer(self):
+    def referer(self) -> str:
         return f"{AcSource.routes['member']}"
 
     @property
-    def uid(self):
+    def uid(self) -> int:
         return self.data.get('userId')
 
     @property
-    def username(self):
+    def username(self) -> str:
         return self.data.get('userName')
 
     def get(self, url_str: str, title=None):
@@ -95,7 +95,7 @@ class Acer:
                 "visitor_st": api_data.get("acfun.api.visitor_st", ''),
             }
 
-    def update_token(self, data: dict):
+    def update_token(self, data: dict) -> dict:
         if self.is_logined:
             data.update({"acfun.midground.api_st": self.tokens['api_st']})
         else:
@@ -109,7 +109,7 @@ class Acer:
         self.is_logined = True
         self._get_personal()
 
-    def login(self, username, password, key=None, captcha=None):
+    def login(self, username, password, key=None, captcha=None) -> bool:
         form_data = {
             "username": username,
             "password": password,
@@ -127,7 +127,7 @@ class Acer:
                 f.write(cookie)
         return self.is_logined
 
-    def logout(self):
+    def logout(self) -> bool:
         self.client.get(AcSource.apis['logout'])
         self.client = httpx.Client(headers=AcSource.header)
         self.is_logined = False
@@ -145,7 +145,7 @@ class Acer:
         return True
 
     @need_login
-    def acoin(self):
+    def acoin(self) -> (dict, None):
         req = self.client.get(AcSource.apis['acoinBalance'])
         data = req.json()
         if data.get('result') == 0:
@@ -153,13 +153,13 @@ class Acer:
         return None
 
     @need_login
-    def setup_signature(self, text: str):
+    def setup_signature(self, text: str) -> bool:
         api_req = self.client.post(AcSource.apis['updateSignature'], data={'signature': text},
                                    headers={'referer': 'https://www.acfun.cn/member/setting?tab=info'})
         return api_req.json().get('result') == 0
 
     @need_login
-    def signin(self):
+    def signin(self) -> bool:
         if self.data.get("signIn") is True:
             return True
         api_req = self.client.get(AcSource.apis['signIn'])
@@ -167,7 +167,7 @@ class Acer:
         return api_data.get('result') == 0
 
     @need_login
-    def throw_banana(self, rtype, rid, count: int):
+    def throw_banana(self, rtype, rid, count: int) -> bool:
         api_req = self.client.post(AcSource.apis['throw_banana'], data={
             "count": 1 if 1 > count > 5 else count,
             "resourceId": rid,
@@ -175,7 +175,7 @@ class Acer:
         }, headers={'referer': AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
-    def _like(self, on_off: bool, otype, oid):
+    def _like(self, on_off: bool, otype, oid) -> bool:
         otype = {"1": 18}.get(str(otype), int(otype))  # 番剧
         form_data = {
             "kpn": "ACFUN_APP",
@@ -192,15 +192,15 @@ class Acer:
         return req.json().get('result') == 1
 
     @need_login
-    def like_add(self, otype, oid):
+    def like_add(self, otype, oid) -> bool:
         return self._like(True, otype, oid)
 
     @need_login
-    def like_delete(self, otype, oid):
+    def like_delete(self, otype, oid) -> bool:
         return self._like(False, otype, oid)
 
     @need_login
-    def history(self, page: int = 1, limit: int = 10, obj: bool = False):
+    def history(self, page: int = 1, limit: int = 10, obj: bool = False) -> dict:
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
         api_req = self.client.post(AcSource.apis['history'], data=form_data)
         api_data = api_req.json()
@@ -216,7 +216,7 @@ class Acer:
         return api_data
 
     @need_login
-    def history_del_all(self, rtype: Literal["", "1,2", "3"] = ""):
+    def history_del_all(self, rtype: Literal["", "1,2", "3"] = "") -> bool:
         # 空 全部;1,2 视频;3 文章
         form_data = {"resourceTypes": rtype or ''}
         api_req = self.client.post(AcSource.apis['history'], data=form_data)

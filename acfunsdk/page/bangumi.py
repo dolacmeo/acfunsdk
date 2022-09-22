@@ -34,11 +34,6 @@ class AcBangumi(AcDetail):
 
     @property
     @not_404
-    def season_data(self):
-        return self.bangumi_data.get('relatedBangumis', [])
-
-    @property
-    @not_404
     def episode_data(self):
         return self.bangumi_list.get('items', [])
 
@@ -59,6 +54,16 @@ class AcBangumi(AcDetail):
 
     def __repr__(self):
         return f"AcBangumi([aa{self.resource_id}]{self.title})".encode(errors='replace').decode()
+
+    @not_404
+    def season(self, obj: bool = False):
+        season_data = self.bangumi_data.get('relatedBangumis', [])
+        if obj is False:
+            return season_data
+        seasons = list()
+        for x in season_data:
+            seasons.append(AcBangumi(self.acer, x['id']))
+        return seasons
 
 
 class AcBangumiList:
@@ -102,7 +107,7 @@ class AcBangumiList:
                 return False
         return True
 
-    def tans_filters(self, words: [str, list]):
+    def tans_filters(self, words: [str, list]) -> (str, bool):
         filters = words.split(",") if isinstance(words, str) else words
         if len(filters) != len(self.menu_filter):
             return False
@@ -125,7 +130,7 @@ class AcBangumiList:
             page = int(param['pageNum'][0])
         return self.page(filters, page, obj)
 
-    def page(self, filters: [str, list, None] = None, page: int = 1, obj: bool = False):
+    def page(self, filters: [str, list, None] = None, page: int = 1, obj: bool = False) -> (dict, None):
         filters = self.default_filter if filters is None else filters
         if self._filter_check(filters) is False:
             return None

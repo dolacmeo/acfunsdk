@@ -88,7 +88,7 @@ class AcDoodle:
                 }
         self.doodle_image = sorted(self.doodle_image, key=lambda x: x['raw']['values']['styles.offset-y']['value'])
 
-    def vote_data(self):
+    def vote_data(self) -> (dict, None):
         if self.doodle_vote is None:
             return None
         data = {
@@ -104,7 +104,7 @@ class AcDoodle:
         assert api_data.get("result") == 1
         return api_data
 
-    def comment_feed(self, pcursor: [str, None] = None):
+    def comment_feed(self, pcursor: [str, None] = None) -> (dict, None):
         form = {
             "objectId": f"{self.doodle_id}",
             "pageSize": "10",

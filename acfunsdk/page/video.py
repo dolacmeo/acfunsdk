@@ -77,7 +77,7 @@ class AcVideo(AcDetail):
         return f"AcVideo([ac{self.resource_id}]{title}{user_txt})".encode(errors='replace').decode()
 
     @not_404
-    def recommends(self, obj: bool = False):
+    def recommends(self, obj: bool = False) -> (dict, None):
         param = {"pagelets": ",".join(["pagelet_newrecommend"]), "ajaxpipe": 1}
         api_req = self.acer.client.get(f"{self.referer}", params=param)
         assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
@@ -91,7 +91,7 @@ class AcVideo(AcDetail):
             videos.append(AcVideo(self.acer, v['dougaFeedView']['dougaId']))
         return videos
 
-    def AcChannel(self):
+    def AcChannel(self) -> object:
         if self.is_404:
             return None
         cid = self.raw_data.get("channel", {}).get('id')

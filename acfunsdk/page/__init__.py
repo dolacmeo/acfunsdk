@@ -49,14 +49,21 @@ class AcFun:
                     self.nav_data.update({str(j['cid']): {y: j[y] for y in j if y != 'children'}})
 
     @property
-    def referer(self):
+    def referer(self) -> str:
         return f"{AcSource.routes['index']}"
 
-    def search_user(self, keyword: str, page: int = 1):
+    def search_user(self, keyword: str, page: int = 1, obj: bool = False) -> dict:
         api_req = self.acer.client.get(AcSource.apis['search_user'], params={'keyword': keyword, "pCursor": page})
-        return api_req.json()
+        api_data = api_req.json()
+        if obj is False:
+            return api_data
+        objs = list()
+        for x in api_data.get("userList", []):
+            objs.append(self.AcUp(x['id']))
+        api_data["userList"] = objs
+        return api_data
 
-    def username_check(self, name: str):
+    def username_check(self, name: str) -> bool:
         api_req = self.acer.client.post(AcSource.apis['check_username'], data={'name': name})
         api_data = api_req.json()
         if api_data.get('result') == 0:
@@ -64,13 +71,13 @@ class AcFun:
         print(api_data['error_msg'])
         return False
 
-    def AcIndex(self):
+    def AcIndex(self) -> object:
         return AcIndex(self.acer)
 
-    def AcChannel(self, cid):
+    def AcChannel(self, cid) -> object:
         return AcChannel(self.acer, cid)
 
-    def AcBangumiList(self):
+    def AcBangumiList(self) -> object:
         return AcBangumiList(self.acer)
 
     def AcWen(self,
@@ -78,66 +85,66 @@ class AcFun:
               sort_type: str = "createTime",
               time_range: str = "all",
               only_original: bool = False,
-              limit: int = 10):
+              limit: int = 10) -> object:
         return AcWen(self.acer, realm_ids, sort_type, time_range, only_original, limit)
 
     def AcRank(self,
                cid: [int, None] = None,
                sub_cid: [int, None] = None,
                limit: int = 50,
-               date_range: [str, None] = None):
+               date_range: [str, None] = None) -> object:
         return AcRank(self.acer, cid, sub_cid, limit, date_range)
 
-    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None):
+    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None) -> object:
         return AcSearch(self.acer, keyword, s_type)
 
-    def AcUp(self, uid):
+    def AcUp(self, uid) -> object:
         return AcUp(self.acer, uid)
 
-    def AcLiveUp(self, uid):
+    def AcLiveUp(self, uid) -> object:
         return AcLiveUp(self.acer, uid)
 
-    def AcArticle(self, ac_num):
+    def AcArticle(self, ac_num) -> object:
         return AcArticle(self.acer, ac_num)
 
-    def AcVideo(self, ac_num):
+    def AcVideo(self, ac_num) -> object:
         return AcVideo(self.acer, ac_num)
 
-    def AcBangumi(self, aa_num):
+    def AcBangumi(self, aa_num) -> object:
         return AcBangumi(self.acer, aa_num)
 
-    def AcAlbum(self, ac_num):
+    def AcAlbum(self, ac_num) -> object:
         return AcAlbum(self.acer, ac_num)
 
-    def AcLive(self):
+    def AcLive(self) -> object:
         return AcLive(self.acer)
 
-    def AcDoodle(self, doodle_id: str):
+    def AcDoodle(self, doodle_id: str) -> object:
         return AcDoodle(self.acer, doodle_id)
 
-    def AcMoment(self, am_num):
+    def AcMoment(self, am_num) -> object:
         return AcMoment(self.acer, am_num)
 
-    def AcDownload(self):
+    def AcDownload(self) -> object:
         return AcDownload(self.acer)
 
-    def AcComment(self, rtype: int, rid: int):
+    def AcComment(self, rtype: int, rid: int) -> object:
         return AcComment(self.acer, rtype, rid)
 
-    def AcDanmaku(self, video_id: int, parent):
+    def AcDanmaku(self, video_id: int, parent) -> object:
         return AcDanmaku(self.acer, video_id, parent)
 
-    def AcImage(self, src, url=None, name=None):
+    def AcImage(self, src, url=None, name=None) -> object:
         return AcImage(self.acer, src, url, name)
 
-    def AcLink(self, url, title=None):
+    def AcLink(self, url, title=None) -> object:
         return AcLink(self.acer, url, title)
 
-    def resource(self, rtype: int, rid: int):
+    def resource(self, rtype: int, rid: int) -> object:
         assert str(rtype) in resource_type_map.keys()
         return getattr(self, resource_type_map[str(rtype)])(rid)
 
-    def get(self, url_str: str, title=None):
+    def get(self, url_str: str, title=None) -> (object, None):
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")
         if url_str in [AcSource.routes['index'], AcSource.routes['index'] + "/"]:

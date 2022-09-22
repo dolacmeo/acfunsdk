@@ -29,7 +29,7 @@ class AcArticle(AcDetail):
         return f"AcArticle([ac{self.resource_id}]{self.title}{user_txt})".encode(errors='replace').decode()
 
     @not_404
-    def recommends(self, obj: bool = False):
+    def recommends(self, obj: bool = False) -> (dict, None):
         articles = list()
         for item in self.page_obj.select('#main > section.area > .content > .fr > .contribution.weblog-item'):
             this_url = item.select_one('.contb-title a').attrs['href']
@@ -47,13 +47,13 @@ class AcArticle(AcDetail):
                 articles.append(data)
         return articles
 
-    def AcWen(self):
+    def AcWen(self) -> (object, None):
         if self.is_404:
             return None
         rid = self.raw_data.get("realm", {}).get("realmId")
         return AcWen(self.acer, [rid])
 
-    def AcChannel(self):
+    def AcChannel(self) -> (object, None):
         if self.is_404:
             return None
         cid = self.raw_data.get("channel", {}).get('id')
@@ -88,7 +88,7 @@ class AcWen:
     def referer(self):
         return f"{AcSource.routes['index']}/v/list63/index.htm"
 
-    def feed(self, obj: bool = True):
+    def feed(self, obj: bool = True) -> (dict, None):
         if self.cursor == 'no_more':
             return None
         form_data = {
@@ -111,6 +111,6 @@ class AcWen:
             return new_data
         return None
 
-    def clean_cache(self):
+    def clean_cache(self) -> bool:
         self.article_data = list()
         return True

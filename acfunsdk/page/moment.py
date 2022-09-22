@@ -81,7 +81,7 @@ class MyMoment:
         query = rtypes.get(str(self.resourceTypes), "")
         return f"{AcSource.routes['feeds']}{query}"
 
-    def set_tab(self, tab: str = 'all'):
+    def set_tab(self, tab: str = 'all') -> bool:
         new = self.rts.get(tab, 0)
         if new != self.resourceTypes:
             self.resourceTypes = new
@@ -90,7 +90,7 @@ class MyMoment:
             return True
         return False
 
-    def feed(self, limit: int = 10, obj: bool = False, refresh: bool = False):
+    def feed(self, limit: int = 10, obj: bool = False, refresh: bool = False) -> (dict, None):
         if refresh is True:
             self.cursor = "0"
             self.moment_data = list()

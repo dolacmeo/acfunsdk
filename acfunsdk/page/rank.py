@@ -48,7 +48,7 @@ class AcRank:
     def channel(self):
         return self.acer.acfun.AcChannel(self.sub_cid or self.cid)
 
-    def contents(self):
+    def contents(self) -> (list, None):
         if self.raw_data is None:
             return None
         data_list = list()
@@ -59,7 +59,7 @@ class AcRank:
                 data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
-    def ups(self):
+    def ups(self) -> (list, None):
         if self.raw_data is None:
             return None
         data_list = list()

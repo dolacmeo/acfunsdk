@@ -26,8 +26,10 @@ class AcLive:
             self.raw_data = api_req.json()
             self.last_update = time.time()
 
-    def list(self):
+    def list(self, obj: bool = False) -> (list, None):
         self._get_list()
+        if obj is False:
+            return self.raw_data.get("liveList")
         lives = list()
         for x in self.raw_data.get('liveList', []):
             lives.append(AcLiveUp(self.acer, x.get('authorId'), x))

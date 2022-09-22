@@ -77,7 +77,7 @@ class AcAlbum(AcDetail):
             page += 1
 
     @not_404
-    def list(self, obj: bool = False):
+    def list(self, obj: bool = False) -> (list, None):
         if obj is False:
             return self.content_list
         if len(self.content_list) == 0:

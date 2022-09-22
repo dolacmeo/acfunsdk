@@ -50,7 +50,7 @@ class AcPagelet:
     def __repr__(self):
         return f"AcIndex(#{self.pagelet_id} {AcSource.pagelets_name[self.pagelet_id]})"
 
-    def _index_header(self, obj=False):
+    def _index_header(self, obj=False) -> list:
         if self.pagelet_id != "pagelet_header":
             return None
         data = list()
@@ -58,7 +58,7 @@ class AcPagelet:
             data.append({'url': url_complete(link.attrs['href']), 'text': link.text.strip()})
         return data
 
-    def _index_banner(self, obj=False):
+    def _index_banner(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_banner":
             return None
         data = dict()
@@ -74,7 +74,7 @@ class AcPagelet:
             return self.acer.acfun.AcImage(data['image'], data['url'], data['title'])
         return data
 
-    def _index_navigation(self, obj=False):
+    def _index_navigation(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_navigation":
             return None
         nav_links = list()
@@ -102,7 +102,7 @@ class AcPagelet:
             nav_links.append(item)
         return nav_links
 
-    def _index_top_area(self, obj=False):
+    def _index_top_area(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_top_area":
             return None
         data = dict(slider=list(), items=list())
@@ -123,7 +123,7 @@ class AcPagelet:
             )
         return data
 
-    def _index_monkey_recommend(self, obj=False):
+    def _index_monkey_recommend(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_monkey_recommend":
             return None
         videos = list()
@@ -158,7 +158,7 @@ class AcPagelet:
             )
         return data
 
-    def _index_live(self, obj=False):
+    def _index_live(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_live":
             return None
         videos = list()
@@ -185,12 +185,12 @@ class AcPagelet:
             )
         return data
 
-    def _index_spring_festival(self, obj=False):
+    def _index_spring_festival(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_spring_festival":
             return None
         return None
 
-    def _index_list_banana(self, obj=False):
+    def _index_list_banana(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_list_banana":
             return None
         data = dict(d1=list(), d3=list(), d7=list(), article=dict())
@@ -253,7 +253,7 @@ class AcPagelet:
             return obj_data
         return data
 
-    def _index_bangumi_list(self, obj=False):
+    def _index_bangumi_list(self, obj=False) -> (dict, None):
         if self.pagelet_id != "pagelet_bangumi_list":
             return None
         data = dict(schedule=list(), recommend=list(), anli=list())
@@ -316,7 +316,7 @@ class AcPagelet:
                 data['anli'].append(media_data)
         return data
 
-    def _index_pagelet_left_info(self, obj=False):
+    def _index_pagelet_left_info(self, obj=False) -> (dict, None):
         data = dict(title="", icon="", links=list(), url=None)
         data['title'] = self.pagelet_obj.select_one('.module-left-header span.header-title').text
         data['icon'] = self.pagelet_obj.select_one('.module-left-header img.header-icon').attrs['src']
@@ -332,7 +332,7 @@ class AcPagelet:
             }
         return data
 
-    def _index_pagelet_right_rank(self, obj=False):
+    def _index_pagelet_right_rank(self, obj=False) -> (dict, None):
         data = dict(rank=dict(d1=list(), d3=list(), d7=list()))
         for index, rank in enumerate(self.pagelet_obj.select('.list-content-videos')):
             for rank_item in rank.select('.log-item'):
@@ -371,7 +371,7 @@ class AcPagelet:
             return dict(rank=obj_data)
         return data
 
-    def _index_pagelet(self, obj=False):
+    def _index_pagelet(self, obj=False) -> (dict, None):
         data = dict(items=list())
         for video in self.pagelet_obj.select('div[class^="video-list-"] > div'):
             if 'big-image' in video['class']:
@@ -405,7 +405,7 @@ class AcPagelet:
         data.update(self._index_pagelet_right_rank(obj))
         return data
 
-    def _footer(self, obj=False):
+    def _footer(self, obj=False) -> (dict, None):
         if self.pagelet_id != "footer":
             return None
         data = dict(links=dict(), infos=list(), copyright=dict())
@@ -447,7 +447,7 @@ class AcPagelet:
                 data['copyright'][k] = v
         return data
 
-    def to_dict(self, obj=False):
+    def to_dict(self, obj=False) -> (dict, None):
         if self.pagelet_id == 'footer':
             return self._footer(obj)
         elif self.pagelet_id in self.pagelet_sp:
@@ -499,7 +499,7 @@ class AcIndex:
         self.index_obj = Bs(page_req.text, 'lxml')
         self.index_pagelets = get_page_pagelets(self.index_obj)
 
-    def _get_pagelet_inner(self, area: [str, None] = None):
+    def _get_pagelet_inner(self, area: [str, None] = None) -> (dict, None):
         datas = dict()
         for js in self.index_obj.select("script"):
             if js.text.startswith("bigPipe.onPageletArrive"):
@@ -510,7 +510,7 @@ class AcIndex:
             return datas.get(area)
         return datas
 
-    def _get_pagelet_api(self, area):
+    def _get_pagelet_api(self, area) -> (dict, None):
         assert area in self.pagelets_from_api
         param = {
             "pagelets": area, "reqID": 0, "ajaxpipe": 1,
@@ -521,7 +521,7 @@ class AcIndex:
             return json.loads(req.text[:-25])
         return req.json()
 
-    def nav_list(self):
+    def nav_list(self) -> (dict, None):
         navs = list()
         for cid in self.acer.nav_data.keys():
             navs.append(self.acer.acfun.AcChannel(cid))

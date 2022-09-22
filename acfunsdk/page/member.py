@@ -66,7 +66,7 @@ class AcUp:
         self.followed_count = self.page_obj.select_one(
             '.tab-list > li[data-index=followed] > span').text
 
-    def AcLive(self):
+    def AcLive(self) -> object:
         return self.acer.acfun.AcLiveUp(self.uid)
 
     def follow_add(self, attention: [bool, None] = None):
@@ -75,7 +75,7 @@ class AcUp:
     def follow_remove(self):
         return self.acer.follow_remove(self.uid)
 
-    def _get_data(self, viewer, page, limit, orderby):
+    def _get_data(self, viewer, page, limit, orderby) -> dict:
         viewers = ['video', 'article', 'album', 'following', 'followed']
         assert viewer in viewers
         orders = ['newest', 'hotest']
@@ -96,7 +96,7 @@ class AcUp:
         assert req.text.endswith("/*<!-- fetch-stream -->*/")
         return json.loads(req.text[:-25])
 
-    def video(self, page=1, limit=10, orderby='newest'):
+    def video(self, page=1, limit=10, orderby='newest') -> list:
         data = list()
         acer_data = self._get_data('video', page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('a.ac-space-video'):
@@ -111,7 +111,7 @@ class AcUp:
             data.append(self.acer.acfun.AcVideo(ac_num, infos))
         return data
 
-    def article(self, page=1, limit=10, orderby='newest'):
+    def article(self, page=1, limit=10, orderby='newest') -> list:
         data = list()
         acer_data = self._get_data('article', page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('.ac-space-article'):
@@ -124,7 +124,7 @@ class AcUp:
             data.append(self.acer.acfun.AcArticle(ac_num, infos))
         return data
 
-    def album(self, page=1, limit=10, orderby='newest'):
+    def album(self, page=1, limit=10, orderby='newest') -> list:
         data = list()
         acer_data = self._get_data('album', page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('.ac-space-album'):
@@ -132,7 +132,7 @@ class AcUp:
             data.append(self.acer.acfun.AcAlbum(ac_num))
         return data
 
-    def _follow(self, key, page=1, limit=10, orderby='newest'):
+    def _follow(self, key, page=1, limit=10, orderby='newest') -> list:
         assert key in ['following', 'followed']
         data = list()
         acer_data = self._get_data(key, page, limit, orderby)
@@ -144,10 +144,10 @@ class AcUp:
             data.append(AcUp(self.acer, infos['id']))
         return data
 
-    def following(self, page=1, limit=10, orderby='newest'):
+    def following(self, page=1, limit=10, orderby='newest') -> list:
         return self._follow("following", page, limit, orderby)
 
-    def followed(self, page=1, limit=10, orderby='newest'):
+    def followed(self, page=1, limit=10, orderby='newest') -> list:
         return self._follow("followed", page, limit, orderby)
 
     def report(self, crime: str, proof: str, description: str):

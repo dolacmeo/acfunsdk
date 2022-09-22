@@ -34,7 +34,7 @@ class BlockContent:
     def contentCount(self):
         return self.raw_data.get('contentCount')
 
-    def list(self, obj: bool = True):
+    def list(self, obj: bool = True) -> (dict, None):
         if obj is False:
             return self.raw_data.get('webContents')
         data_list = list()
@@ -70,7 +70,7 @@ class ChannelBlock:
     def __repr__(self):
         return f"AcBlock(#{self.blockType} {self.name})"
 
-    def list(self, obj: bool = True):
+    def list(self, obj: bool = True) -> (dict, None):
         if obj is False:
             return self.raw_data.get('content', [])
         return [BlockContent(self.acer, content) for content in self.raw_data.get('content', [])]
@@ -146,7 +146,7 @@ class AcChannel:
             return False
         self.raw_data = json.loads(json_text)
 
-    def hot_words(self):
+    def hot_words(self) -> (dict, None):
         if not self.is_main:
             return None
         return self.raw_data['channel']['hotWordList']
@@ -167,7 +167,7 @@ class AcChannel:
             sub_cid = int(self.cid)
         return self.acer.acfun.AcRank(cid, sub_cid, limit, date_range=date_range)
 
-    def articles(self):
+    def articles(self) -> (dict, None):
         if self.ctype != 'wen':
             return None
         if self.cid == '63':
@@ -182,7 +182,7 @@ class AcChannel:
                sortby: [str, None] = None,
                duration: [str, None] = None,
                datein: [str, None] = None,
-               obj: bool = True):
+               obj: bool = True) -> (dict, None):
         if self.ctype != 'videos':
             return None
         sortby_list = {

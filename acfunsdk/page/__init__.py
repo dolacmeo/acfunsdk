@@ -19,7 +19,7 @@ from .comment import AcComment
 from .danmaku import AcDanmaku
 from .message import MyMessage
 from .acer import MyFansClub, MyFollow, MyFavourite, MyAlbum, MyContribute, MyDanmaku, BananaMall
-from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReport, AcDownload
+from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReport, AcDownload, AcLab, AcScreeningRoom
 from .utils import B64s, match1, get_page_pagelets, resource_type_map, routes_type_map
 
 __author__ = 'dolacmeo'
@@ -32,6 +32,7 @@ class AcFun:
     AcReport = AcReport
     AcAcademy = AcAcademy
     AcHelp = AcHelp
+    AcLab = AcLab
 
     def __init__(self, acer):
         self.acer = acer
@@ -127,6 +128,9 @@ class AcFun:
 
     def AcDownload(self) -> object:
         return AcDownload(self.acer)
+
+    def AcScreeningRoom(self) -> object:
+        return AcScreeningRoom(self.acer)
 
     def AcComment(self, rtype: int, rid: int) -> object:
         return AcComment(self.acer, rtype, rid)

@@ -18,6 +18,18 @@ class AcArticle(AcDetail):
         return self.raw_data.get('contentTitle', self.raw_data.get('title', ""))
 
     @property
+    def tags(self):
+        if self.is_404:
+            return self._msg['404']
+        return self.raw_data.get('tagList', [])
+
+    @property
+    def contents(self):
+        if self.is_404:
+            return self._msg['404']
+        return self.raw_data.get('parts', [])
+
+    @property
     def cover(self):
         if self.is_404:
             return None

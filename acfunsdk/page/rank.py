@@ -1,20 +1,19 @@
 # coding=utf-8
-from typing import Literal
-from urllib import parse
-from acfunsdk.source import routes, apis
+from .utils import parse, Literal
+from .utils import AcSource
 
 __author__ = 'dolacmeo'
 
 
 class AcRank:
     date_ranges = ['DAY', 'THREE_DAYS', 'WEEK']
-    rank_data = None
+    raw_data = None
 
     def __init__(self, acer,
                  cid: [int, None] = None,
                  sub_cid: [int, None] = None,
                  limit: int = 50,
-                 date_range: (Literal['DAY', 'THREE_DAYS', 'WEEK'], None) = None):
+                 date_range: Literal['DAY', 'THREE_DAYS', 'WEEK', None] = None):
         self.acer = acer
         self.cid = cid if isinstance(cid, int) else ""
         self.sub_cid = sub_cid if isinstance(sub_cid, int) else ""
@@ -33,7 +32,7 @@ class AcRank:
             "cid": self.sub_cid or "-1",
             "range": self.date_range
         }
-        return f"{routes['rank']}?{parse.urlencode(param)}"
+        return f"{AcSource.routes['rank']}?{parse.urlencode(param)}"
 
     def get_data(self):
         param = {
@@ -42,28 +41,28 @@ class AcRank:
             "rankLimit": self.limit,
             "rankPeriod": self.date_range
         }
-        api_req = self.acer.client.get(apis['rank_list'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['rank_list'], params=param)
         if api_req.json().get('result') == 0:
-            self.rank_data = api_req.json().get('rankList')
+            self.raw_data = api_req.json().get('rankList')
 
     def channel(self):
         return self.acer.acfun.AcChannel(self.sub_cid or self.cid)
 
-    def contents(self):
-        if self.rank_data is None:
+    def contents(self) -> (list, None):
+        if self.raw_data is None:
             return None
         data_list = list()
-        for content in self.rank_data:
+        for content in self.raw_data:
             if content['contentType'] == 2:
                 data_list.append(self.acer.acfun.AcVideo(content['dougaId'], content))
             elif content['contentType'] == 3:
                 data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
-    def ups(self):
-        if self.rank_data is None:
+    def ups(self) -> (list, None):
+        if self.raw_data is None:
             return None
         data_list = list()
-        for content in self.rank_data:
+        for content in self.raw_data:
             data_list.append(self.acer.acfun.AcUp(content['userId']))
         return data_list

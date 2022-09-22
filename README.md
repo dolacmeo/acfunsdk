@@ -35,7 +35,7 @@ python -m pip install acfunsdk
 ```python
 from acfunsdk import Acer
 # 实例化一个Acer
-acer = Acer(debug=True)
+acer = Acer()
 # 登录用户(成功登录后会自动保存 '<用户名>.cookies')
 # 请注意保存，防止被盗
 acer.login(username='you@email.com', password='balalabalala')

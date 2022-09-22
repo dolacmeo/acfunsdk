@@ -1,15 +1,12 @@
 # coding=utf-8
-import json
-import httpx
-from bs4 import BeautifulSoup as Bs
-from acfunsdk.source import routes, apis
-from acfunsdk.page.utils import match1
+from .utils import json, httpx, Bs
+from .utils import AcSource, match1
 
 __author__ = 'dolacmeo'
 
 
 class AcDoodle:
-    doodle_data = None
+    raw_data = None
     doodle_title = None
     doodle_video = list()
     doodle_bg = list()
@@ -31,27 +28,27 @@ class AcDoodle:
 
     @property
     def referer(self):
-        return f"{routes['doodle']}{self.doodle_id}.html"
+        return f"{AcSource.routes['doodle']}{self.doodle_id}.html"
 
     def loading(self):
         page_req = httpx.get(self.referer)
         self.page_obj = Bs(page_req.text, 'lxml')
         self.doodle_title = self.page_obj.select_one('title').text
         json_text = match1(page_req.text, r"(?s)__schema__\s*=\s*'(\{.*?\})';")
-        self.doodle_data = json.loads(json_text.replace(r'\\"', r'\"'))
-        root_id = self.doodle_data['app']['data']['rootContainer']
+        self.raw_data = json.loads(json_text.replace(r'\\"', r'\"'))
+        root_id = self.raw_data['app']['data']['rootContainer']
         main_block = None
-        for item_id in self.doodle_data[root_id]['data']['children']:
-            if self.doodle_data[item_id]['elementInfo']['label'] == 'Block':
+        for item_id in self.raw_data[root_id]['data']['children']:
+            if self.raw_data[item_id]['elementInfo']['label'] == 'Block':
                 main_block = item_id
-                block_bg = self.doodle_data[item_id]['values'].get("styles.background-image", {}).get("value")
+                block_bg = self.raw_data[item_id]['values'].get("styles.background-image", {}).get("value")
                 if block_bg:
                     self.doodle_bg.append(block_bg)
                 break
         if main_block is None:
             return None
-        for k in self.doodle_data[main_block]['data']['children']:
-            ele = self.doodle_data[k]
+        for k in self.raw_data[main_block]['data']['children']:
+            ele = self.raw_data[k]
             ele_name = ele['elementInfo']['label']
             ele_bg = ele['values'].get("styles.background-image", {}).get("value")
             if ele_bg:
@@ -91,7 +88,7 @@ class AcDoodle:
                 }
         self.doodle_image = sorted(self.doodle_image, key=lambda x: x['raw']['values']['styles.offset-y']['value'])
 
-    def vote_data(self):
+    def vote_data(self) -> (dict, None):
         if self.doodle_vote is None:
             return None
         data = {
@@ -102,12 +99,12 @@ class AcDoodle:
             "sort": 1,
             "title": ""
         }
-        api_req = self.acer.client.post(apis['doodle_vote'], json=data)
+        api_req = self.acer.client.post(AcSource.apis['doodle_vote'], json=data)
         api_data = api_req.json()
         assert api_data.get("result") == 1
         return api_data
 
-    def comment_feed(self, pcursor: [str, None] = None):
+    def comment_feed(self, pcursor: [str, None] = None) -> (dict, None):
         form = {
             "objectId": f"{self.doodle_id}",
             "pageSize": "10",
@@ -116,7 +113,7 @@ class AcDoodle:
             "kpn": "ACFUN_APP",
             "pcursor": pcursor or "",
         }
-        api_req = self.acer.client.post(apis['doodle_comment'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['doodle_comment'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 1
         return api_data

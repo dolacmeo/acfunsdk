@@ -1,7 +1,8 @@
 # coding=utf-8
-import time
-from acfunsdk.source import routes, apis
-from acfunsdk.exceptions import *
+from .utils import time
+from .utils import AcSource, need_login
+
+__author__ = 'dolacmeo'
 
 
 class AcComment:
@@ -43,7 +44,7 @@ class AcComment:
             "t": str(time.time_ns())[:13],
             "supportZtEmot": True,
         }
-        req = self.acer.client.get(apis[api_name], params=param)
+        req = self.acer.client.get(AcSource.apis[api_name], params=param)
         return req.json()
 
     def _get_sub(self, root_id, page: int = 1):
@@ -55,7 +56,7 @@ class AcComment:
             "t": str(time.time_ns())[:13],
             "supportZtEmot": True
         }
-        req = self.acer.client.get(apis['comment_subs'], params=param)
+        req = self.acer.client.get(AcSource.apis['comment_subs'], params=param)
         return req.json()
 
     def get_all_comments(self):
@@ -113,7 +114,7 @@ class AcComment:
             "content": content,
             "replyToCommentId": reply_id or "",
         }
-        req = self.acer.client.post(apis['comment_add'], data=form_data,
+        req = self.acer.client.post(AcSource.apis['comment_add'], data=form_data,
                                     headers={'referer': self.referer})
         return req.json().get('result') == 0
 
@@ -194,20 +195,23 @@ class Comment:
     @need_login
     def like(self):
         if self.cdata('isLiked') is False:
-            req = self.acer.client.post(apis['comment_like'], data=self.api_data, headers={'referer': self.referer})
+            req = self.acer.client.post(AcSource.apis['comment_like'],
+                                        data=self.api_data, headers={'referer': self.referer})
             return req.json().get('result') == 0
         return True
 
     @need_login
     def unlike(self):
         if self.cdata('isLiked') is True:
-            req = self.acer.client.post(apis['comment_unlike'], data=self.api_data, headers={'referer': self.referer})
+            req = self.acer.client.post(AcSource.apis['comment_unlike'],
+                                        data=self.api_data, headers={'referer': self.referer})
             return req.json().get('result') == 0
         return True
 
     @need_login
     def delete(self):
-        req = self.acer.client.post(apis['comment_delete'], data=self.api_data, headers={'referer': self.referer})
+        req = self.acer.client.post(AcSource.apis['comment_delete'],
+                                    data=self.api_data, headers={'referer': self.referer})
         return req.json().get('result') == 0
 
     def report(self, crime: str, proof: str, description: str):

@@ -1,7 +1,6 @@
 # coding=utf-8
-import json
-from typing import Literal
-from acfunsdk.source import scheme, domains, routes, apis
+from .utils import json, Literal
+from .utils import AcSource
 
 __author__ = 'dolacmeo'
 
@@ -13,16 +12,16 @@ class MyFansClub:
 
     @property
     def referer(self):
-        return f"{routes['medallist']}"
+        return f"{AcSource.routes['medallist']}"
 
     def medal_list(self):
-        api_req = self.acer.client.post(apis['live_medal_list'])
+        api_req = self.acer.client.post(AcSource.apis['live_medal_list'])
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data.get("medalList")
 
     def medal_info(self, uid: [str, int]):
-        api_req = self.acer.client.post(apis['live_medal'], params={"uperId": uid})
+        api_req = self.acer.client.post(AcSource.apis['live_medal'], params={"uperId": uid})
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -30,7 +29,7 @@ class MyFansClub:
     def medal_wear(self, uid: [str, int], on_off: bool):
         param = {"uperId": uid}
         on_off = "on" if on_off is True else "off"
-        api_req = self.acer.client.post(apis[f"live_medal_wear_{on_off}"], params=param)
+        api_req = self.acer.client.post(AcSource.apis[f"live_medal_wear_{on_off}"], params=param)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -44,17 +43,17 @@ class MyFollow:
 
     @property
     def referer(self):
-        return f"{routes['member_following']}"
+        return f"{AcSource.routes['member_following']}"
 
     def groups(self):
-        api_req = self.acer.client.get(apis['follow_groups'])
+        api_req = self.acer.client.get(AcSource.apis['follow_groups'])
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return api_data.get('groupList', [])
         return None
 
     def _follow_group_action(self, form_data: dict):
-        api_req = self.acer.client.post(apis['follow_group'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['follow_group'], data=form_data)
         return api_req.json().get('result') == 0
 
     def group_add(self, name: str):
@@ -77,17 +76,17 @@ class MyFollow:
             form_data['action'] = 15
         if form_data['action'] == 1:
             form_data['groupId'] = 0
-        api_req = self.acer.client.post(apis['follow'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['follow'], data=form_data)
         return api_req.json().get('result') == 0
 
     def remove(self, uid):
         form_data = {"toUserId": uid, "action": 2}
-        api_req = self.acer.client.post(apis['follow'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['follow'], data=form_data)
         return api_req.json().get('result') == 0
 
     def my_fans(self, page: int = 1, limit: int = 10, obj: bool = False):
         form_data = {"page": page, "count": limit, "action": 8}
-        api_req = self.acer.client.post(apis['follow_fans'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['follow_fans'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -107,26 +106,28 @@ class MyFavourite:
 
     @property
     def referer(self):
-        return f"{routes['member_favourite']}"
+        return f"{AcSource.routes['member_favourite']}"
 
-    def add(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
+    def add(self, rtype: int, rid: str, fids: [str, None] = None):
+        rtype = {"2": 9}.get(str(rtype), int(rtype))
+        form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
             form_data['addFolderIds'] = str(fids or self.default_fid)
-        req = self.acer.client.post(apis['favorite_add'], data=form_data,
-                                    headers={"referer": routes['index']})
+        req = self.acer.client.post(AcSource.apis['favorite_add'], data=form_data,
+                                    headers={"referer": AcSource.routes['index']})
         return req.json().get('result') == 0
 
-    def cancel(self, obj_id: str, rtype: int, fids: [str, None] = None):
-        form_data = {"resourceId": obj_id, "resourceType": rtype}
+    def cancel(self, rtype: int, rid: str, fids: [str, None] = None):
+        rtype = {"2": 9}.get(str(rtype), int(rtype))
+        form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
             form_data['delFolderIds'] = fids or self.default_fid
-        req = self.acer.client.post(apis['favorite_remove'], data=form_data,
-                                    headers={"referer": routes['index']})
+        req = self.acer.client.post(AcSource.apis['favorite_remove'], data=form_data,
+                                    headers={"referer": AcSource.routes['index']})
         return req.json().get('result') == 0
 
     def video_groups(self):
-        api_req = self.acer.client.get(apis['favorite_list'])
+        api_req = self.acer.client.get(AcSource.apis['favorite_list'])
         api_data = api_req.json()
         if api_data.get('result') == 0:
             self.folders = api_data.get('dataList', [])
@@ -136,25 +137,25 @@ class MyFavourite:
 
     def video_group_add(self, name: str):
         form_data = {"name": name}
-        api_req = self.acer.client.post(apis['favorite_group_add'], data=form_data,
-                                        headers={"referer": routes['index']})
+        api_req = self.acer.client.post(AcSource.apis['favorite_group_add'], data=form_data,
+                                        headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
     def video_group_rename(self, fid: [int, str], name: str):
         form_data = {"folderId": fid, "name": name}
-        api_req = self.acer.client.post(apis['favorite_group_update'], data=form_data,
-                                        headers={"referer": routes['index']})
+        api_req = self.acer.client.post(AcSource.apis['favorite_group_update'], data=form_data,
+                                        headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
     def video_group_remove(self, fid: [int, str]):
         form_data = {"folderId": fid}
-        api_req = self.acer.client.post(apis['favorite_group_delete'], data=form_data,
-                                        headers={"referer": routes['index']})
+        api_req = self.acer.client.post(AcSource.apis['favorite_group_delete'], data=form_data,
+                                        headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
     def video_list(self, fid: [int, str], page: int = 1, limit: int = 10):
         form_data = {"folderId": fid, "page": page, "perpage": limit}
-        api_req = self.acer.client.post(apis['favorite_video'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['favorite_video'], data=form_data)
         data = api_req.json()
         if data.get('result') == 0:
             return data.get('favoriteList', [])
@@ -162,7 +163,7 @@ class MyFavourite:
 
     def article_list(self, page: int = 1, limit: int = 10):
         form_data = {"page": page, "perpage": limit}
-        api_req = self.acer.client.post(apis['favorite_article'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['favorite_article'], data=form_data)
         data = api_req.json()
         if data.get('result') == 0:
             return data.get('favoriteList', [])
@@ -170,7 +171,7 @@ class MyFavourite:
 
     def bangumi_list(self, page: int = 1, limit: int = 10):
         param = {"page": page, "perpage": limit}
-        api_req = self.acer.client.get(apis['favorite_article'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['favorite_article'], params=param)
         data = api_req.json()
         if data.get('result') == 0:
             return data.get('favoriteList', [])
@@ -178,7 +179,7 @@ class MyFavourite:
 
     def album_list(self, page: int = 1, limit: int = 10):
         form_data = {"page": page, "perpage": limit}
-        api_req = self.acer.client.post(apis['favorite_album'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['favorite_album'], data=form_data)
         data = api_req.json()
         if data.get('result') == 0:
             return data.get('favoriteList', [])
@@ -192,11 +193,11 @@ class MyAlbum:
 
     @property
     def referer(self):
-        return f"{routes['member_album']}"
+        return f"{AcSource.routes['member_album']}"
 
     def list(self, page: int = 1, size: int = 10):
         param = {"size": size, "page": page, "status": 0, "sort": 0}
-        api_req = self.acer.client.get(apis["my_album_list"], params=param)
+        api_req = self.acer.client.get(AcSource.apis["my_album_list"], params=param)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -209,13 +210,13 @@ class MyAlbum:
             "intro": intro,
             "status": status,
         }
-        api_req = self.acer.client.post(apis["my_album_add"], data=form)
+        api_req = self.acer.client.post(AcSource.apis["my_album_add"], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data.get("arubamuId")
 
     def remove(self, album_id: [str, int]):
-        api_req = self.acer.client.post(apis["my_album_del"], data={"arubamuId": album_id})
+        api_req = self.acer.client.post(AcSource.apis["my_album_del"], data={"arubamuId": album_id})
         api_data = api_req.json()
         return api_data.get("result") == 0
 
@@ -229,13 +230,13 @@ class MyAlbum:
             "intro": intro,
             "status": status,
         }
-        api_req = self.acer.client.post(apis["my_album_update"], data=form)
+        api_req = self.acer.client.post(AcSource.apis["my_album_update"], data=form)
         api_data = api_req.json()
         return api_data.get("result") == 0
 
     def get_contents(self, album_id: [str, int], page: int = 1, size: int = 10):
         param = {"arubamuId": album_id, "page": page, "size": size}
-        api_req = self.acer.client.get(apis["my_album_contents"], params=param)
+        api_req = self.acer.client.get(AcSource.apis["my_album_contents"], params=param)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -248,7 +249,7 @@ class MyAlbum:
             "arubamuId": album_id,
             "resourceListStr": json.dumps(rlist, separators=(',', ':'))
         }
-        api_req = self.acer.client.post(apis["my_album_content_add"], data=form)
+        api_req = self.acer.client.post(AcSource.apis["my_album_content_add"], data=form)
         api_data = api_req.json()
         return api_data.get("result") == 0
 
@@ -259,7 +260,7 @@ class MyAlbum:
             "arubamuId": album_id,
             "arubamuContentIdList": rids
         }
-        api_req = self.acer.client.post(apis["my_album_content_del"], data=form)
+        api_req = self.acer.client.post(AcSource.apis["my_album_content_del"], data=form)
         api_data = api_req.json()
         return api_data.get("result") == 0
 
@@ -271,7 +272,7 @@ class MyContribute:
 
     @property
     def referer(self):
-        return f"{routes['up_index']}"
+        return f"{AcSource.routes['up_index']}"
 
     def _get_my_posted(self,
                        rtype: int,
@@ -299,7 +300,7 @@ class MyContribute:
             "status": status_list.get(status, 0),
             "keyword": keyword,
         }
-        api_req = self.acer.client.post(apis['member_posted'], data=form_data)
+        api_req = self.acer.client.post(AcSource.apis['member_posted'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return api_data.get('feed', [])
@@ -312,7 +313,7 @@ class MyContribute:
         return self._get_my_posted(2, page, status, sortby, keyword)
 
     def data_center(self, days: int = 1):
-        api_req = self.acer.client.post(apis['dataCenter_overview'], data={'days': 1 if days < 1 else days})
+        api_req = self.acer.client.post(AcSource.apis['dataCenter_overview'], data={'days': 1 if days < 1 else days})
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return api_data
@@ -331,10 +332,10 @@ class MyContribute:
         assert sortby in sort_list
         form_data = {'days': 1 if days < 1 else days}
         if rtype == 'live':
-            api_req = self.acer.client.post(apis['dataCenter_live'], data=form_data)
+            api_req = self.acer.client.post(AcSource.apis['dataCenter_live'], data=form_data)
         else:
             form_data.update({"resourceType": rtypes.get(rtype), "orderBy": sortby})
-            api_req = self.acer.client.post(apis['dataCenter_content'], data=form_data)
+            api_req = self.acer.client.post(AcSource.apis['dataCenter_content'], data=form_data)
         api_data = api_req.json()
         if api_data.get('result') == 0:
             return api_data
@@ -348,8 +349,8 @@ class MyContribute:
             "subBiz": "mainApp"
         }
         param = self.acer.update_token(param)
-        api_req = self.acer.client.post(apis['live_obs_config'], params=param,
-                                        headers={'referer': f"{scheme}://{domains['user']}"})
+        api_req = self.acer.client.post(AcSource.apis['live_obs_config'], params=param,
+                                        headers={'referer': f"{AcSource.routes['member_index']}"})
         return api_req.json()
 
     def post_article(self):
@@ -368,10 +369,10 @@ class MyDanmaku:
 
     @property
     def referer(self):
-        return f"{routes['danmaku_manage']}"
+        return f"{AcSource.routes['danmaku_manage']}"
 
     def advance_config(self):
-        api_req = self.acer.client.post(apis['danmaku_config'])
+        api_req = self.acer.client.post(AcSource.apis['danmaku_config'])
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -384,23 +385,23 @@ class MyDanmaku:
         3 仅限互相关注
         4 关闭高级弹幕
         """
-        api_req = self.acer.client.post(apis['danmaku_setup'], data={"availableType": str(n)})
+        api_req = self.acer.client.post(AcSource.apis['danmaku_setup'], data={"availableType": str(n)})
         api_data = api_req.json()
         return api_data.get("result") == 0
 
     def forbidden_words(self):
-        api_req = self.acer.client.post(apis['ban_danmaku'])
+        api_req = self.acer.client.post(AcSource.apis['ban_danmaku'])
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data.get("data")
 
     def forbidden_add(self, words: str):
-        api_req = self.acer.client.post(apis['ban_danmaku_add'], data={"forbiddenWords": words})
+        api_req = self.acer.client.post(AcSource.apis['ban_danmaku_add'], data={"forbiddenWords": words})
         api_data = api_req.json()
         return api_data.get("result") == 0
 
     def forbidden_del(self, words: str):
-        api_req = self.acer.client.post(apis['ban_danmaku_del'], data={"forbiddenWords": words})
+        api_req = self.acer.client.post(AcSource.apis['ban_danmaku_del'], data={"forbiddenWords": words})
         api_data = api_req.json()
         return api_data.get("result") == 0
 
@@ -415,7 +416,7 @@ class MyDanmaku:
             "danmakuText": search or "",
             "page": page,
         }
-        api_req = self.acer.client.post(apis['search_danmaku_adv'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['search_danmaku_adv'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -431,7 +432,7 @@ class MyDanmaku:
             "danmakuText": search or "",
             "page": page,
         }
-        api_req = self.acer.client.post(apis['search_danmaku'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['search_danmaku'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -443,14 +444,14 @@ class MyDanmaku:
             "danmakuId": danmaku_id,
             "rank": 9 if on_off is True else 5,
         }
-        api_req = self.acer.client.post(apis['protect_danmaku'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['protect_danmaku'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
 
     def danmaku_del(self, danmaku_ids: [int, str]):
         form = {"danmakuIdList": str(danmaku_ids)}
-        api_req = self.acer.client.post(apis['delete_danmaku'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['delete_danmaku'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -463,18 +464,18 @@ class BananaMall:
 
     @property
     def referer(self):
-        return f"{routes['member_mall']}"
+        return f"{AcSource.routes['member_mall']}"
 
     def shop_list(self, page: int = 1, size: int = 30, stype: Literal[1, 2, 3] = 1, asc: bool = False):
         form = {"pageNo": page, "pageSize": size, "sortType": stype, "asc": asc}
-        api_req = self.acer.client.post(apis['shop_list'], data=form)
+        api_req = self.acer.client.post(AcSource.apis['shop_list'], data=form)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
 
     def my_items(self, page: int = 1, size: int = 30):
         param = {"page": page, "count": size}
-        api_req = self.acer.client.get(apis['shop_user_item'], params=param)
+        api_req = self.acer.client.get(AcSource.apis['shop_user_item'], params=param)
         api_data = api_req.json()
         assert api_data.get("result") == 0
         return api_data
@@ -482,7 +483,7 @@ class BananaMall:
     def set_item(self, pid: int, on_off: bool = True):
         form = {"productId": pid}
         on_off = "use" if on_off is True else "unuse"
-        api_req = self.acer.client.post(apis[f"shop_user_item_{on_off}"], data=form)
+        api_req = self.acer.client.post(AcSource.apis[f"shop_user_item_{on_off}"], data=form)
         api_data = api_req.json()
         return api_data.get("result") == 0
 

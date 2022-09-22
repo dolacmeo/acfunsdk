@@ -1,10 +1,8 @@
 # coding=utf-8
-import re
-import time
-import json
-from bs4 import BeautifulSoup as Bs
-from .utils import thin_string
-from acfunsdk.source import scheme, routes, apis
+from .utils import re, json, time, Bs
+from .utils import AcSource, thin_string
+
+__author__ = 'dolacmeo'
 
 
 class Message:
@@ -146,7 +144,7 @@ class MyMessage:
     def unread(self):
         if self.acer.is_logined is False:
             return None
-        api_req = self.acer.client.get(apis['unread'])
+        api_req = self.acer.client.get(AcSource.apis['unread'])
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -163,7 +161,7 @@ class MyMessage:
             "pageNum": page,
             "t": str(time.time_ns())[:13],
         }
-        api_req = self.acer.client.get(apis['message'] + vid, params=param)
+        api_req = self.acer.client.get(AcSource.apis['message'] + vid, params=param)
         if api_req.text.endswith("/*<!-- fetch-stream -->*/"):
             api_data = json.loads(api_req.text[:-25])
             page_obj = Bs(api_data.get('html', ''), 'lxml')
@@ -173,7 +171,7 @@ class MyMessage:
         total = str(page_obj.select_one('#listview').attrs['totalcount'])
         for item in page_obj.select('#listview > ul,.main-block-msg-item'):
             if vid == '':
-                main_url = scheme + ':' + item.select_one('.intro').a.attrs['href']
+                main_url = AcSource.scheme + ':' + item.select_one('.intro').a.attrs['href']
                 reply_url = item.select_one('a.msg-reply').attrs['href']
                 item_data.append({
                     'content_url': main_url,
@@ -188,7 +186,7 @@ class MyMessage:
                 })
             elif vid == 'like':
                 this_url = item.select_one('a.replied').attrs['href'].split('#')
-                main_url = scheme + ':' + this_url[0]
+                main_url = AcSource.scheme + ':' + this_url[0]
                 item_data.append({
                     'content_url': main_url,
                     'replied': item.select_one('.clamp-text .inner').text.strip().replace('\xa0', ' '),
@@ -201,7 +199,7 @@ class MyMessage:
             elif vid == 'atmine':
                 this_url = item.select_one('.content .msg-text').attrs['href']
                 item_data.append({
-                    'content_url': scheme + ':' + this_url.split('#')[0],
+                    'content_url': AcSource.scheme + ':' + this_url.split('#')[0],
                     'ncid': this_url.split('#ncid=')[1],
                     'uid': item.select_one('.avatar-section').attrs['href'][17:],
                     'username': item.select_one('.titlebar-container .name').text,
@@ -214,7 +212,7 @@ class MyMessage:
                     intro = thin_string(item.select_one('.msg-content').text)
                     item_data.append({
                         'classify': 'moment',
-                        'content_url': scheme + ':' + this_url,
+                        'content_url': AcSource.scheme + ':' + this_url,
                         'content_title': '动态',
                         'uid': item.select_one('.avatar-section').attrs['href'][17:],
                         'username': item.select_one('.content .name').text,
@@ -228,7 +226,7 @@ class MyMessage:
                     intro = thin_string(item.select_one('p').text)
                     item_data.append({
                         'classify': 'content',
-                        'content_url': scheme + ':' + this_url.attrs['href'],
+                        'content_url': AcSource.scheme + ':' + this_url.attrs['href'],
                         'content_title': this_url.text,
                         'uid': acer_url.attrs['href'][17:],
                         'username': acer_url.text,
@@ -254,9 +252,9 @@ class MyMessage:
                 for link in item.select('a'):
                     url_str = link.attrs['href']
                     if not url_str.startswith('http'):
-                        url_str = scheme + ':' + url_str
+                        url_str = AcSource.scheme + ':' + url_str
                     for link_name in ['video', 'article', 'album', 'bangumi', 'up', 'live']:
-                        if url_str.startswith(routes[link_name]) and link_name not in links:
+                        if url_str.startswith(AcSource.routes[link_name]) and link_name not in links:
                             links[link_name] = [link.text, url_str]
                 item_data.append({
                     'create_at': item.select_one('p.msg-item-time').text.strip(),

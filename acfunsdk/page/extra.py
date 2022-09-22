@@ -1,6 +1,6 @@
 # coding=utf-8
-from .utils import os, httpx, Bs, json, subprocess
-from .utils import AcSource, url_complete, match1, emoji_cleanup
+from .utils import httpx, Bs, json
+from .utils import AcSource, VideoItem, url_complete
 
 __author__ = 'dolacmeo'
 
@@ -381,52 +381,18 @@ class AcScreeningRoom:
         assert api_data.get('result') == 0
         return api_data.get("playInfo")
 
-    def m3u8_url(self, key: str, num: int, quality: [int, str] = 0,
-                 hevc: bool = True, only_url: bool = True) -> (dict, None):
-        assert key in self.raw_data
-        main_data = self.raw_data[key]
-        assert num in range(len(main_data['list']))
-        item_data = main_data['list'][num]
-        if "bangumiId" in item_data:
-            raw_data = self._get_data_from_api(1, item_data['bangumiId'], item_data['videoId'])
-        else:
-            raw_data = self._get_data_from_api(2, item_data['contentId'], item_data['videoId'])
-        code_type = "ksPlayJsonHevc" if hevc is True else "ksPlayJson"
-        play_data = json.loads(raw_data.get(code_type, ""))
-        adapt = raw_data['transcodeInfos']
-        if isinstance(quality, int):
-            assert quality in range(len(adapt))
-        elif isinstance(quality, str):
-            quality = quality.lower()
-            q_map = {x["qualityType"]: i for i, x in enumerate(adapt)}
-            assert quality in q_map.keys()
-            quality = q_map[quality]
-        else:
-            return None
-        this_quality = play_data['adaptationSet'][0]['representation'][quality]
-        if only_url is True:
-            return this_quality['url'], this_quality['backupUrl']
-        return this_quality
-
-    def play(self, key: str, num: int, potplayer_path: [os.PathLike, str],
-             quality: [int, str] = 0, hevc: bool = True):
-        adapt = self.m3u8_url(key, num, quality, hevc, False)
-        qtype = adapt["qualityType"]
-        assert os.path.exists(potplayer_path)
-        quality_mark = f"{qtype}_HEVC" if hevc is True else qtype
-        main_title = self.raw_data[key]['name']
-        sub_title = self.raw_data[key]['list'][num]['title']
-        player_title = f'"{main_title}{sub_title}-{quality_mark}"'.replace(" ", '')
-        cmds = [potplayer_path, adapt['url'], "/title", emoji_cleanup(player_title)]
-        return subprocess.Popen(cmds, stdout=subprocess.PIPE)
-
-    def danmaku(self, key: str, num: int, ) -> object:
+    def get_video(self, key: str, num: int):
         assert key in self.raw_data
         main_data = self.raw_data[key]
         assert num in range(len(main_data['list']))
         item_data = main_data['list'][num]
         if "bangumiId" in item_data:
             parent = self.acer.acfun.resource(1, item_data['bangumiId'])
-            return self.acer.acfun.AcDanmaku(item_data['videoId'], parent)
-        parent = self.acer.acfun.resource(2, item_data['contentId'])
-        return self.acer.acfun.AcDanmaku(item_data['videoId'], parent)
+        else:
+            parent = self.acer.acfun.resource(2, item_data['contentId'])
+        if parent.is_404 is True:
+            parent.is_404 = False
+            parent.raw_data['data'] = {"bangumiTitle": main_data['name']}
+            parent.raw_data['list'] = main_data['list']
+        sub_title = self.raw_data[key]['list'][num]['title']
+        return VideoItem(self.acer, item_data['videoId'], sub_title, parent.referer, parent)

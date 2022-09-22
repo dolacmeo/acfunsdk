@@ -16,7 +16,7 @@ class AcSearch:
         'video': 'video-list',
         'user': 'user-list',
         'article': 'article-list',
-        'bgm': 'bangumi-list',
+        'bangumi': 'bangumi-list',
         'album': 'album-list',
     }
 

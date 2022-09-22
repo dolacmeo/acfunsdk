@@ -8,8 +8,8 @@ __author__ = 'dolacmeo'
 class AcUp:
     resource_type = 5
     uid = None
-    up_data = None
-    up_page = None
+    raw_data = None
+    page_obj = None
 
     video_count = None
     article_count = None
@@ -20,7 +20,7 @@ class AcUp:
 
     def __init__(self, acer, uid: [str, int], up_data: [dict, None] = None):
         self.uid = int(uid)
-        self.up_data = dict() if up_data is None else up_data
+        self.raw_data = dict() if up_data is None else up_data
         self.acer = acer
         self._get_acup()
 
@@ -29,11 +29,19 @@ class AcUp:
         if api_req.json().get('result') != 0:
             self.is_404 = True
             return None
-        self.up_data.update(api_req.json().get('profile', {}))
+        self.raw_data.update(api_req.json().get('profile', {}))
 
     @property
     def name(self):
-        return self.up_data.get('userName', self.up_data.get('name'))
+        if self.is_404:
+            return None
+        return self.raw_data.get('userName', self.raw_data.get('name'))
+
+    @property
+    def avatar(self):
+        if self.is_404:
+            return None
+        return self.raw_data.get("headUrl")
 
     def __repr__(self):
         return f"Acer([#{self.uid}] @{self.name})".encode(errors='replace').decode()
@@ -46,16 +54,16 @@ class AcUp:
         if self.is_404 is True:
             return None
         page_req = self.acer.client.get(AcSource.routes['up'] + self.uid)
-        self.up_page = Bs(page_req.text, "lxml")
-        self.video_count = self.up_page.select_one(
+        self.page_obj = Bs(page_req.text, "lxml")
+        self.video_count = self.page_obj.select_one(
             '.ac-space-contribute-list > .tags > li[data-index=video]').attrs['data-count']
-        self.article_count = self.up_page.select_one(
+        self.article_count = self.page_obj.select_one(
             '.ac-space-contribute-list > .tags > li[data-index=article]').attrs['data-count']
-        self.album_count = self.up_page.select_one(
+        self.album_count = self.page_obj.select_one(
             '.ac-space-contribute-list > .tags > li[data-index=album]').attrs['data-count']
-        self.following_count = self.up_page.select_one(
+        self.following_count = self.page_obj.select_one(
             '.tab-list > li[data-index=following] > span').text
-        self.followed_count = self.up_page.select_one(
+        self.followed_count = self.page_obj.select_one(
             '.tab-list > li[data-index=followed] > span').text
 
     def AcLive(self):
@@ -98,7 +106,7 @@ class AcUp:
                 'dougaId': ac_num,
                 'coverUrl': item.select_one('.video > img').attrs['src'],
                 'createTime': item.select_one('p.date').text.replace('/', '-'),
-                'user': self.up_data
+                'user': self.raw_data
             }
             data.append(self.acer.acfun.AcVideo(ac_num, infos))
         return data
@@ -111,7 +119,7 @@ class AcUp:
             infos = {
                 'title': item.a.attrs['title'],
                 'dougaId': ac_num,
-                'user': self.up_data
+                'user': self.raw_data
             }
             data.append(self.acer.acfun.AcArticle(ac_num, infos))
         return data

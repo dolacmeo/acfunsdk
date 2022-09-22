@@ -6,11 +6,11 @@ __author__ = 'dolacmeo'
 
 
 class BlockContent:
-    content_data = None
+    raw_data = None
 
-    def __init__(self, acer, content_data: dict):
+    def __init__(self, acer, raw_data: dict):
         self.acer = acer
-        self.content_data = content_data
+        self.raw_data = raw_data
 
     def __repr__(self):
         if self.name:
@@ -20,23 +20,25 @@ class BlockContent:
 
     @property
     def blockId(self):
-        return self.content_data.get('blockId')
+        return self.raw_data.get('blockId')
 
     @property
     def name(self):
-        return self.content_data.get('name')
+        return self.raw_data.get('name')
 
     @property
     def keyname(self):
-        return self.content_data.get('interfaceParameter', '').strip()
+        return self.raw_data.get('interfaceParameter', '').strip()
 
     @property
     def contentCount(self):
-        return self.content_data.get('contentCount')
+        return self.raw_data.get('contentCount')
 
-    def list(self):
+    def list(self, obj: bool = True):
+        if obj is False:
+            return self.raw_data.get('webContents')
         data_list = list()
-        for v in self.content_data.get('webContents'):
+        for v in self.raw_data.get('webContents'):
             if v['mediaType'] == 0:
                 data_list.append(self.acer.acfun.AcVideo(v['mediaId']))
             elif v['mediaType'] == 1:
@@ -51,41 +53,42 @@ class BlockContent:
 
 
 class ChannelBlock:
-    block_data = None
+    raw_data = None
 
-    def __init__(self, acer, block_data: dict):
+    def __init__(self, acer, raw_data: dict):
         self.acer = acer
-        self.block_data = block_data
+        self.raw_data = raw_data
+
+    @property
+    def name(self):
+        return self.raw_data.get('name', '').strip()
+
+    @property
+    def blockType(self):
+        return self.raw_data.get('blockType')
 
     def __repr__(self):
         return f"AcBlock(#{self.blockType} {self.name})"
 
-    @property
-    def name(self):
-        return self.block_data.get('name', '').strip()
-
-    @property
-    def blockType(self):
-        return self.block_data.get('blockType')
-
-    def contents(self):
-        return [BlockContent(self.acer, content) for content in self.block_data.get('content', [])]
+    def list(self, obj: bool = True):
+        if obj is False:
+            return self.raw_data.get('content', [])
+        return [BlockContent(self.acer, content) for content in self.raw_data.get('content', [])]
 
 
 class AcChannel:
-    channel_data = AcSource.channel_data
+    page_obj = None
+    raw_data = None
     nav_data = dict()
-    channel_obj = None
-    is_main = False
     parent_data = None
     sub_data = None
+    is_main = False
     is_404 = False
 
-    def __init__(self, acer, cid, nav_info: dict):
+    def __init__(self, acer, cid):
         self.acer = acer
         self.cid = str(cid)
-        self.info = nav_info
-        self._get_channel_info()
+        self.loading()
 
     @property
     def ctype(self):
@@ -105,56 +108,51 @@ class AcChannel:
 
     @property
     def _main_channels(self):
-        return {x["channelId"]: x for x in self.channel_data}
-
-    def _get_channel_info(self):
-        for channel in self.channel_data:
-            if self.cid == channel['channelId']:
-                self.parent_data = channel
-                self.info = self.parent_data
-                break
-            for sub in channel['children']:
-                if self.cid == sub['channelId']:
-                    self.parent_data = channel
-                    self.sub_data = sub
-                    self.info = self.sub_data
-                    break
-        self.is_main = self.sub_data is None
-        if self.parent_data is None:
-            self.is_404 = True
+        return {x["channelId"]: x for x in AcSource.channel_data}
 
     def __repr__(self):
         if self.is_404 is True:
             return f"AcChannel(#{self.cid} 404)"
-        return f"AcChannel(#{self.cid} {self.info['name']})"
+        return f"AcChannel(#{self.cid} {self.nav_data['name']})"
+
+    def _get_channel_info(self):
+        for channel in AcSource.channel_data:
+            if self.cid == channel['channelId']:
+                self.nav_data = self.parent_data
+                self.sub_data = channel["children"]
+                break
+            for sub in channel['children']:
+                if self.cid == sub['channelId']:
+                    self.parent_data = channel
+                    self.nav_data = sub
+                    break
+        self.is_main = self.parent_data is None
+        if self.nav_data is None:
+            self.is_404 = True
 
     def loading(self):
+        self._get_channel_info()
         if not self.is_main:
-            print("Is sub channels, just use videos.")
             return False
         page_req = self.acer.client.get(self.referer)
-        self.channel_obj = Bs(page_req.text, 'lxml')
+        self.page_obj = Bs(page_req.text, 'lxml')
         json_text = match1(page_req.text, r"(?s)__INITIAL_STATE__\s*=\s*(\{.*?\});")
         if json_text is None:
             self.is_404 = True
             return False
-        self.channel_data = json.loads(json_text)
+        self.raw_data = json.loads(json_text)
 
     def hot_words(self):
         if not self.is_main:
             return None
-        if self.channel_data is None:
-            self.loading()
-        return self.channel_data['channel']['hotWordList']
+        return self.raw_data['channel']['hotWordList']
 
     def blocks(self):
         if not self.is_main:
             return None
-        if self.channel_data is None:
-            self.loading()
         if self.cid == '63':
-            return [ChannelBlock(self.acer, data) for data in self.channel_data['article']['blockList']]
-        return [ChannelBlock(self.acer, data) for data in self.channel_data['channel']['blockList']]
+            return [ChannelBlock(self.acer, data) for data in self.raw_data['article']['blockList']]
+        return [ChannelBlock(self.acer, data) for data in self.raw_data['channel']['blockList']]
 
     def ranks(self, limit: int = 50, date_range: str = None):
         if self.is_main:
@@ -171,7 +169,7 @@ class AcChannel:
         if self.cid == '63':
             return self.acer.acfun.AcWen()
         rids = list()
-        for item in self.info.get("realms", []):
+        for item in self.nav_data.get("realms", []):
             rids.append(item['realmId'])
         return self.acer.acfun.AcWen(rids)
 

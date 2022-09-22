@@ -4,17 +4,6 @@ from .utils import AcSource, url_complete
 
 __author__ = 'dolacmeo'
 
-AcFunWeixin_qr = "http://weixin.qq.com/r/6i7a3qnEcGEMKe29b3tu"
-AcFunWeixin_qr_img = "https://cdnfile.aixifan.com/static/img/qrcode_e280b30.jpg"
-
-AcFun_ico = "https://cdn.aixifan.com/ico/favicon.ico"
-AcFun_logo = "https://ali-imgs.acfun.cn/kos/nlav10360/static/packageDownload/static/img/logo.e3f3277bac07179de334.png"
-AcFun_login_bg = "https://static.yximgs.com/udata/pkg/acfun/loginbg.be7a2d2876ab48ed.png"
-AcFun_danmaku_bg = [
-    "https://ali-imgs.acfun.cn/kos/nlav10360/static/packageDownload/static/img/danmu-1.13b8f4cb7a790fdcfe19.png",
-    "https://ali-imgs.acfun.cn/kos/nlav10360/static/packageDownload/static/img/danmu-2.7a0c666031b39fd1fa65.png",
-]
-
 
 class AcLink:
 
@@ -94,16 +83,25 @@ class AcInfo:
         "title": "关于AcFun弹幕视频网",
         "subtilte": "About Us",
         "content": [
-            "AcFun弹幕视频网隶属于北京弹幕网络科技有限公司，是中国最具影响力的弹幕视频平台，"
-            "也是全球最早上线的弹幕视频网站之一。“AcFun”原取意于“Anime Comic Fun”。"
-            "自2007年6月6日成立以来，AcFun历经几年努力，从最初单一的视频站发展为现在的综合性弹幕视频网站，"
+            "AcFun弹幕视频网隶属于北京弹幕网络科技有限公司，"
+            "是中国最具影响力的弹幕视频平台，"
+            "也是全球最早上线的弹幕视频网站之一。"
+            "“AcFun”原取意于“Anime Comic Fun”。"
+            "自2007年6月6日成立以来，AcFun历经几年努力，"
+            "从最初单一的视频站发展为现在的综合性弹幕视频网站，"
             "目前已是国内弹幕视频行业的领军品牌。",
-            "AcFun从创立之初就坚持以“天下漫友是一家”为主旨，以“认真你就输了”为文化导向，倡导轻松欢快的亚文化。"
-            "在几年中吸引了无数深爱宅文化的观众，也诞生了难以计数的知名原创视频作者。"
-            "几年中由AcFun推广的无数优秀视频作品，深刻影响和改变了众多宅文化爱好者，"
+            "AcFun从创立之初就坚持以“天下漫友是一家”为主旨，"
+            "以“认真你就输了”为文化导向，倡导轻松欢快的亚文化。"
+            "在几年中吸引了无数深爱宅文化的观众，"
+            "也诞生了难以计数的知名原创视频作者。"
+            "几年中由AcFun推广的无数优秀视频作品，"
+            "深刻影响和改变了众多宅文化爱好者，"
             "它们中的大多数现已经成为网络经典。",
-            "让更多人融入到弹幕视频的互动中去，让更多人理解宅文化的魅力所在，这就是几年来AcFun一直孜孜不倦追求的目标。"
-            "随着时代变迁，AcFun也在不断进步和革新，以崭新的面貌，为所有热爱宅文化的观众们带来更完美的视听享受。",
+            "让更多人融入到弹幕视频的互动中去，"
+            "让更多人理解宅文化的魅力所在，"
+            "这就是几年来AcFun一直孜孜不倦追求的目标。"
+            "随着时代变迁，AcFun也在不断进步和革新，"
+            "以崭新的面貌，为所有热爱宅文化的观众们带来更完美的视听享受。",
         ]
     }
     contact = {

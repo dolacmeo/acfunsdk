@@ -1,5 +1,5 @@
 # coding=utf-8
-from .utils import json, math, time, parse, Bs
+from .utils import json, math, time, parse, Bs, Literal
 from .utils import AcSource, AcDetail, not_404, get_channel_info
 
 __author__ = 'dolacmeo'
@@ -10,8 +10,8 @@ class AcBangumi(AcDetail):
     def __init__(self, acer, rid: [str, int]):
         if isinstance(rid, str) and rid.startswith('aa'):
             rid = rid[2:]
-            if "_36188_" in rid:
-                rid, _ = map(int, rid.split('_36188_'))
+        if "_36188_" in rid:
+            rid, _ = map(int, rid.split('_36188_'))
         super().__init__(acer, 1, rid)
 
     def loading_more(self):
@@ -50,6 +50,15 @@ class AcBangumi(AcDetail):
         if self.is_404:
             return self._msg['404']
         return self.bangumi_data.get('bangumiTitle')
+
+    @property
+    def cover(self):
+        if self.is_404:
+            return None
+        return self.cover_image()
+
+    def cover_image(self, v_or_h: Literal["v", "h", "V", "H"] = "h"):
+        return self.bangumi_data.get(f"bangumiCoverImage{v_or_h.upper()}")
 
     def __repr__(self):
         return f"AcBangumi([aa{self.resource_id}]{self.title})".encode(errors='replace').decode()

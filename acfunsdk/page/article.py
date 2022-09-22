@@ -17,6 +17,12 @@ class AcArticle(AcDetail):
             return self._msg['404']
         return self.raw_data.get('contentTitle', self.raw_data.get('title', ""))
 
+    @property
+    def cover(self):
+        if self.is_404:
+            return None
+        return self.raw_data.get("coverUrl")
+
     def __repr__(self):
         user_name = self._up_name or self._up_uid
         user_txt = "" if len(user_name) == 0 else f" @{user_name}"

@@ -28,7 +28,7 @@ class Acer:
     danmaku = None
     bananamall = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, /, **kwargs):
         self.config = kwargs
         self.client = httpx.Client(headers=AcSource.header)
         if "loading" in kwargs:

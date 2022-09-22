@@ -23,10 +23,18 @@ class AcAlbum(AcDetail):
             return self._msg['404']
         return self.info.get('title')
 
+    @property
+    def cover(self):
+        if self.is_404:
+            return None
+        return self.info.get("coverImage")
+
+    @property
     @not_404
     def up_uid(self):
         return self.info.get("authorId")
 
+    @property
     @not_404
     def up_name(self):
         return self.info.get("authorName")

@@ -63,6 +63,12 @@ class AcVideo(AcDetail):
             return self._msg['404']
         return self.raw_data.get('title', "")
 
+    @property
+    def cover(self):
+        if self.is_404:
+            return None
+        return self.raw_data.get("coverUrl")
+
     def __repr__(self):
         if self.is_404:
             return f"AcVideo([ac{self.resource_id}]咦？世界线变动了。看看其他内容吧~)"

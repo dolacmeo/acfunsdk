@@ -189,7 +189,16 @@ class AcLiveUp:
 
     @property
     def title(self):
+        if self.past_time < 0:
+            return "未开播"
         return self.raw_data.get('title', '')
+
+    @property
+    def cover(self):
+        urls = self.raw_data.get("coverUrls", [])
+        if len(urls):
+            return urls[0]
+        return None
 
     @property
     def username(self):

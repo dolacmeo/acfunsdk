@@ -68,7 +68,7 @@ class AcFun:
         return AcIndex(self.acer)
 
     def AcChannel(self, cid):
-        return AcChannel(self.acer, cid, self.nav_data.get(int(cid)))
+        return AcChannel(self.acer, cid)
 
     def AcBangumiList(self):
         return AcBangumiList(self.acer)

@@ -150,7 +150,7 @@ class AcInfo:
 
 
 class AcReport:
-    url = "https://www.acfun.cn/infringementreport"
+    referer = "https://www.acfun.cn/infringementreport"
     complaint_doc = "https://cdn.aixifan.com/downloads/AcFun%E4%B8%BE%E6%8A%A5%E7%94%B3%E8%AF%89%E8%A1%A8.doc"
     email = "ac-report@kuaishou.com"
 
@@ -187,7 +187,7 @@ class AcReport:
 
 
 class AcAcademy:
-    url = "https://member.acfun.cn/academy"
+    referer = "https://member.acfun.cn/academy"
     banner = "https://static.yximgs.com/udata/pkg/acfun-fe/up.cd94ec8275ced105.png"
     background = "https://tx2.a.kwimgs.com/udata/pkg/acfun/bg.e4bb289f.png"
     question_image = "https://tx2.a.kwimgs.com/udata/pkg/acfun/qadayi.b87cd018.png"
@@ -311,7 +311,6 @@ class AcDownload:
 
 
 class AcLab:
-    url = AcSource.routes['lab_index']
     page_obj = None
     subjects = dict()
     history = list()
@@ -321,8 +320,12 @@ class AcLab:
         self.acer = acer
         self.loading()
 
+    @property
+    def referer(self):
+        return f"{AcSource.routes['lab_index']}"
+
     def loading(self):
-        page_req = self.acer.client.get(self.url)
+        page_req = self.acer.client.get(self.referer)
         self.page_obj = Bs(page_req.text, 'lxml')
         for link in self.page_obj.select(".main .list a"):
             self.subjects[link.text.strip()] = link.attrs['href']
@@ -341,7 +344,6 @@ class AcLab:
 
 
 class AcScreeningRoom:
-    url = AcSource.routes['lab_screening']
     page_obj = None
     raw_data = None
 
@@ -349,8 +351,12 @@ class AcScreeningRoom:
         self.acer = acer
         self.loading()
 
+    @property
+    def referer(self):
+        return f"{AcSource.routes['lab_screening']}"
+
     def loading(self):
-        page_req = self.acer.client.get(self.url)
+        page_req = self.acer.client.get(self.referer)
         self.page_obj = Bs(page_req.text, 'lxml')
         page_script = self.page_obj.select_one(".main script").text.strip()
         page_script = page_script.replace("window.dataMap = ", "")

@@ -149,16 +149,20 @@ class AcFun:
         return getattr(self, resource_type_map[str(rtype)])(rid)
 
     def get(self, url_str: str, title=None) -> (object, None):
+        # 统一换成HTTPS协议
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")
+        # 主站首页
         if url_str in [AcSource.routes['index'], AcSource.routes['index'] + "/"]:
             return self.AcIndex()
-        elif url_str in [AcSource.routes['live_index'], AcSource.routes['live_index'] + "/"]:
+        # 直播首页
+        if url_str in [AcSource.routes['live_index'], AcSource.routes['live_index'] + "/"]:
             return self.AcLive()
-        for link_name in routes_type_map.keys():
-            if url_str.startswith(AcSource.routes[link_name]):
-                ends = url_str[len(AcSource.routes[link_name]):]
-                return getattr(self, routes_type_map[link_name])(ends)
+        # 栏目页面
+        channel_rex = re.compile(rf"^{AcSource.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
+        if channel_rex:
+            return self.AcChannel(channel_rex[0])
+        # 排行、番剧
         for link_name in ['rank', 'bangumi_list']:
             if url_str.startswith(AcSource.routes[link_name]):
                 ends = url_str[len(AcSource.routes[link_name]):]
@@ -173,17 +177,22 @@ class AcFun:
                     }
                     return self.AcRank(**kw)
                 return getattr(self, f"Ac{link_name.capitalize()}")(ends)
-        channel_rex = re.compile(rf"^{AcSource.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
-        if channel_rex:
-            return self.AcChannel(channel_rex[0])
+        # 内容页面
+        for link_name in routes_type_map.keys():
+            if url_str.startswith(AcSource.routes[link_name]):
+                ends = url_str[len(AcSource.routes[link_name]):]
+                return getattr(self, routes_type_map[link_name])(ends)
+        # 涂鸦短链接
         if "//hd.acfun.cn/s/" in url_str:
             req3xx = httpx.get(url_str)
             req_redirect = parse.urlsplit(req3xx.headers.get("Location", ""))
             w_link = parse.parse_qs(req_redirect.query).get("wLink", [])
             if len(w_link):
                 return self.get(w_link[0])
+        # 图片、链接
         if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
             if parse.urlsplit(url_str).netloc in self.cdn_domain:
                 return AcImage(self.acer, url_str)
             return AcLink(self.acer, url_str, title)
+        # 不知道是啥
         return None

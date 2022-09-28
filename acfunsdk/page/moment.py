@@ -1,5 +1,5 @@
 # coding=utf-8
-from .utils import AcSource, AcDetail, resource_type_str_map, thin_string, limit_string
+from .utils import parse, AcSource, AcDetail, resource_type_str_map, thin_string, limit_string
 
 __author__ = 'dolacmeo'
 
@@ -14,6 +14,21 @@ class AcMoment(AcDetail):
 
     def loading_more(self):
         self.raw_data = self.raw_data.get("moment", {})
+
+    @property
+    def mobile_url(self):
+        return f"{AcSource.routes['moment_mobile']}{self.resource_id}"
+
+    @property
+    def mobile_qrcode(self):
+        parma = {
+            "content": self.mobile_url,
+            "contentType": "URL",
+            "toShortUrl": False,
+            "width": 100,
+            "height": 100
+        }
+        return f"{AcSource.apis['qrcode']}?{parse.urlencode(parma)}"
 
     @property
     def title(self):

@@ -38,7 +38,7 @@ class AcVideo(AcDetail):
 
     @property
     def mobile_url(self):
-        return f"https://scan.acfun.cn/vd/{self.resource_id}"
+        return f"{AcSource.routes['video_mobile']}{self.resource_id}"
 
     @property
     def mobile_qrcode(self):

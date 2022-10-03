@@ -1,6 +1,6 @@
 # coding=utf-8
 from .utils import json, math, time, parse, Bs, Literal
-from .utils import AcSource, AcDetail, not_404
+from .utils import AcSource, AcDetail, not_404, match1
 
 __author__ = 'dolacmeo'
 
@@ -12,7 +12,7 @@ class AcBangumi(AcDetail):
             if rid.startswith('aa'):
                 rid = rid[2:]
             if "_36188_" in rid:
-                rid, _ = map(int, rid.split('_36188_'))
+                rid, = map(int, rid.split('_36188_'))
         super().__init__(acer, 1, rid)
 
     @not_404
@@ -65,6 +65,17 @@ class AcBangumi(AcDetail):
         for x in season_data:
             seasons.append(AcBangumi(self.acer, x['id']))
         return seasons
+
+    def get_part_list(self, aa_num: [None, str] = None):
+        if aa_num is None:
+            return self.bangumi_list.get("items", [])
+        param = {"quickViewId": "pagelet_partlist", "ajaxpipe": 1}
+        api_req = self.acer.client.get(f"{AcSource.routes['bangumi']}{aa_num}", params=param)
+        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        api_data = json.loads(api_req.text[:-25])
+        v_script = match1(api_data['html'].replace(" ", ""), r"partsData=((?=\{)[^\s]*(?<=\}))\<\/script\>")
+        part_list = json.loads(v_script)
+        return part_list.get("items", [])
 
 
 class AcBangumiList:

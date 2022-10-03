@@ -30,7 +30,7 @@ class Acer:
 
     def __init__(self, /, **kwargs):
         self.config = kwargs
-        self.client = httpx.Client(headers=AcSource.header)
+        self.client = httpx.Client(headers=kwargs.get("header", AcSource.header))
         if "loading" in kwargs:
             self.loading(kwargs['loading'])
         elif "username" in kwargs and "password" in kwargs:

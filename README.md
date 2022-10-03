@@ -18,7 +18,7 @@ acfunsdk是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
 - - -
 
-**Python** : `Python>=3.7`， 本体请自行[下载安装][python]。
+**Python** : `Python>=3.8`， 本体请自行[下载安装][python]。
 
 ## [从PyPI安装](https://pypi.org/project/acfunsdk/)
 

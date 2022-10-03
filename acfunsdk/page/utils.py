@@ -117,6 +117,13 @@ class VideoItem:
         code_type = "ksPlayJsonHevc" if hevc is True else "ksPlayJson"
         play_data = json.loads(self.raw_data.get(code_type, ""))
         this_quality = play_data.get("adaptationSet", [{}])[0].get("representation")[quality]
+        domains = self.raw_data.get("domainInfos", [])
+        if len(domains):
+            main_url = parse.urlsplit(this_quality['url'])
+            this_quality['backupUrl'] = list()
+            for domain in domains:
+                new_url = f"{main_url.scheme}://{domain['url']}{main_url.path}?{main_url.query}"
+                this_quality['backupUrl'].append(new_url)
         if only_url is True:
             return this_quality['url'], this_quality['backupUrl']
         return this_quality

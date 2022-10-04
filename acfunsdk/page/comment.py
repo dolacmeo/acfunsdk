@@ -7,7 +7,7 @@ __author__ = 'dolacmeo'
 
 class AcComment:
     resource_type_map = {
-        "1": 6,  # 番剧
+        "1": 2,  # 番剧
         "2": 3,  # 视频稿件
         "3": 1,  # 文章稿件
         "10": 4,  # 动态

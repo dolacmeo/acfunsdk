@@ -152,14 +152,16 @@ class VideoItem:
         if api_data.get("spriteVtt") is None:
             return None
         pos_data = list()
+        images = list()
         sprite_data = api_data.get("spriteVtt", "").split("\n\n")[1:]
-        sprite_img = sprite_data[0].split("\n")[1].split("#")[0]
         for line in sprite_data:
             pos, img_url = line.split("\n")
             pos_s, pos_e = pos.split(" --> ")
-            _, xywh = img_url.split("#xywh=")
-            pos_data.append([pos_s, pos_e, xywh])
-        return {"sprite_image": sprite_img, "pos": pos_data}
+            sprite_img, xywh = img_url.split("#xywh=")
+            if sprite_img not in images:
+                images.append(sprite_img)
+            pos_data.append([pos_s, pos_e, xywh, images.index(sprite_img)])
+        return {"sprite_images": images, "pos": pos_data}
 
     @property
     def hotspot(self) -> (dict, None):

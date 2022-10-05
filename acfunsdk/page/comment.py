@@ -59,13 +59,16 @@ class AcComment:
         req = self.acer.client.get(AcSource.apis['comment_subs'], params=param)
         return req.json()
 
-    def get_all_comments(self):
+    def get_all_comments(self, limit: [None, int] = None):
         self.hot_comments = list()
         self.root_comments = list()
         self.sub_comments = dict()
         page = 1
         page_max = 10
         while page <= page_max:
+            if isinstance(limit, int):
+                if page > limit:
+                    break
             api_data = self._get_data(page)
             if api_data.get('result') != 0:
                 print(api_data)
@@ -92,13 +95,16 @@ class AcComment:
                     sub_data['pcursor'] = "no_more"
                 time.sleep(0.1)
 
-    def get_all_floors(self):
+    def get_all_floors(self, limit: [None, int] = None):
         first_page = self._get_data(1, 'comment_floor')
         self.commentIds = first_page['commentIds']
         self.commentsMap = first_page['commentsMap']
         page = first_page['curPage']
         page_max = first_page['totalPage']
         while page <= page_max:
+            if isinstance(limit, int):
+                if page > limit:
+                    break
             page += 1
             api_data = self._get_data(page, 'comment_floor')
             assert api_data['result'] == 0

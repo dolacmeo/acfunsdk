@@ -4,6 +4,15 @@ import json
 from typing import Literal
 from .page import *
 from .exceptions import need_login
+from importlib.metadata import version as pip_version
+from importlib.metadata import PackageNotFoundError
+exts = {}
+try:
+    if pip_version('acsaver') >= "0.1.3":
+        from acsaver import AcSaver
+        exts['acsaver'] = True
+except PackageNotFoundError:
+    pass
 
 __author__ = 'dolacmeo'
 
@@ -38,6 +47,10 @@ class Acer:
         else:
             self._get_personal()
         self.acfun = AcFun(self)
+        if exts.get("acsaver", False) is True:
+            acsaver_path = self.config.get("acsaver_path")
+            if isinstance(acsaver_path, str) and os.path.isdir(acsaver_path):
+                self.acsaver = AcSaver(self, acsaver_path)
 
     def __repr__(self):
         if self.is_logined:

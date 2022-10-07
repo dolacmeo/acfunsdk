@@ -158,6 +158,9 @@ class AcLiveUp:
         self.is_404 = self.AcUp.is_404
         self.visitor = AcLiveVisitor(self.acer)
         self.loading()
+        self._saver = None
+        if hasattr(self.acer, 'acsaver'):
+            self._saver = acer.acsaver.get_saver(self)
 
     @property
     def referer(self):
@@ -221,6 +224,11 @@ class AcLiveUp:
         if self.visitor.is_logined:
             self.report_data['host'] = self._get_report_data('liveStream')
             self.report_data['audience'] = self._get_report_data('liveStreamAudience')
+
+    def save_all(self):
+        if self._saver is None:
+            raise ImportError("Depend on acsaver>=0.1.3, and need setup 'acsaver_path' in acer first")
+        return self._saver.save_all()
 
     @property
     def past_time(self):

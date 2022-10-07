@@ -207,6 +207,9 @@ class AcDetail:
         self.acer = acer
         self.resource_type = int(rtype)
         self.resource_id = int(rid)
+        self._saver = None
+        if hasattr(self.acer, 'acsaver'):
+            self._saver = acer.acsaver.get_saver(self)
         self.loading()
 
     @property
@@ -262,6 +265,11 @@ class AcDetail:
 
     def loading_more(self):
         pass
+
+    def save_all(self):
+        if self._saver is None:
+            raise ImportError("Depend on acsaver>=0.1.3, and need setup 'acsaver_path' in acer first")
+        return self._saver.save_all()
 
     @property
     @not_404

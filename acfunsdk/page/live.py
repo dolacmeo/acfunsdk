@@ -39,44 +39,6 @@ class AcLive:
         return AcLiveUp(self.acer, uid)
 
 
-class AcLiveVisitor:
-    client = None
-    did = None
-    uid = None
-    is_logined = False
-    tokens = dict()
-
-    def __init__(self, acer):
-        self.acer = acer
-        self.is_logined = self.acer.is_logined
-        self.client = self.acer.client
-        self.loading()
-
-    def loading(self):
-        if self.is_logined is True:
-            self.did = self.acer.did
-            self.uid = self.acer.uid
-            self.tokens = self.acer.tokens
-        else:
-            did_req = self.client.get(AcSource.apis['app'])
-            self.did = did_req.cookies.get('_did')
-            token_req = self.client.post(AcSource.apis['token_visitor'],
-                                         data={"sid": "acfun.api.visitor"})
-            token_data = token_req.json()
-            self.uid = token_data.get("userId"),
-            self.tokens = {
-                "ssecurity": token_data.get("acSecurity", ''),
-                "visitor_st": token_data.get("acfun.api.visitor_st", ''),
-            }
-
-    def update_token(self, data: dict):
-        if self.is_logined:
-            data.update({"acfun.midground.api_st": self.tokens['api_st']})
-        else:
-            data.update({"acfun.api.visitor_st": self.tokens['visitor_st']})
-        return data
-
-
 class LiveItem:
     raw_data = None
     is_open = False
@@ -85,10 +47,9 @@ class LiveItem:
     availableTickets = []
     representation = []
 
-    def __init__(self, acer, uid: int, visitor, parent):
+    def __init__(self, acer, uid: int, parent):
         self.acer = acer
         self.uid = uid
-        self.visitor = visitor
         self.parent = parent
         self.loading()
 
@@ -156,7 +117,6 @@ class AcLiveUp:
         self.uid = uid
         self.AcUp = self.acer.acfun.AcUp(self.uid)
         self.is_404 = self.AcUp.is_404
-        self.visitor = AcLiveVisitor(self.acer)
         self.loading()
         self._saver = None
         if hasattr(self.acer, 'acsaver'):
@@ -220,8 +180,8 @@ class AcLiveUp:
         api_req = self.acer.client.get(AcSource.apis['live_info'], params=param)
         self.raw_data = api_req.json()
         if self.past_time > -1:
-            self.live = LiveItem(self.acer, self.uid, self.visitor, self)
-        if self.visitor.is_logined:
+            self.live = LiveItem(self.acer, self.uid, self)
+        if self.acer.is_logined:
             self.report_data['host'] = self._get_report_data('liveStream')
             self.report_data['audience'] = self._get_report_data('liveStreamAudience')
 
@@ -249,10 +209,10 @@ class AcLiveUp:
             "subBiz": "mainApp",
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
-            "userId": self.visitor.uid,
-            "did": self.visitor.did,
+            "userId": self.acer.uid,
+            "did": self.acer.did,
         }
-        param = self.visitor.update_token(param)
+        param = self.acer.update_token(param)
         api_req = self.acer.client.post(AcSource.apis[api_name], params=param, data=form_data,
                                         headers={'referer': f"{AcSource.routes['live_index']}"})
         return api_req.json()
@@ -365,10 +325,10 @@ class AcLiveUp:
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "appver": "1.0.0",
-            "userId": self.visitor.uid,
-            "did": self.visitor.did,
+            "userId": self.acer.uid,
+            "did": self.acer.did,
         }
-        data = self.visitor.update_token(data)
+        data = self.acer.update_token(data)
         api_req = self.acer.client.post(AcSource.apis[api_name[sub_biz]], params=data, json=data)
         api_data = api_req.json()
         assert api_data.get("result") == 1
@@ -398,8 +358,8 @@ class AcLiveUp:
             "kpn": "ACFUN_APP",
             "kpf": "PC_WEB",
             "appver": "1.0.0",
-            "userId": self.visitor.uid,
-            "did": self.visitor.did,
+            "userId": self.acer.uid,
+            "did": self.acer.did,
         }
         api_req = self.acer.client.post(AcSource.apis[api_name[sub_biz]], params=param, json=data)
         api_data = api_req.json()

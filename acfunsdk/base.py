@@ -63,7 +63,9 @@ class Acer:
 
     @property
     def uid(self) -> int:
-        return self.data.get('userId')
+        if self.is_logined:
+            return self.data.get('userId')
+        return self.tokens.get('userId')
 
     @property
     def username(self) -> str:
@@ -104,6 +106,7 @@ class Acer:
             api_data = api_req.json()
             assert api_data.get('result') == 0
             self.tokens = {
+                "userId": api_data.get("userId", ""),
                 "ssecurity": api_data.get("acSecurity", ''),
                 "visitor_st": api_data.get("acfun.api.visitor_st", ''),
             }

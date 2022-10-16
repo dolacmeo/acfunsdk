@@ -6,6 +6,7 @@ import time
 import math
 import httpx
 import base64
+import datetime
 import subprocess
 from uuid import uuid4
 from urllib import parse
@@ -235,6 +236,35 @@ class AcDetail:
     @property
     def title(self):
         return ""
+
+    @property
+    def view_count(self) -> int:
+        return self.raw_data.get("viewCount", 0)
+
+    @property
+    def like_count(self) -> int:
+        return self.raw_data.get("likeCount", 0)
+
+    @property
+    def stow_count(self) -> int:
+        return self.raw_data.get("stowCount", 0)
+
+    @property
+    def banana_count(self) -> int:
+        return self.raw_data.get("bananaCount", 0)
+
+    @property
+    def share_count(self) -> int:
+        return self.raw_data.get("shareCount", 0)
+
+    @property
+    def comment_count(self) -> int:
+        return self.raw_data.get("commentCountRealValue", 0)
+
+    @property
+    def create_time(self) -> datetime:
+        unix = self.raw_data.get("createTimeMillis", time.time() * 1000)
+        return datetime.datetime.fromtimestamp(unix / 1000)
 
     def __repr__(self):
         if self.is_404:

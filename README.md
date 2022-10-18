@@ -97,6 +97,12 @@ print(demo_doodle)
 + QQ频道“AcFun开源⑨课”
 + 使用 [Poetry](https://python-poetry.org/) 构建
 
+> Special Thanks:
+> <p align="center"><strong>JetBrains Licenses for Open Source Development - Community Support</strong></p>
+> <p align="center"><a href="https://jb.gg/OpenSourceSupport" target="_blank">
+> <img height="100" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg" alt=""><img height="100" src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.svg" alt="">
+> </a></p>
+
 - - - 
 
 ## About Me

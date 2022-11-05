@@ -20,12 +20,15 @@ acfunsdk是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
 **Python** : `Python>=3.8`， 本体请自行[下载安装][python]。
 
-## [从PyPI安装](https://pypi.org/project/acfunsdk/)
+### [从PyPI安装](https://pypi.org/project/acfunsdk/)
 
 ```shell
 python -m pip install acfunsdk
 ```
-
+> **相关组件**
+> + [x] [`acfunsdk-ws`](https://github.com/dolaCmeo/acfunsdk-ws) 为`acfunsdk`提供websocket支持
+> + [x] [`acsaver`](https://github.com/dolaCmeo/acsaver) 为`acfunsdk`提供内容保存下载功能
+> + [ ] [`acfunsdk-cli`](https://github.com/dolaCmeo/acfunsdk-cli) 为`acfunsdk`提供命令行支持，TUI
 - - -
 
 ## 使用方法
@@ -48,8 +51,8 @@ acer.signin()
 # 视  频: https://www.acfun.cn/v/ac4741185
 demo_video = acer.get("https://www.acfun.cn/v/ac4741185")
 print(demo_video)
-# 文  章: https://www.acfun.cn/a/ac16695813
-demo_article = acer.get("https://www.acfun.cn/a/ac16695813")
+# 文  章: https://www.acfun.cn/a/ac37416587
+demo_article = acer.get("https://www.acfun.cn/a/ac37416587")
 print(demo_article)
 # 合  集: https://www.acfun.cn/a/aa6001205
 demo_album = acer.get("https://www.acfun.cn/a/aa6001205")

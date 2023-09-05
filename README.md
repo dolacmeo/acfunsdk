@@ -18,13 +18,41 @@ acfunsdk是 **非官方的 [AcFun弹幕视频网][acfun.cn]** Python库。
 
 - - -
 
-**Python** : `Python>=3.8`， 本体请自行[下载安装][python]。
+**Python** : `Python>=3.10`， 本体请自行[下载安装][python]。
 
 ### [从PyPI安装](https://pypi.org/project/acfunsdk/)
 
 ```shell
 python -m pip install acfunsdk
 ```
+
+### 从源码开发（[uv](https://docs.astral.sh/uv/)）
+
+```shell
+uv sync --all-groups
+uv run pytest
+uv build
+```
+
+根目录 **`.python-version`** 固定为 **3.10**，`uv` 会按此创建/同步 `.venv`（可用 `uv python install 3.10` 安装解释器）。
+
+**测试**（依赖外网；访客用例中的 URL 与 `examples/acer_demo.py` 对齐，列表仅在 `tests/demo_urls.py` 供 parametrize 使用）：
+
+```shell
+# 仅访客 / 公开 URL（适合 CI）
+uv run pytest -m "not requires_cookies"
+# 全量（需已配置登录 Cookie，见下）
+uv run pytest
+```
+
+登录相关用例需环境变量 **`ACFUNSDK_TEST_LOADING`**（与 `Acer(loading=...)` 一致，且对应文件名 `<该字符串>.cookies`）。默认在 **`tests/`** 目录下查找 Cookie，可通过 **`ACFUNSDK_TEST_COOKIE_DIR`** 指定目录。
+
+**示例脚本**（仓库根目录执行）：
+
+```shell
+python examples/acer_demo.py
+```
+
 > **相关组件**
 > + [x] [`acfunsdk-ws`](https://github.com/dolaCmeo/acfunsdk-ws) 为`acfunsdk`提供websocket支持
 > + [x] [`acsaver`](https://github.com/dolaCmeo/acsaver) 为`acfunsdk`提供内容保存下载功能
@@ -83,11 +111,11 @@ print(demo_doodle)
 <details>
 <summary>依赖库</summary>
 
-**依赖: 包含在 `requirements.txt` 中**
+**依赖: 以 `pyproject.toml` 为准**（`requirements.txt` 为 pip 兼容的简要列表）
 
-+ [`httpx`](https://pypi.org/project/httpx/)`>=0.23`
-+ [`lxml`](https://pypi.org/project/lxml/)`>=4`
-+ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4`
++ [`httpx`](https://pypi.org/project/httpx/)`>=0.27`
++ [`lxml`](https://pypi.org/project/lxml/)`>=5.3`
++ [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)`>=4.12`
 
 </details>
 
@@ -98,7 +126,7 @@ print(demo_doodle)
 + [AcFunDanmaku](https://github.com/wpscott/AcFunDanmaku) 是用C# 和 .Net 6编写的AcFun直播弹幕工具。
 + [实现自己的AcFun直播弹幕姬](https://www.acfun.cn/a/ac16695813) [@財布士醬](https://www.acfun.cn/u/311509)
 + QQ频道“AcFun开源⑨课”
-+ 使用 [Poetry](https://python-poetry.org/) 构建
++ 使用 [uv](https://docs.astral.sh/uv/) 管理依赖与构建
 
 > Special Thanks:
 > <p align="center"><strong>JetBrains Licenses for Open Source Development - Community Support</strong></p>
@@ -122,7 +150,7 @@ print(demo_doodle)
 [acfun.cn]: https://www.acfun.cn/
 [Issue]: https://github.com/dolaCmeo/acfunsdk/issues
 [python]: https://www.python.org/downloads/
-[venv]: https://docs.python.org/zh-cn/3.8/library/venv.html
+[venv]: https://docs.python.org/zh-cn/3.10/library/venv.html
 
 [acer]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/acer_demo.py
 [index]: https://github.com/dolaCmeo/acfunsdk/blob/main/examples/index_reader.py

@@ -1,22 +1,21 @@
 # coding=utf-8
 from acfunsdk import Acer
 
-# 初始化acer
+# 初始化 acer
 
 # 默认实例化
 acer = Acer()
 # 实例化时初次登录 (成功登录后会自动保存 '<用户名>.cookies')
 # acer = Acer(username='you@email.com', password='balalabalala')
-# 实例化时载入已登录cookies
+# 实例化时载入已登录 cookies
 # acer = Acer(loading='13800138000')
 # 设置默认保存路径
 # saver_path = r"D:\AcSaver"
 # acer = Acer(acsaver_path=saver_path)
 
 # ############## 主功能 ############## #
-# 获取ac内容对象
-# 通过链接直接获取内容对象
-# 目前支持 9种内容类型：
+# 获取 ac 内容对象：通过链接直接获取内容对象
+# 目前支持 9 种内容类型：
 # 视  频: https://www.acfun.cn/v/ac4741185
 demo_video = acer.get("https://www.acfun.cn/v/ac4741185")
 print(demo_video)
@@ -43,6 +42,7 @@ demo_share = acer.get("https://m.acfun.cn/v/?ac=37086357")
 print(demo_share)
 # 涂鸦(单页): https://hd.acfun.cn/doodle/knNWmnco.html
 demo_doodle = acer.get("https://hd.acfun.cn/doodle/knNWmnco.html")
+print(demo_doodle)
 
 # acer 对象功能
 # 登录用户(成功登录后会自动保存 '<用户名>.cookies')
@@ -86,5 +86,5 @@ demo_doodle = acer.get("https://hd.acfun.cn/doodle/knNWmnco.html")
 # acer.bananamall  # 香蕉商城
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

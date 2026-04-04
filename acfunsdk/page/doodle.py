@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import json, httpx, Bs
 from .utils import AcSource, match1
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -88,7 +89,7 @@ class AcDoodle:
                 }
         self.doodle_image = sorted(self.doodle_image, key=lambda x: x['raw']['values']['styles.offset-y']['value'])
 
-    def vote_data(self) -> (dict, None):
+    def vote_data(self) -> dict | None:
         if self.doodle_vote is None:
             return None
         data = {
@@ -101,10 +102,11 @@ class AcDoodle:
         }
         api_req = self.acer.client.post(AcSource.apis['doodle_vote'], json=data)
         api_data = api_req.json()
-        assert api_data.get("result") == 1
+        if api_data.get("result") != 1:
+            raise TingBuDong(f"doodle_vote result={api_data.get('result')!r}")
         return api_data
 
-    def comment_feed(self, pcursor: [str, None] = None) -> (dict, None):
+    def comment_feed(self, pcursor: str | None = None) -> dict | None:
         form = {
             "objectId": f"{self.doodle_id}",
             "pageSize": "10",
@@ -115,7 +117,8 @@ class AcDoodle:
         }
         api_req = self.acer.client.post(AcSource.apis['doodle_comment'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 1
+        if api_data.get("result") != 1:
+            raise TingBuDong(f"doodle_comment result={api_data.get('result')!r}")
         return api_data
 
 

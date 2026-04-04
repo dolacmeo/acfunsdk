@@ -45,6 +45,27 @@ uv run pytest -m "not requires_cookies"
 uv run pytest
 ```
 
+**AcSource 地址探测**（`tests/test_source_urls.py`，标记 `integration` + `source_urls`）：对 `acfunsdk/source.py` 中 `AcSource` 的 `routes` / `apis` / `app_apis` / `domains`、静态资源 URL 及 `websocket_links` 做可达性检查（HTTP 优先 HEAD、必要时 GET；WSS 做 TLS 握手）。需稳定外网；部分 CDN 在简单探测下会返回 502，用例会记为 **xfail** 而不导致套件失败。
+
+```shell
+# 只跑 AcSource 探测（约 200+ 条 HTTP + 若干 WSS）
+uv run pytest tests/test_source_urls.py -m integration
+# 或按 pytest 标记筛选
+uv run pytest -m source_urls
+
+# 查看通过 / xfail 等摘要（含 xfail 原因）
+uv run pytest tests/test_source_urls.py -m integration -ra --tb=no -q
+
+# 无网络 CI：跳过本文件全部用例
+set ACFUNSDK_SKIP_SOURCE_URLS=1
+uv run pytest tests/test_source_urls.py -m integration
+# （Linux / macOS）export ACFUNSDK_SKIP_SOURCE_URLS=1
+
+# 单次请求超时（秒，默认 20）
+set ACFUNSDK_SOURCE_URL_TIMEOUT=30
+uv run pytest tests/test_source_urls.py -m integration
+```
+
 登录相关用例需环境变量 **`ACFUNSDK_TEST_LOADING`**（与 `Acer(loading=...)` 一致，且对应文件名 `<该字符串>.cookies`）。默认在 **`tests/`** 目录下查找 Cookie，可通过 **`ACFUNSDK_TEST_COOKIE_DIR`** 指定目录。
 
 **示例脚本**（仓库根目录执行）：

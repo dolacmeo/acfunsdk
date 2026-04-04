@@ -10,8 +10,8 @@ class AcRank:
     raw_data = None
 
     def __init__(self, acer,
-                 cid: [int, None] = None,
-                 sub_cid: [int, None] = None,
+                 cid: int | None = None,
+                 sub_cid: int | None = None,
                  limit: int = 50,
                  date_range: Literal['DAY', 'THREE_DAYS', 'WEEK', None] = None):
         self.acer = acer
@@ -48,7 +48,7 @@ class AcRank:
     def channel(self):
         return self.acer.acfun.AcChannel(self.sub_cid or self.cid)
 
-    def contents(self) -> (list, None):
+    def contents(self) -> list | None:
         if self.raw_data is None:
             return None
         data_list = list()
@@ -59,7 +59,7 @@ class AcRank:
                 data_list.append(self.acer.acfun.AcArticle(content['resourceId'], content))
         return data_list
 
-    def ups(self) -> (list, None):
+    def ups(self) -> list | None:
         if self.raw_data is None:
             return None
         data_list = list()

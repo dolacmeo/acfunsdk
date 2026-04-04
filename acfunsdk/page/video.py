@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import parse, json, Bs
 from .utils import AcSource, AcDetail, not_404
+from ..exceptions import TingBuDong
 
 
 __author__ = 'dolacmeo'
@@ -8,7 +9,7 @@ __author__ = 'dolacmeo'
 
 class AcVideo(AcDetail):
 
-    def __init__(self, acer, rid: [str, int]):
+    def __init__(self, acer, rid: str | int):
         if isinstance(rid, str) and rid.startswith('ac'):
             rid = rid[2:]
             if "_" in rid:
@@ -30,7 +31,8 @@ class AcVideo(AcDetail):
             self.raw_data['upInfo'] = staff_data.get('upInfo')
 
     def video(self, index: int = 0):
-        assert index in range(len(self.video_list))
+        if index not in range(len(self.video_list)):
+            raise IndexError(f"P 索引越界: {index!r}，共 {len(self.video_list)}P")
         vid = self.video_list[index]
         ends = "" if index == 0 else f"_{index + 1}"
         title = "" if len(self.video_list) == 1 else vid['title']
@@ -77,10 +79,11 @@ class AcVideo(AcDetail):
         return f"AcVideo([ac{self.resource_id}]{title}{user_txt})".encode(errors='replace').decode()
 
     @not_404
-    def recommends(self, obj: bool = False) -> (dict, None):
+    def recommends(self, obj: bool = False) -> dict | None:
         param = {"pagelets": ",".join(["pagelet_newrecommend"]), "ajaxpipe": 1}
         api_req = self.acer.client.get(f"{self.referer}", params=param)
-        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not api_req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("视频页推荐块响应缺少 fetch-stream 尾标")
         page_data = json.loads(api_req.text[:-25])['html']
         recommend_raw = Bs(page_data, 'lxml').select_one("#recommendList").text
         recommend_data = json.loads(recommend_raw)

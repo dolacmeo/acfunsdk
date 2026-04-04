@@ -15,7 +15,7 @@ from datetime import timedelta
 from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from ..source import AcSource
-from ..exceptions import need_login, not_404
+from ..exceptions import need_login, not_404, TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -81,16 +81,17 @@ class VideoItem:
     def __repr__(self):
         return f"{self.parent}"
 
-    def _get_data_from_quick_view(self) -> (dict, None):
+    def _get_data_from_quick_view(self) -> dict | None:
         param = {"quickViewId": "videoInfo_new", "ajaxpipe": 1}
         page_req = self.acer.client.get(self.referer, params=param)
-        assert page_req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not page_req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("video quickView 响应缺少 fetch-stream 尾标")
         page_data = json.loads(page_req.text[:-25])
         v_script = match1(page_data['html'].replace(" ", ""), r"videoInfo=((?=\{)[^\s]*(?<=\}));?")
         video_data = json.loads(v_script)
         return video_data.get("currentVideoInfo")
 
-    def _get_data_from_api(self) -> (dict, None):
+    def _get_data_from_api(self) -> dict | None:
         param = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type,
@@ -98,20 +99,23 @@ class VideoItem:
         }
         api_req = self.acer.client.get(AcSource.apis['video_ksplay'], params=param)
         api_data = api_req.json()
-        assert api_data.get('result') == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"video_ksplay result={api_data.get('result')!r}")
         return api_data.get("playInfo")
 
     @property
     def quality(self) -> list:
         return self.raw_data.get("transcodeInfos", [])
 
-    def m3u8_url(self, quality: [int, str] = 0, hevc: bool = True, only_url: bool = True) -> (dict, str, None):
+    def m3u8_url(self, quality: int | str = 0, hevc: bool = True, only_url: bool = True) -> dict | str | None:
         if isinstance(quality, int):
-            assert quality in range(len(self.quality))
+            if quality not in range(len(self.quality)):
+                raise ValueError(f"quality index 越界: {quality!r}，共 {len(self.quality)} 档")
         elif isinstance(quality, str):
             quality = quality.lower()
             q_map = {x["qualityType"]: i for i, x in enumerate(self.quality)}
-            assert quality in q_map.keys()
+            if quality not in q_map:
+                raise ValueError(f"未知清晰度: {quality!r}")
             quality = q_map[quality]
         else:
             return None
@@ -129,8 +133,9 @@ class VideoItem:
             return this_quality['url'], this_quality['backupUrl']
         return this_quality
 
-    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = "1080p", hevc: bool = True):
-        assert os.path.exists(potplayer_path)
+    def play(self, potplayer_path: os.PathLike | str, quality: int | str = "1080p", hevc: bool = True):
+        if not os.path.exists(potplayer_path):
+            raise FileNotFoundError(str(potplayer_path))
         adapt = self.m3u8_url(quality, hevc, False)
         qtype = adapt["qualityType"]
         quality_mark = f"{qtype}_HEVC" if hevc is True else qtype
@@ -140,7 +145,7 @@ class VideoItem:
         return subprocess.Popen(cmds, stdout=subprocess.PIPE)
 
     @property
-    def scenes(self) -> (dict, None):
+    def scenes(self) -> dict | None:
         form_data = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type,
@@ -165,7 +170,7 @@ class VideoItem:
         return {"sprite_images": images, "pos": pos_data}
 
     @property
-    def hotspot(self) -> (dict, None):
+    def hotspot(self) -> dict | None:
         form_data = {
             "resourceId": self.parent.resource_id,
             "resourceType": self.parent.resource_type
@@ -204,7 +209,7 @@ class AcDetail:
         "404": "咦？世界线变动了。看看其他内容吧~"
     }
 
-    def __init__(self, acer, rtype: [str, int], rid: [str, int]):
+    def __init__(self, acer, rtype: str | int, rid: str | int):
         self.acer = acer
         self.resource_type = int(rtype)
         self.resource_id = int(rid)
@@ -339,7 +344,8 @@ class AcDetail:
 
     @not_404
     def _banana(self, count: int):
-        assert 1 >= count >= 5
+        if not (1 <= count <= 5):
+            raise ValueError(f"投蕉数量须在 1～5 之间: {count!r}")
         return self.acer.throw_banana(self.resource_type, self.resource_id, count)
 
     @not_404
@@ -354,7 +360,7 @@ class B64s:
     EN_TRANS = STANDARD
     DE_TRANS = STANDARD
 
-    def __init__(self, s: [bytes, bytearray], n: [int, None] = None):
+    def __init__(self, s: bytes | bytearray, n: int | None = None):
         self.raw = s
         if isinstance(n, int):
             n = n % 64
@@ -377,7 +383,7 @@ def sizeof_fmt(num, suffix="B") -> str:
     return f"{num:.1f} Yi{suffix}"
 
 
-def match_info(text) -> (dict, None):
+def match_info(text) -> dict | None:
     rex = re.compile(r"(?P<title>.*)\r"
                      r"UP:(?P<up>.*)\r"
                      r"发布于(?P<createTime>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
@@ -461,22 +467,27 @@ def emoji_cleanup(text) -> str:
 def image_uploader(client, image_data: bytes, ext: str = 'jpeg') -> str:
     token_req = client.post(AcSource.apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
     token_data = token_req.json()
-    assert token_data.get('result') == 0
+    if token_data.get("result") != 0:
+        raise TingBuDong(f"image_upload_gettoken result={token_data.get('result')!r}")
     resume_req = client.get(AcSource.apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
     resume_data = resume_req.json()
-    assert resume_data.get('result') == 1
+    if resume_data.get("result") != 1:
+        raise TingBuDong(f"image_upload_resume result={resume_data.get('result')!r}")
     fragment_req = client.post(AcSource.apis['image_upload_fragment'], data=image_data,
                                params=dict(upload_token=token_data['info']['token'], fragment_id=0),
                                headers={"Content-Type": "application/octet-stream"})
     fragment_data = fragment_req.json()
-    assert fragment_data.get('result') == 1
+    if fragment_data.get("result") != 1:
+        raise TingBuDong(f"image_upload_fragment result={fragment_data.get('result')!r}")
     complete_req = client.post(AcSource.apis['image_upload_complete'],
                                params=dict(upload_token=token_data['info']['token'], fragment_count=1))
     complete_data = complete_req.json()
-    assert complete_data.get('result') == 1
+    if complete_data.get("result") != 1:
+        raise TingBuDong(f"image_upload_complete result={complete_data.get('result')!r}")
     result_req = client.post(AcSource.apis['image_upload_geturl'], data=dict(token=token_data['info']['token']))
     result_data = result_req.json()
-    assert result_data.get('result') == 0
+    if result_data.get("result") != 0:
+        raise TingBuDong(f"image_upload_geturl result={result_data.get('result')!r}")
     return result_data.get('url')
 
 
@@ -498,7 +509,7 @@ def thin_string(_string: str, no_break: bool = False) -> str:
     return " ↲ ".join(final_str)
 
 
-def warp_mix_chars(_string: str, lens: int = 40, border: [tuple, None] = None) -> (str, list):
+def warp_mix_chars(_string: str, lens: int = 40, border: tuple | None = None) -> str | list:
     output = list()
     tmp_string = ""
     tmp_count = 0
@@ -542,7 +553,7 @@ def url_complete(url) -> str:
     return url
 
 
-def get_dict_value_in_path(data: dict, path: [str, list], default=None):
+def get_dict_value_in_path(data: dict, path: str | list, default=None):
     if isinstance(path, str):
         path = path.split('.')
     inside = data

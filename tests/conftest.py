@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from acfunsdk import Acer
+from acfunsdk.exceptions import TingBuDong
 
 
 @pytest.fixture
@@ -58,5 +59,5 @@ def acer_logged_in(
     monkeypatch.chdir(acfun_cookie_dir)
     try:
         return Acer(loading=acfun_authenticated_username)
-    except AssertionError as exc:
+    except (AssertionError, TingBuDong) as exc:
         pytest.skip(f"Acer(loading=…) failed (expired or invalid cookies?): {exc}")

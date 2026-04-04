@@ -39,8 +39,8 @@ class AcPagelet:
         if isinstance(pagelet_data, Tag):
             self.pagelet_id = str(pagelet_data.attrs['id'])
             self.pagelet_obj = pagelet_data
-            assert self.pagelet_id.startswith("pagelet_") or \
-                   self.pagelet_id in ['footer']
+            if not (self.pagelet_id.startswith("pagelet_") or self.pagelet_id in ("footer",)):
+                raise ValueError(f"unexpected pagelet id on Tag: {self.pagelet_id!r}")
         elif isinstance(pagelet_data, dict):
             raw_id = pagelet_data.get('id')
             self.pagelet_id = None if raw_id is None else str(raw_id)
@@ -69,9 +69,11 @@ class AcPagelet:
         data = dict()
         banner_css_text = "\n".join(self.pagelet_raw.get('styles', [])).replace("\n", "")
         banner_css = match1(banner_css_text, r"\.page-top-banner \.banner-pic \{(?P<banner>[^}]*)}")
-        assert banner_css is not None
+        if banner_css is None:
+            return None
         banner_image = match1(banner_css, r"background-image: url\('(?P<image>[^)]*)'\);")
-        assert banner_image is not None
+        if banner_image is None:
+            return None
         data['image'] = banner_image
         data['url'] = self.pagelet_obj.select_one(".page-top-banner > a.banner-pic").attrs['href']
         data['title'] = self.pagelet_obj.select_one(".float-text").text
@@ -111,7 +113,9 @@ class AcPagelet:
         if self.pagelet_id != "pagelet_top_area":
             return None
         data = dict(slider=list(), items=list())
-        for js_data in self.pagelet_raw.get('scripts', [])[0].split('\n'):
+        scripts = self.pagelet_raw.get("scripts") or []
+        first_js = scripts[0] if scripts else ""
+        for js_data in first_js.split("\n"):
             if js_data.strip().startswith("window.sliderData = ["):
                 data['slider'] = json.loads(js_data.strip()[20:-1])
         for video in self.pagelet_obj.select('a.recommend-video.log-item'):
@@ -453,6 +457,12 @@ class AcPagelet:
         return data
 
     def to_dict(self, obj=False) -> dict | None:
+        try:
+            return self._to_dict_impl(obj)
+        except (AttributeError, KeyError, TypeError, IndexError, json.JSONDecodeError):
+            return None
+
+    def _to_dict_impl(self, obj=False) -> dict | None:
         if self.pagelet_id == 'footer':
             return self._footer(obj)
         elif self.pagelet_id in self.pagelet_sp:
@@ -490,7 +500,6 @@ class AcIndex:
     ]
     index_obj = None
     index_pagelets = []
-    nav_data = dict()
 
     def __init__(self, acer=None):
         self.acer = acer
@@ -507,16 +516,21 @@ class AcIndex:
     def _get_pagelet_inner(self, area: str | None = None) -> dict | None:
         datas = dict()
         for js in self.index_obj.select("script"):
-            if js.text.startswith("bigPipe.onPageletArrive"):
-                data = json.loads(js.text[24:-2])
-                datas[data['id']] = data
+            text = js.text or ""
+            if text.startswith("bigPipe.onPageletArrive"):
+                try:
+                    data = json.loads(text[24:-2])
+                    datas[data['id']] = data
+                except (json.JSONDecodeError, KeyError, TypeError):
+                    continue
         datas['footer'] = self.index_obj.select_one('#footer')
         if isinstance(area, str):
             return datas.get(area)
         return datas
 
     def _get_pagelet_api(self, area) -> dict | None:
-        assert area in self.pagelets_from_api
+        if area not in self.pagelets_from_api:
+            raise ValueError(f"unsupported pagelet api area: {area!r}")
         param = {
             "pagelets": area, "reqID": 0, "ajaxpipe": 1,
             "t": str(time.time_ns())[:13]
@@ -526,9 +540,9 @@ class AcIndex:
             return json.loads(req.text[:-25])
         return req.json()
 
-    def nav_list(self) -> dict | None:
+    def nav_list(self) -> list:
         navs = list()
-        for cid in self.acer.nav_data.keys():
+        for cid in self.acer.acfun.nav_data.keys():
             navs.append(self.acer.acfun.AcChannel(cid))
         return navs
 
@@ -541,5 +555,7 @@ class AcIndex:
             raw_data = self._get_pagelet_api(area)
         else:
             raise ValueError('area not support')
+        if raw_data is None:
+            return None
         acp = AcPagelet(self.acer, raw_data)
         return acp.to_dict(obj)

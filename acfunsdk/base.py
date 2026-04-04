@@ -2,15 +2,18 @@
 import os
 import json
 from typing import Literal
-from .page import *
-from .exceptions import need_login
+from packaging.version import Version
 from importlib.metadata import version as pip_version
 from importlib.metadata import PackageNotFoundError
+
+from .page import *
+from .exceptions import need_login, TingBuDong, AcExploded
+
 exts = {}
 try:
-    if pip_version('acsaver') >= "0.1.3":
+    if Version(pip_version("acsaver")) >= Version("0.1.3"):
         from acsaver import AcSaver
-        exts['acsaver'] = True
+        exts["acsaver"] = True
 except PackageNotFoundError:
     pass
 
@@ -76,12 +79,16 @@ class Acer:
 
     def _get_personal(self):
         live_page_req = self.client.get(AcSource.routes['app'])
-        assert live_page_req.status_code // 100 == 2
+        if live_page_req.status_code // 100 != 2:
+            raise AcExploded(
+                f"app 页请求失败 HTTP {live_page_req.status_code}: {AcSource.routes['app']!r}"
+            )
         self.did = live_page_req.cookies.get('_did')
         if self.is_logined:
             api_req = self.client.post(AcSource.apis['token'], data={"sid": "acfun.midground.api"})
             api_data = api_req.json()
-            assert api_data.get('result') == 0
+            if api_data.get("result") != 0:
+                raise TingBuDong(f"midground token API result={api_data.get('result')!r}")
             self.tokens = {
                 "ssecurity": api_data.get("ssecurity", ''),
                 "api_st": api_data.get("acfun.midground.api_st", ''),
@@ -89,7 +96,8 @@ class Acer:
             }
             info_req = self.client.get(AcSource.apis['personalInfo'])
             info_data = info_req.json()
-            assert info_data.get('result') == 0
+            if info_data.get("result") != 0:
+                raise TingBuDong(f"personalInfo API result={info_data.get('result')!r}")
             self.data = info_data.get('info', {})
             self.message = MyMessage(self)
             self.fansclub = MyFansClub(self)
@@ -104,7 +112,8 @@ class Acer:
         else:
             api_req = self.client.post(AcSource.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
             api_data = api_req.json()
-            assert api_data.get('result') == 0
+            if api_data.get("result") != 0:
+                raise TingBuDong(f"visitor token API result={api_data.get('result')!r}")
             self.tokens = {
                 "userId": api_data.get("userId", ""),
                 "ssecurity": api_data.get("acSecurity", ''),
@@ -145,7 +154,7 @@ class Acer:
 
     def logout(self) -> bool:
         self.client.get(AcSource.apis['logout'])
-        self.client = httpx.Client(headers=AcSource.header)
+        self.client = httpx.Client(headers=self.config.get("header", AcSource.header))
         self.is_logined = False
         self.data = dict()
         self.tokens = dict()
@@ -161,7 +170,7 @@ class Acer:
         return True
 
     @need_login
-    def acoin(self) -> (dict, None):
+    def acoin(self) -> dict | None:
         req = self.client.get(AcSource.apis['acoinBalance'])
         data = req.json()
         if data.get('result') == 0:
@@ -185,7 +194,7 @@ class Acer:
     @need_login
     def throw_banana(self, rtype, rid, count: int) -> bool:
         api_req = self.client.post(AcSource.apis['throw_banana'], data={
-            "count": 1 if 1 > count > 5 else count,
+            "count": min(max(count, 1), 5),
             "resourceId": rid,
             "resourceType": rtype
         }, headers={'referer': AcSource.routes['index']})
@@ -220,7 +229,8 @@ class Acer:
         form_data = {"pageNo": page, "pageSize": limit, "resourceTypes": ''}
         api_req = self.client.post(AcSource.apis['history'], data=form_data)
         api_data = api_req.json()
-        assert api_data.get('result') == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"history API result={api_data.get('result')!r}")
         if obj is False:
             return api_data
         objs = list()

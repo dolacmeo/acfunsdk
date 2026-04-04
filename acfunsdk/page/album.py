@@ -1,4 +1,6 @@
 # coding=utf-8
+from __future__ import annotations
+
 from .utils import AcSource, AcDetail, not_404
 
 __author__ = 'dolacmeo'
@@ -7,7 +9,7 @@ __author__ = 'dolacmeo'
 class AcAlbum(AcDetail):
     content_list = list()
 
-    def __init__(self, acer, rid: [str, int]):
+    def __init__(self, acer, rid: str | int):
         if isinstance(rid, str) and rid.startswith('aa'):
             rid = rid[2:]
         self.acer = acer
@@ -77,7 +79,7 @@ class AcAlbum(AcDetail):
             page += 1
 
     @not_404
-    def list(self, obj: bool = False) -> (list, None):
+    def list(self, obj: bool = False) -> list | None:
         if obj is False:
             return self.content_list
         if len(self.content_list) == 0:

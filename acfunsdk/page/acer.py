@@ -1,6 +1,9 @@
 # coding=utf-8
+from __future__ import annotations
+
 from .utils import json, Literal
 from .utils import AcSource
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -17,21 +20,24 @@ class MyFansClub:
     def medal_list(self):
         api_req = self.acer.client.post(AcSource.apis['live_medal_list'])
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"live_medal_list result={api_data.get('result')!r}")
         return api_data.get("medalList")
 
-    def medal_info(self, uid: [str, int]):
+    def medal_info(self, uid: str | int):
         api_req = self.acer.client.post(AcSource.apis['live_medal'], params={"uperId": uid})
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"live_medal result={api_data.get('result')!r}")
         return api_data
 
-    def medal_wear(self, uid: [str, int], on_off: bool):
+    def medal_wear(self, uid: str | int, on_off: bool):
         param = {"uperId": uid}
         on_off = "on" if on_off is True else "off"
         api_req = self.acer.client.post(AcSource.apis[f"live_medal_wear_{on_off}"], params=param)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"live_medal_wear result={api_data.get('result')!r}")
         return api_data
 
 
@@ -60,15 +66,15 @@ class MyFollow:
         form_data = {"action": 4, "groupName": name}
         return self._follow_group_action(form_data)
 
-    def group_rename(self, gid: [int, str], name: str):
+    def group_rename(self, gid: int | str, name: str):
         form_data = {"action": 6, "groupId": gid, "groupName": name}
         return self._follow_group_action(form_data)
 
-    def group_remove(self, gid: [int, str]):
+    def group_remove(self, gid: int | str):
         form_data = {"action": 5, "groupId": gid}
         return self._follow_group_action(form_data)
 
-    def add(self, uid, attention: [bool, None] = None):
+    def add(self, uid, attention: bool | None = None):
         form_data = {"toUserId": uid, "action": 1}
         if attention is True:
             form_data['action'] = 14
@@ -97,18 +103,18 @@ class MyFollow:
 
 
 class MyFavourite:
-    folders = list()
-    default_fid = None
 
     def __init__(self, acer):
         self.acer = acer
+        self.folders: list = []
+        self.default_fid = None
         self.video_groups()
 
     @property
     def referer(self):
         return f"{AcSource.routes['member_favourite']}"
 
-    def add(self, rtype: int, rid: str, fids: [str, None] = None):
+    def add(self, rtype: int, rid: str, fids: str | None = None):
         rtype = {"2": 9}.get(str(rtype), int(rtype))
         form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
@@ -117,7 +123,7 @@ class MyFavourite:
                                     headers={"referer": AcSource.routes['index']})
         return req.json().get('result') == 0
 
-    def cancel(self, rtype: int, rid: str, fids: [str, None] = None):
+    def cancel(self, rtype: int, rid: str, fids: str | None = None):
         rtype = {"2": 9}.get(str(rtype), int(rtype))
         form_data = {"resourceId": rid, "resourceType": rtype}
         if fids is not None or rtype == 9:
@@ -141,19 +147,19 @@ class MyFavourite:
                                         headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
-    def video_group_rename(self, fid: [int, str], name: str):
+    def video_group_rename(self, fid: int | str, name: str):
         form_data = {"folderId": fid, "name": name}
         api_req = self.acer.client.post(AcSource.apis['favorite_group_update'], data=form_data,
                                         headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
-    def video_group_remove(self, fid: [int, str]):
+    def video_group_remove(self, fid: int | str):
         form_data = {"folderId": fid}
         api_req = self.acer.client.post(AcSource.apis['favorite_group_delete'], data=form_data,
                                         headers={"referer": AcSource.routes['index']})
         return api_req.json().get('result') == 0
 
-    def video_list(self, fid: [int, str], page: int = 1, limit: int = 10):
+    def video_list(self, fid: int | str, page: int = 1, limit: int = 10):
         form_data = {"folderId": fid, "page": page, "perpage": limit}
         api_req = self.acer.client.post(AcSource.apis['favorite_video'], data=form_data)
         data = api_req.json()
@@ -170,8 +176,8 @@ class MyFavourite:
         return None
 
     def bangumi_list(self, page: int = 1, limit: int = 10):
-        param = {"page": page, "perpage": limit}
-        api_req = self.acer.client.get(AcSource.apis['favorite_article'], params=param)
+        form_data = {"page": page, "perpage": limit}
+        api_req = self.acer.client.post(AcSource.apis['favorite_bangumi'], data=form_data)
         data = api_req.json()
         if data.get('result') == 0:
             return data.get('favoriteList', [])
@@ -199,7 +205,8 @@ class MyAlbum:
         param = {"size": size, "page": page, "status": 0, "sort": 0}
         api_req = self.acer.client.get(AcSource.apis["my_album_list"], params=param)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"my_album_list result={api_data.get('result')!r}")
         return api_data
 
     def add(self, title: str, rtype: Literal[2, 3], cover: str, intro: str, status: Literal[1, 2]):
@@ -212,15 +219,16 @@ class MyAlbum:
         }
         api_req = self.acer.client.post(AcSource.apis["my_album_add"], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"my_album_add result={api_data.get('result')!r}")
         return api_data.get("arubamuId")
 
-    def remove(self, album_id: [str, int]):
+    def remove(self, album_id: str | int):
         api_req = self.acer.client.post(AcSource.apis["my_album_del"], data={"arubamuId": album_id})
         api_data = api_req.json()
         return api_data.get("result") == 0
 
-    def update(self, album_id: [str, int], title: str, rtype: Literal[2, 3],
+    def update(self, album_id: str | int, title: str, rtype: Literal[2, 3],
                cover: str, intro: str, status: Literal[1, 2]):
         form = {
             "arubamuId": album_id,
@@ -234,14 +242,15 @@ class MyAlbum:
         api_data = api_req.json()
         return api_data.get("result") == 0
 
-    def get_contents(self, album_id: [str, int], page: int = 1, size: int = 10):
+    def get_contents(self, album_id: str | int, page: int = 1, size: int = 10):
         param = {"arubamuId": album_id, "page": page, "size": size}
         api_req = self.acer.client.get(AcSource.apis["my_album_contents"], params=param)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"my_album_contents result={api_data.get('result')!r}")
         return api_data
 
-    def contents_add(self, album_id: [str, int], rtype: Literal[2, 3], rids: [str, list]):
+    def contents_add(self, album_id: str | int, rtype: Literal[2, 3], rids: str | list):
         if isinstance(rids, str):
             rids = rids.split(',')
         rlist = [{"resourceId": x, "resourceType": rtype} for x in rids]
@@ -253,7 +262,7 @@ class MyAlbum:
         api_data = api_req.json()
         return api_data.get("result") == 0
 
-    def contents_del(self, album_id: [str, int], rids: [str, list]):
+    def contents_del(self, album_id: str | int, rids: str | list):
         if isinstance(rids, str):
             rids = rids.split(',')
         form = {
@@ -279,7 +288,7 @@ class MyContribute:
                        page: int = 1,
                        status: str = 'all',
                        sortby: str = 'recently',
-                       keyword: [str, None] = None):
+                       keyword: str | None = None):
         # 我的文章
         status_list = {
             'all': 0,  # 全部
@@ -306,10 +315,10 @@ class MyContribute:
             return api_data.get('feed', [])
         return None
 
-    def my_articles(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
+    def my_articles(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: str | None = None):
         return self._get_my_posted(3, page, status, sortby, keyword)
 
-    def my_videos(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: [str, None] = None):
+    def my_videos(self, page: int = 1, status: str = 'all', sortby: str = 'recently', keyword: str | None = None):
         return self._get_my_posted(2, page, status, sortby, keyword)
 
     def data_center(self, days: int = 1):
@@ -321,7 +330,8 @@ class MyContribute:
 
     def data_center_detail(self, rtype: str, days: int = 1, sortby: str = 'viewCount'):
         rtypes = {'video': 2, 'article': 3, 'live': None}
-        assert rtype in rtypes.keys()
+        if rtype not in rtypes:
+            raise ValueError(f"rtype must be one of {tuple(rtypes)!r}, got {rtype!r}")
         sort_list = {
             "viewCount": "阅读量",
             "commentCount": "评论量",
@@ -329,7 +339,8 @@ class MyContribute:
             "shareCount": "分享量",
             "bananaCount": "投蕉量"
         }
-        assert sortby in sort_list
+        if sortby not in sort_list:
+            raise ValueError(f"sortby must be one of {tuple(sort_list)!r}, got {sortby!r}")
         form_data = {'days': 1 if days < 1 else days}
         if rtype == 'live':
             api_req = self.acer.client.post(AcSource.apis['dataCenter_live'], data=form_data)
@@ -374,7 +385,8 @@ class MyDanmaku:
     def advance_config(self):
         api_req = self.acer.client.post(AcSource.apis['danmaku_config'])
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"danmaku_config result={api_data.get('result')!r}")
         return api_data
 
     def advance_setup(self, n: Literal['1', '2', '3', '4', 1, 2, 3, 4]):
@@ -392,7 +404,8 @@ class MyDanmaku:
     def forbidden_words(self):
         api_req = self.acer.client.post(AcSource.apis['ban_danmaku'])
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"ban_danmaku result={api_data.get('result')!r}")
         return api_data.get("data")
 
     def forbidden_add(self, words: str):
@@ -407,9 +420,9 @@ class MyDanmaku:
 
     def advance_list(self,
                      page: int = 1,
-                     ac_num: [int, str, None] = None,
-                     vid: [int, str, None] = None,
-                     search: [str, None] = None):
+                     ac_num: int | str | None = None,
+                     vid: int | str | None = None,
+                     search: str | None = None):
         form = {
             "dougaId": ac_num or "",
             "videoId": vid or "",
@@ -418,14 +431,15 @@ class MyDanmaku:
         }
         api_req = self.acer.client.post(AcSource.apis['search_danmaku_adv'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"search_danmaku_adv result={api_data.get('result')!r}")
         return api_data
 
     def danmaku_list(self,
                      page: int = 1,
-                     ac_num: [int, str, None] = None,
-                     vid: [int, str, None] = None,
-                     search: [str, None] = None):
+                     ac_num: int | str | None = None,
+                     vid: int | str | None = None,
+                     search: str | None = None):
         form = {
             "dougaId": ac_num or "",
             "videoId": vid or "",
@@ -434,10 +448,11 @@ class MyDanmaku:
         }
         api_req = self.acer.client.post(AcSource.apis['search_danmaku'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"search_danmaku result={api_data.get('result')!r}")
         return api_data
 
-    def danmaku_protect(self, ac_num: [int, str], danmaku_id: [int, str], on_off: bool = True):
+    def danmaku_protect(self, ac_num: int | str, danmaku_id: int | str, on_off: bool = True):
         form = {
             "videoResourceType": "douga",
             "videoResourceId": ac_num,
@@ -446,14 +461,16 @@ class MyDanmaku:
         }
         api_req = self.acer.client.post(AcSource.apis['protect_danmaku'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"protect_danmaku result={api_data.get('result')!r}")
         return api_data
 
-    def danmaku_del(self, danmaku_ids: [int, str]):
+    def danmaku_del(self, danmaku_ids: int | str):
         form = {"danmakuIdList": str(danmaku_ids)}
         api_req = self.acer.client.post(AcSource.apis['delete_danmaku'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"delete_danmaku result={api_data.get('result')!r}")
         return api_data
 
 
@@ -470,14 +487,16 @@ class BananaMall:
         form = {"pageNo": page, "pageSize": size, "sortType": stype, "asc": asc}
         api_req = self.acer.client.post(AcSource.apis['shop_list'], data=form)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"shop_list result={api_data.get('result')!r}")
         return api_data
 
     def my_items(self, page: int = 1, size: int = 30):
         param = {"page": page, "count": size}
         api_req = self.acer.client.get(AcSource.apis['shop_user_item'], params=param)
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"shop_user_item result={api_data.get('result')!r}")
         return api_data
 
     def set_item(self, pid: int, on_off: bool = True):

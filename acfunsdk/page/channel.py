@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import json, time, Bs
 from .utils import AcSource, match1
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -34,7 +35,7 @@ class BlockContent:
     def contentCount(self):
         return self.raw_data.get('contentCount')
 
-    def list(self, obj: bool = True) -> (dict, None):
+    def list(self, obj: bool = True) -> dict | None:
         if obj is False:
             return self.raw_data.get('webContents')
         data_list = list()
@@ -70,7 +71,7 @@ class ChannelBlock:
     def __repr__(self):
         return f"AcBlock(#{self.blockType} {self.name})"
 
-    def list(self, obj: bool = True) -> (dict, None):
+    def list(self, obj: bool = True) -> dict | None:
         if obj is False:
             return self.raw_data.get('content', [])
         return [BlockContent(self.acer, content) for content in self.raw_data.get('content', [])]
@@ -146,7 +147,7 @@ class AcChannel:
             return False
         self.raw_data = json.loads(json_text)
 
-    def hot_words(self) -> (dict, None):
+    def hot_words(self) -> dict | None:
         if not self.is_main:
             return None
         return self.raw_data['channel']['hotWordList']
@@ -167,7 +168,7 @@ class AcChannel:
             sub_cid = int(self.cid)
         return self.acer.acfun.AcRank(cid, sub_cid, limit, date_range=date_range)
 
-    def articles(self) -> (dict, None):
+    def articles(self) -> dict | None:
         if self.ctype != 'wen':
             return None
         if self.cid == '63':
@@ -179,10 +180,10 @@ class AcChannel:
 
     def videos(self,
                page: int = 1,
-               sortby: [str, None] = None,
-               duration: [str, None] = None,
-               datein: [str, None] = None,
-               obj: bool = True) -> (dict, None):
+               sortby: str | None = None,
+               duration: str | None = None,
+               datein: str | None = None,
+               obj: bool = True) -> dict | None:
         if self.ctype != 'videos':
             return None
         sortby_list = {
@@ -193,7 +194,8 @@ class AcChannel:
             "bananaCount": "投蕉最多",
             "danmakuCount": "弹幕最多"
         }
-        assert sortby in sortby_list or sortby is None
+        if sortby is not None and sortby not in sortby_list:
+            raise ValueError(f"sortby 无效: {sortby!r}")
         duration_list = {
             "all": "全部",
             "0,5": "5分钟以下",
@@ -201,7 +203,8 @@ class AcChannel:
             "30,60": "30-60分钟",
             "60,": "60分钟以上"
         }
-        assert duration in duration_list or duration is None
+        if duration is not None and duration not in duration_list:
+            raise ValueError(f"duration 无效: {duration!r}")
         datein_list = {
             "default": "近三个月",
             "20200101,20210101": "2020",
@@ -213,7 +216,8 @@ class AcChannel:
             "20100101,20150101": "2014-2010",
             ",20100101": "更早",
         }
-        assert datein in datein_list or datein is None
+        if datein is not None and datein not in datein_list:
+            raise ValueError(f"datein 无效: {datein!r}")
         api_req = self.acer.client.get(self.referer, params={
             "sortField": "rankScore" if sortby is None else sortby,
             "duration": "all" if duration is None else duration,
@@ -224,7 +228,8 @@ class AcChannel:
             "ajaxpipe": 1,
             "t": str(time.time_ns())[:13]
         })
-        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not api_req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("栏目视频列表响应缺少 fetch-stream 尾标")
         api_data = json.loads(api_req.text[:-25])
         api_obj = Bs(api_data.get('html', ''), 'lxml')
         v_datas = list()

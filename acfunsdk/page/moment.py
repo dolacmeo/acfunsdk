@@ -6,7 +6,7 @@ __author__ = 'dolacmeo'
 
 class AcMoment(AcDetail):
 
-    def __init__(self, acer, rid: [str, int]):
+    def __init__(self, acer, rid: str | int):
         if isinstance(rid, str) and rid.startswith('am'):
             rid = rid[2:]
         self.acer = acer
@@ -105,7 +105,7 @@ class MyMoment:
             return True
         return False
 
-    def feed(self, limit: int = 10, obj: bool = False, refresh: bool = False) -> (dict, None):
+    def feed(self, limit: int = 10, obj: bool = False, refresh: bool = False) -> dict | None:
         if refresh is True:
             self.cursor = "0"
             self.moment_data = list()

@@ -6,7 +6,7 @@ __author__ = 'dolacmeo'
 
 class AcArticle(AcDetail):
 
-    def __init__(self, acer, rid: [str, int]):
+    def __init__(self, acer, rid: str | int):
         if isinstance(rid, str) and rid.startswith('ac'):
             rid = rid[2:]
         super().__init__(acer, 3, rid)
@@ -41,7 +41,7 @@ class AcArticle(AcDetail):
         return f"AcArticle([ac{self.resource_id}]{self.title}{user_txt})".encode(errors='replace').decode()
 
     @not_404
-    def recommends(self, obj: bool = False) -> (dict, None):
+    def recommends(self, obj: bool = False) -> dict | None:
         articles = list()
         for item in self.page_obj.select('#main > section.area > .content > .fr > .contribution.weblog-item'):
             this_url = item.select_one('.contb-title a').attrs['href']
@@ -59,13 +59,13 @@ class AcArticle(AcDetail):
                 articles.append(data)
         return articles
 
-    def AcWen(self) -> (object, None):
+    def AcWen(self) -> object | None:
         if self.is_404:
             return None
         rid = self.raw_data.get("realm", {}).get("realmId")
         return AcWen(self.acer, [rid])
 
-    def AcChannel(self) -> (object, None):
+    def AcChannel(self) -> object | None:
         if self.is_404:
             return None
         cid = self.raw_data.get("channel", {}).get('id')
@@ -82,16 +82,18 @@ class AcWen:
     article_data = list()
 
     def __init__(self, acer,
-                 realmIds: [list, None] = None,
+                 realmIds: list | None = None,
                  sortType: str = "createTime",
                  timeRange: str = "all",
                  onlyOriginal: bool = False,
                  limit: int = 10):
         self.acer = acer
         self.realmIds = realmIds
-        assert sortType in ['createTime', 'lastCommentTime', 'hotScore']
+        if sortType not in ('createTime', 'lastCommentTime', 'hotScore'):
+            raise ValueError(f"sortType 无效: {sortType!r}")
         self.sortType = sortType
-        assert timeRange in ['all', 'oneDay', 'threeDay', 'oneWeek', 'oneMonth']
+        if timeRange not in ('all', 'oneDay', 'threeDay', 'oneWeek', 'oneMonth'):
+            raise ValueError(f"timeRange 无效: {timeRange!r}")
         self.timeRange = timeRange
         self.onlyOriginal = onlyOriginal
         self.limit = limit
@@ -100,7 +102,7 @@ class AcWen:
     def referer(self):
         return f"{AcSource.routes['index']}/v/list63/index.htm"
 
-    def feed(self, obj: bool = True) -> (dict, None):
+    def feed(self, obj: bool = True) -> dict | None:
         if self.cursor == 'no_more':
             return None
         form_data = {

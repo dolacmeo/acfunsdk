@@ -26,7 +26,6 @@ __author__ = 'dolacmeo'
 
 
 class AcFun:
-    nav_data = dict()
     channel_data = AcSource.channel_data
     AcInfo = AcInfo
     AcReport = AcReport
@@ -36,6 +35,7 @@ class AcFun:
 
     def __init__(self, acer):
         self.acer = acer
+        self.nav_data: dict = {}
         self.cdn_domain = self.acer.client.post(AcSource.apis['cdn_domain'], headers={
             "referer": AcSource.routes['index']}).json().get('domain')
         self._get_nav()
@@ -82,7 +82,7 @@ class AcFun:
         return AcBangumiList(self.acer)
 
     def AcWen(self,
-              realm_ids: [list, None] = None,
+              realm_ids: list | None = None,
               sort_type: str = "createTime",
               time_range: str = "all",
               only_original: bool = False,
@@ -90,13 +90,13 @@ class AcFun:
         return AcWen(self.acer, realm_ids, sort_type, time_range, only_original, limit)
 
     def AcRank(self,
-               cid: [int, None] = None,
-               sub_cid: [int, None] = None,
+               cid: int | None = None,
+               sub_cid: int | None = None,
                limit: int = 50,
-               date_range: [str, None] = None) -> object:
+               date_range: str | None = None) -> object:
         return AcRank(self.acer, cid, sub_cid, limit, date_range)
 
-    def AcSearch(self, keyword: [str, None] = None, s_type: [str, None] = None) -> object:
+    def AcSearch(self, keyword: str | None = None, s_type: str | None = None) -> object:
         return AcSearch(self.acer, keyword, s_type)
 
     def AcUp(self, uid) -> object:
@@ -145,10 +145,11 @@ class AcFun:
         return AcLink(self.acer, url, title)
 
     def resource(self, rtype: int, rid: int) -> object:
-        assert str(rtype) in resource_type_map.keys()
+        if str(rtype) not in resource_type_map:
+            raise ValueError(f"不支持的 resource type: {rtype!r}")
         return getattr(self, resource_type_map[str(rtype)])(rid)
 
-    def get(self, url_str: str, title=None) -> (object, None):
+    def get(self, url_str: str, title=None) -> object | None:
         # 统一换成HTTPS协议
         if url_str.startswith("http://"):
             url_str = url_str.replace("http://", "https://")

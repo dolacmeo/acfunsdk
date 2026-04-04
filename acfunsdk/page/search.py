@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import json, time, parse, Bs
 from .utils import AcSource
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -20,14 +21,15 @@ class AcSearch:
         'album': 'album-list',
     }
 
-    def __init__(self, acer, keyword: [str, None] = None, s_type: [str, None] = None):
+    def __init__(self, acer, keyword: str | None = None, s_type: str | None = None):
         self.acer = acer
         self._get_keywords()
         if keyword is None and 'searchKeywords' in self.hot_keywords:
             self.keyword = self.hot_keywords['searchKeywords'][0].get('keyword')
         else:
             self.keyword = keyword
-        assert self.keyword
+        if not self.keyword:
+            raise ValueError("搜索关键词不能为空（未传入 keyword 且无默认热词）")
         if s_type in self.search_types:
             self.search_type = s_type
         else:
@@ -57,7 +59,8 @@ class AcSearch:
             "t": str(time.time_ns())[:13],
         }
         api_req = self.acer.client.get(AcSource.apis['search'], params=param)
-        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not api_req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("搜索 ajax 响应缺少 fetch-stream 尾标")
         self.reqID += 1
         self.result_raw = json.loads(api_req.text[:-25])
         self.result_obj = Bs(self.result_raw.get('html', ''), 'lxml')
@@ -68,7 +71,7 @@ class AcSearch:
         if api_data.get('result') == 0:
             self.hot_keywords = api_data
 
-    def page(self, num=1, sortby: int = 1, channel_id: int = 0) -> (list, None):
+    def page(self, num=1, sortby: int = 1, channel_id: int = 0) -> list | None:
         self._get_data(num, sortby, channel_id)
         item_data = list()
         for item in self.result_obj.select('[class^=search-]'):

@@ -1,13 +1,14 @@
 # coding=utf-8
 from .utils import json, math, time, parse, Bs, Literal
 from .utils import AcSource, AcDetail, not_404, match1
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
 
 class AcBangumi(AcDetail):
 
-    def __init__(self, acer, rid: [str, int]):
+    def __init__(self, acer, rid: str | int):
         if isinstance(rid, str):
             if rid.startswith('aa'):
                 rid = rid[2:]
@@ -17,7 +18,8 @@ class AcBangumi(AcDetail):
 
     @not_404
     def video(self, index: int = 0):
-        assert index in range(len(self.episode_data))
+        if index not in range(len(self.episode_data)):
+            raise IndexError(f"分集索引越界: {index!r}，共 {len(self.episode_data)} 集")
         vid = self.episode_data[index]
         ends = f"_36188_{vid['videoId']}" if index > 0 else ""
         title = "" if len(self.episode_data) == 1 else vid['episodeName']
@@ -66,12 +68,13 @@ class AcBangumi(AcDetail):
             seasons.append(AcBangumi(self.acer, x['id']))
         return seasons
 
-    def get_part_list(self, aa_num: [None, str] = None):
+    def get_part_list(self, aa_num: str | None = None):
         if aa_num is None:
             return self.bangumi_list.get("items", [])
         param = {"quickViewId": "pagelet_partlist", "ajaxpipe": 1}
         api_req = self.acer.client.get(f"{AcSource.routes['bangumi']}{aa_num}", params=param)
-        assert api_req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not api_req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("番剧 partlist 响应缺少 fetch-stream 尾标")
         api_data = json.loads(api_req.text[:-25])
         v_script = match1(api_data['html'].replace(" ", ""), r"partsData=((?=\{)[^\s]*(?<=\}))\<\/script\>")
         part_list = json.loads(v_script)
@@ -109,7 +112,7 @@ class AcBangumiList:
         firsts = sorted(firsts, key=lambda i: i[0])
         self.default_filter = ",".join([n[1] for n in firsts])
 
-    def _filter_check(self, filters: [str, list]):
+    def _filter_check(self, filters: str | list):
         filters = filters.split(",") if isinstance(filters, str) else filters
         if len(filters) != len(self.menu_filter):
             return False
@@ -119,7 +122,7 @@ class AcBangumiList:
                 return False
         return True
 
-    def tans_filters(self, words: [str, list]) -> (str, bool):
+    def tans_filters(self, words: str | list) -> str | bool:
         filters = words.split(",") if isinstance(words, str) else words
         if len(filters) != len(self.menu_filter):
             return False
@@ -142,7 +145,7 @@ class AcBangumiList:
             page = int(param['pageNum'][0])
         return self.page(filters, page, obj)
 
-    def page(self, filters: [str, list, None] = None, page: int = 1, obj: bool = False) -> (dict, None):
+    def page(self, filters: str | list | None = None, page: int = 1, obj: bool = False) -> dict | None:
         filters = self.default_filter if filters is None else filters
         if self._filter_check(filters) is False:
             return None

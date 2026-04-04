@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import time
 from .utils import AcSource, need_login
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -20,7 +21,7 @@ class AcComment:
     commentIds = list()
     commentsMap = dict()
 
-    def __init__(self, acer, rtype: [str, int], rid: [str, int]):
+    def __init__(self, acer, rtype: str | int, rid: str | int):
         self.acer = acer
         self.sourceId = str(rid)
         self.sourceType = self.resource_type_map[str(rtype)]
@@ -34,7 +35,8 @@ class AcComment:
         return self.main.referer
 
     def _get_data(self, page: int = 1, api_name: str = 'comment'):
-        assert api_name in ['comment', 'comment_floor']
+        if api_name not in ('comment', 'comment_floor'):
+            raise ValueError(f"api_name 无效: {api_name!r}")
         param = {
             "sourceId": self.sourceId,
             "sourceType": self.sourceType,
@@ -59,7 +61,7 @@ class AcComment:
         req = self.acer.client.get(AcSource.apis['comment_subs'], params=param)
         return req.json()
 
-    def get_all_comments(self, limit: [None, int] = None):
+    def get_all_comments(self, limit: int | None = None):
         self.hot_comments = list()
         self.root_comments = list()
         self.sub_comments = dict()
@@ -95,7 +97,7 @@ class AcComment:
                     sub_data['pcursor'] = "no_more"
                 time.sleep(0.1)
 
-    def get_all_floors(self, limit: [None, int] = None):
+    def get_all_floors(self, limit: int | None = None):
         first_page = self._get_data(1, 'comment_floor')
         self.commentIds = first_page['commentIds']
         self.commentsMap = first_page['commentsMap']
@@ -107,13 +109,14 @@ class AcComment:
                     break
             page += 1
             api_data = self._get_data(page, 'comment_floor')
-            assert api_data['result'] == 0
+            if api_data.get('result') != 0:
+                raise TingBuDong(f"comment_floor page={page} result={api_data.get('result')!r}")
             self.commentIds.extend(api_data['commentIds'])
             self.commentsMap.update(api_data['commentsMap'])
             time.sleep(0.5)
 
     @need_login
-    def add(self, content: str, reply_id: [str, int, None] = None):
+    def add(self, content: str, reply_id: str | int | None = None):
         form_data = {
             "sourceId": self.sourceId,
             "sourceType": self.sourceType,
@@ -153,7 +156,7 @@ class AcComment:
                 return Comment(self.acer, x, self)
         return None
 
-    def find(self, cid: [int, str]):
+    def find(self, cid: int | str):
         for x in self.root_comments:
             if x['commentId'] == int(cid):
                 return Comment(self.acer, x, self)

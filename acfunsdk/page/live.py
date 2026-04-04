@@ -1,6 +1,9 @@
 # coding=utf-8
+from __future__ import annotations
+
 from .utils import os, json, time, subprocess, parse
 from .utils import AcSource, need_login, emoji_cleanup
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -26,7 +29,7 @@ class AcLive:
             self.raw_data = api_req.json()
             self.last_update = time.time()
 
-    def list(self, obj: bool = False) -> (list, None):
+    def list(self, obj: bool = False) -> list | None:
         self._get_list()
         if obj is False:
             return self.raw_data.get("liveList")
@@ -35,7 +38,7 @@ class AcLive:
             lives.append(AcLiveUp(self.acer, x.get('authorId'), x))
         return lives
 
-    def get(self, uid: [int, str]):
+    def get(self, uid: int | str):
         return AcLiveUp(self.acer, uid)
 
 
@@ -83,8 +86,9 @@ class LiveItem:
         create_time = self.raw_data.get('liveStartTime', 0) // 1000
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(create_time))
 
-    def m3u8_url(self, quality: [int, str] = -1, only_url: bool = True):
-        assert self.is_open is True
+    def m3u8_url(self, quality: int | str = -1, only_url: bool = True):
+        if self.is_open is not True:
+            raise RuntimeError("直播未开启或当前不可播放")
         if quality == -1:
             for x in self.representation:
                 if x['defaultSelect'] is True:
@@ -96,9 +100,11 @@ class LiveItem:
                 return self.representation[quality]['url']
             return self.representation[quality]
 
-    def play(self, potplayer_path: [os.PathLike, str], quality: [int, str] = -1):
-        assert self.is_open is True
-        assert os.path.exists(potplayer_path)
+    def play(self, potplayer_path: os.PathLike | str, quality: int | str = -1):
+        if self.is_open is not True:
+            raise RuntimeError("直播未开启或当前不可播放")
+        if not os.path.exists(potplayer_path):
+            raise FileNotFoundError(str(potplayer_path))
         adapt = self.m3u8_url(quality, False)
         player_title = f'"{self.start_time}|{self.parent}{self.title}-{adapt["name"]}"'.replace(" ", '')
         cmds = [potplayer_path, adapt['url'], "/title", emoji_cleanup(player_title)]
@@ -112,7 +118,7 @@ class AcLiveUp:
     report_data = dict()
     live = None
 
-    def __init__(self, acer, uid: [int, str]):
+    def __init__(self, acer, uid: int | str):
         self.acer = acer
         self.uid = uid
         self.AcUp = self.acer.acfun.AcUp(self.uid)
@@ -225,7 +231,8 @@ class AcLiveUp:
     def medal_info(self):
         api_req = self.acer.client.post(AcSource.apis['live_medal'], params={"uperId": self.uid})
         api_data = api_req.json()
-        assert api_data.get("result") == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"live_medal result={api_data.get('result')!r}")
         return api_data
 
     def push_danmaku(self, content: str):
@@ -315,7 +322,8 @@ class AcLiveUp:
 
     @need_login
     def _get_report_data(self, sub_biz: str):
-        assert sub_biz in ['liveStream', 'liveStreamAudience']
+        if sub_biz not in ('liveStream', 'liveStreamAudience'):
+            raise ValueError(f"sub_biz 必须是 liveStream / liveStreamAudience: {sub_biz!r}")
         api_name = {
             'liveStream': "live_report_h0",
             'liveStreamAudience': "live_report_a0"
@@ -331,7 +339,8 @@ class AcLiveUp:
         data = self.acer.update_token(data)
         api_req = self.acer.client.post(AcSource.apis[api_name[sub_biz]], params=data, json=data)
         api_data = api_req.json()
-        assert api_data.get("result") == 1
+        if api_data.get("result") != 1:
+            raise TingBuDong(f"live_report config result={api_data.get('result')!r}")
         config = json.loads(api_data.get('json'))
         options = list()
         for x in config['config']['props']['children']:
@@ -341,7 +350,7 @@ class AcLiveUp:
             options.append({'id': option_id, 'key': key, 'text': text})
         return options
 
-    def _report_req(self, sub_biz: str, code: int, reason: [str, None] = None):
+    def _report_req(self, sub_biz: str, code: int, reason: str | None = None):
         api_name = {
             'liveStream': "live_report_h1",
             'liveStreamAudience': "live_report_a1"
@@ -366,13 +375,15 @@ class AcLiveUp:
         return api_data
 
     @need_login
-    def report_host(self, code: int, reason: [str, None] = None):
+    def report_host(self, code: int, reason: str | None = None):
         codes = [i['id'] for i in self.report_data['host']]
-        assert code in codes
+        if code not in codes:
+            raise ValueError(f"code 不在主播举报码表内: {code!r}")
         return self._report_req('liveStream', code, reason)
 
     @need_login
-    def report_audience(self, code: int, reason: [str, None] = None):
+    def report_audience(self, code: int, reason: str | None = None):
         codes = [i['id'] for i in self.report_data['audience']]
-        assert code in codes
+        if code not in codes:
+            raise ValueError(f"code 不在观众举报码表内: {code!r}")
         return self._report_req('liveStreamAudience', code, reason)

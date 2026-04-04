@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import httpx, Bs, json
 from .utils import AcSource, VideoItem, url_complete
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -16,7 +17,7 @@ class AcLink:
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcLink({self.title or ''}{show_link})"
 
-    def container(self) -> (object, None):
+    def container(self) -> object | None:
         return self.acer.get(self.url)
 
 
@@ -32,7 +33,7 @@ class AcImage:
         show_link = f" >> {self.url}" if self.url else ""
         return f"AcImg({self.name}[{self.src}]{show_link})"
 
-    def container(self) -> (object, None):
+    def container(self) -> object | None:
         return self.acer.get(self.url)
 
 
@@ -51,7 +52,8 @@ class AcHelp:
     def loading(self):
         tab_req = httpx.post(AcSource.apis['feedback_tab'], json={"appType": "acfun_m"})
         tab_data = tab_req.json()
-        assert tab_data.get("result") == 1
+        if tab_data.get("result") != 1:
+            raise TingBuDong(f"feedback_tab result={tab_data.get('result')!r}")
         for x in tab_data.get("tabFaqs", []):
             if x['tab'] == 'all':
                 self.category = {str(c['id']): c for c in x['faqs']}
@@ -64,14 +66,16 @@ class AcHelp:
         children_req = httpx.post(AcSource.apis['feedback_children'],
                                   json={"appType": "acfun_m", "parentId": parent_id})
         children_data = children_req.json()
-        assert children_data.get("result") == 1
+        if children_data.get("result") != 1:
+            raise TingBuDong(f"feedback_children result={children_data.get('result')!r}")
         return children_data.get("children")
 
     def get(self, question_id: str):
         question_req = httpx.post(AcSource.apis['feedback_question'],
                                   json={"appType": "acfun_m", "questionId": question_id})
         question_data = question_req.json()
-        assert question_data.get("result") == 1
+        if question_data.get("result") != 1:
+            raise TingBuDong(f"feedback_question result={question_data.get('result')!r}")
         return question_data
 
 
@@ -156,14 +160,20 @@ class AcReport:
 
     @staticmethod
     def submit(url: str, rtype: str, rid: str, uid: str, crime: str, proof: str, description: str):
-        assert int(rtype) in [1, 2, 3, 4, 5, 6, 8, 10]
+        if int(rtype) not in (1, 2, 3, 4, 5, 6, 8, 10):
+            raise ValueError(f"rtype 不在允许范围: {rtype!r}")
         crimes = ['色情', '血腥', '暴力', '猎奇', '政治', '辱骂', '广告', '挖坟', '剧透', '其他',
                   '话题不符', '少儿不宜', '未成年不良信息']
-        assert int(crime) in range(1, len(crimes) + 1)
-        assert uid.isdigit()
-        assert len(url) >= 5
-        assert len(proof) >= 5
-        assert len(description) >= 5
+        if int(crime) not in range(1, len(crimes) + 1):
+            raise ValueError(f"crime 编号无效: {crime!r}")
+        if not uid.isdigit():
+            raise ValueError("uid 须为数字字符串")
+        if len(url) < 5:
+            raise ValueError("url 长度过短")
+        if len(proof) < 5:
+            raise ValueError("proof 长度过短")
+        if len(description) < 5:
+            raise ValueError("description 长度过短")
         form = {
             "url": url,
             "resourceId": rid,
@@ -178,9 +188,12 @@ class AcReport:
 
     @staticmethod
     def feedback(title: str, content: str, tel: str):
-        assert len(title) >= 5
-        assert len(content) >= 5
-        assert len(tel) == 11
+        if len(title) < 5:
+            raise ValueError("title 长度过短")
+        if len(content) < 5:
+            raise ValueError("content 长度过短")
+        if len(tel) != 11:
+            raise ValueError("tel 须为 11 位")
         form = {"title": title, "content": content, "tel": tel}
         api_req = httpx.post(AcSource.apis['feedback'], data=form)
         return api_req.json().get("result") == 0
@@ -376,7 +389,7 @@ class AcScreeningRoom:
                 "list": item_data['list']
             }})
 
-    def _get_data_from_api(self, rtype, rid, vid) -> (dict, None):
+    def _get_data_from_api(self, rtype, rid, vid) -> dict | None:
         param = {
             "resourceId": rid,
             "resourceType": rtype,
@@ -384,13 +397,16 @@ class AcScreeningRoom:
         }
         api_req = self.acer.client.get(AcSource.apis['video_ksplay'], params=param)
         api_data = api_req.json()
-        assert api_data.get('result') == 0
+        if api_data.get("result") != 0:
+            raise TingBuDong(f"screening video_ksplay result={api_data.get('result')!r}")
         return api_data.get("playInfo")
 
     def get_video(self, key: str, num: int):
-        assert key in self.raw_data
+        if key not in self.raw_data:
+            raise KeyError(f"未知放映单 key: {key!r}")
         main_data = self.raw_data[key]
-        assert num in range(len(main_data['list']))
+        if num not in range(len(main_data['list'])):
+            raise IndexError(f"序号越界: {num!r}，列表长 {len(main_data['list'])}")
         item_data = main_data['list'][num]
         if "bangumiId" in item_data:
             parent = self.acer.acfun.resource(1, item_data['bangumiId'])

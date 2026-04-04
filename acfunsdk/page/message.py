@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import re, json, time, Bs
 from .utils import AcSource, thin_string
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -152,7 +153,8 @@ class MyMessage:
 
     def _get_msg_api(self, vid: str = '', page: int = 1):
         vids = ['', 'like', 'atmine', 'gift', 'sysmsg', 'resmsg']
-        assert vid in vids
+        if vid not in vids:
+            raise ValueError(f"vid 必须是 {vids} 之一: {vid!r}")
         self.req_count += 1
         param = {
             "quickViewId": 'upCollageMain',

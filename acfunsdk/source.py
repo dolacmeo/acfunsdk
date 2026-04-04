@@ -1,12 +1,11 @@
 # coding=utf-8
 # LastCheck: 2022/08/16
-from dataclasses import dataclass
 
 __author__ = 'dolacmeo'
 
 
-@dataclass(frozen=True)
 class AcSource:
+    """URL、域名与接口路径等静态配置命名空间（按类属性使用，非典型 dataclass 实例）。"""
     header = {
         "Referer":          "https://www.acfun.cn/",
         "accept-encoding":  "gzip, deflate, br",

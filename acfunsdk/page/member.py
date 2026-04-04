@@ -1,6 +1,7 @@
 # coding=utf-8
 from .utils import json, time, Bs
 from .utils import AcSource
+from ..exceptions import TingBuDong
 
 __author__ = 'dolacmeo'
 
@@ -18,7 +19,7 @@ class AcUp:
     followed_count = None
     is_404 = False
 
-    def __init__(self, acer, uid: [str, int], up_data: [dict, None] = None):
+    def __init__(self, acer, uid: str | int, up_data: dict | None = None):
         self.uid = int(uid)
         self.raw_data = dict() if up_data is None else up_data
         self.acer = acer
@@ -69,7 +70,7 @@ class AcUp:
     def AcLive(self) -> object:
         return self.acer.acfun.AcLiveUp(self.uid)
 
-    def follow_add(self, attention: [bool, None] = None):
+    def follow_add(self, attention: bool | None = None):
         return self.acer.follow_add(self.uid, attention)
 
     def follow_remove(self):
@@ -77,9 +78,11 @@ class AcUp:
 
     def _get_data(self, viewer, page, limit, orderby) -> dict:
         viewers = ['video', 'article', 'album', 'following', 'followed']
-        assert viewer in viewers
+        if viewer not in viewers:
+            raise ValueError(f"viewer 无效: {viewer!r}")
         orders = ['newest', 'hotest']
-        assert orderby in orders
+        if orderby not in orders:
+            raise ValueError(f"orderby 无效: {orderby!r}")
         param = {
             "reqID": viewers.index(viewer) + 1,
             "ajaxpipe": 1,
@@ -93,7 +96,8 @@ class AcUp:
         else:
             param.update({"quickViewId": f"ac-space-{viewer}-user-list"})
         req = self.acer.client.get(AcSource.routes['up'] + self.uid, params=param)
-        assert req.text.endswith("/*<!-- fetch-stream -->*/")
+        if not req.text.endswith("/*<!-- fetch-stream -->*/"):
+            raise TingBuDong("空间页 ajax 响应缺少 fetch-stream 尾标")
         return json.loads(req.text[:-25])
 
     def video(self, page=1, limit=10, orderby='newest') -> list:
@@ -133,7 +137,8 @@ class AcUp:
         return data
 
     def _follow(self, key, page=1, limit=10, orderby='newest') -> list:
-        assert key in ['following', 'followed']
+        if key not in ('following', 'followed'):
+            raise ValueError(f"key 必须是 following / followed: {key!r}")
         data = list()
         acer_data = self._get_data(key, page, limit, orderby)
         for item in Bs(acer_data.get('html', ''), 'lxml').select('li'):

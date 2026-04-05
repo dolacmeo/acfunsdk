@@ -126,6 +126,20 @@ demo_doodle = acer.get("https://hd.acfun.cn/doodle/knNWmnco.html")
 print(demo_doodle)
 ```
 
+### 异步使用
+```python
+import asyncio
+from acfunsdk import Acer
+
+async def main():
+    acer = Acer()
+    # 异步获取内容对象
+    demo_video = await acer.get_async("https://www.acfun.cn/v/ac4741185")
+    print(demo_video)
+
+asyncio.run(main())
+```
+
 - - -
 
 

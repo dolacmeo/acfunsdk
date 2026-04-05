@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "acfunsdk"
-version = "0.9.7"
+version = "0.9.8"
 description = "acfunsdk - UNOFFICIAL"
 readme = "README.md"
 license = "MIT"

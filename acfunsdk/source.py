@@ -1,5 +1,6 @@
 # coding=utf-8
-# LastCheck: 2022/08/16
+# LastCheck: 2026/04/05 - APIs may be outdated, verify against AcFun website
+# TODO: Check and update API endpoints if necessary
 
 __author__ = 'dolacmeo'
 

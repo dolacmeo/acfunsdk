@@ -20,7 +20,8 @@ from .danmaku import AcDanmaku
 from .message import MyMessage
 from .acer import MyFansClub, MyFollow, MyFavourite, MyAlbum, MyContribute, MyDanmaku, BananaMall
 from .extra import AcLink, AcImage, AcHelp, AcInfo, AcAcademy, AcReport, AcDownload, AcLab, AcScreeningRoom
-from .utils import B64s, match1, get_page_pagelets, resource_type_map, routes_type_map
+from .utils import B64s, match1, get_page_pagelets
+from ..constants import routes_type_map
 
 __author__ = 'dolacmeo'
 
@@ -190,6 +191,57 @@ class AcFun:
             w_link = parse.parse_qs(req_redirect.query).get("wLink", [])
             if len(w_link):
                 return self.get(w_link[0])
+        # 图片、链接
+        if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
+            if parse.urlsplit(url_str).netloc in self.cdn_domain:
+                return AcImage(self.acer, url_str)
+            return AcLink(self.acer, url_str, title)
+        # 不知道是啥
+        return None
+
+    async def get_async(self, url_str: str, title=None) -> object | None:
+        # 异步版本，逻辑相同，但涂鸦短链接使用异步请求
+        # 统一换成HTTPS协议
+        if url_str.startswith("http://"):
+            url_str = url_str.replace("http://", "https://")
+        # 主站首页
+        if url_str in [AcSource.routes['index'], AcSource.routes['index'] + "/"]:
+            return self.AcIndex()
+        # 直播首页
+        if url_str in [AcSource.routes['live_index'], AcSource.routes['live_index'] + "/"]:
+            return self.AcLive()
+        # 栏目页面
+        channel_rex = re.compile(rf"^{AcSource.routes['index']}/v/list(\d+)/index.htm").findall(url_str)
+        if channel_rex:
+            return self.AcChannel(channel_rex[0])
+        # 排行、番剧
+        for link_name in ['rank', 'bangumi_list']:
+            if url_str.startswith(AcSource.routes[link_name]):
+                ends = url_str[len(AcSource.routes[link_name]):]
+                if link_name == 'bangumi_list':
+                    return self.AcBangumiList()
+                elif link_name == 'rank':
+                    q = parse.parse_qs(parse.urlsplit(url_str).query)
+                    kw = {
+                        'cid': None if q.get('pcid', "-1") == "-1" else int(q['pcid'][0]),
+                        'sub_cid': None if q.get('cid', "-1") == "-1" else int(q['cid'][0]),
+                        'date_range': q.get("range", ['DAY'])[0],
+                    }
+                    return self.AcRank(**kw)
+                return getattr(self, f"Ac{link_name.capitalize()}")(ends)
+        # 内容页面
+        for link_name in routes_type_map.keys():
+            if url_str.startswith(AcSource.routes[link_name]):
+                ends = url_str[len(AcSource.routes[link_name]):]
+                return getattr(self, routes_type_map[link_name])(ends)
+        # 涂鸦短链接
+        if "//hd.acfun.cn/s/" in url_str:
+            async with self.acer.async_client as client:
+                req3xx = await client.get(url_str)
+                req_redirect = parse.urlsplit(req3xx.headers.get("Location", ""))
+                w_link = parse.parse_qs(req_redirect.query).get("wLink", [])
+                if len(w_link):
+                    return await self.get_async(w_link[0])
         # 图片、链接
         if url_str.startswith('http') and parse.urlsplit(url_str).netloc.endswith('acfun.cn'):
             if parse.urlsplit(url_str).netloc in self.cdn_domain:

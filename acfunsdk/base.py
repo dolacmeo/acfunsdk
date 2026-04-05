@@ -1,12 +1,18 @@
-# coding=utf-8
 import os
 import json
-from typing import Literal
+import logging
+import httpx
+from typing import Literal, Dict, Any, Optional
 from packaging.version import Version
 from importlib.metadata import version as pip_version
 from importlib.metadata import PackageNotFoundError
 
-from .page import *
+from .page.acer import MyFansClub, MyFollow, MyFavourite, MyAlbum, MyContribute, MyDanmaku, BananaMall
+from .page.message import MyMessage
+from .page.moment import MyMoment
+from .page import AcFun
+from .page.utils import B64s
+from .source import AcSource
 from .exceptions import need_login, TingBuDong, AcExploded
 
 exts = {}
@@ -21,28 +27,42 @@ __author__ = 'dolacmeo'
 
 
 class Acer:
-    BASE_PATH = os.getcwd()
-    client = None
-    config = dict()
+    BASE_PATH: str = os.getcwd()
+    client: httpx.Client
+    config: Dict[str, Any]
 
-    did = None
-    data = dict()
-    tokens = dict()
+    did: Optional[str]
+    data: Dict[str, Any]
+    tokens: Dict[str, str]
 
-    is_logined = False
-    message = None
-    fansclub = None
-    moment = None
-    follow = None
-    favourite = None
-    album = None
-    contribute = None
-    danmaku = None
-    bananamall = None
+    is_logined: bool
+    message: Optional[MyMessage]
+    fansclub: Optional[MyFansClub]
+    moment: Optional[MyMoment]
+    follow: Optional[MyFollow]
+    favourite: Optional[MyFavourite]
+    album: Optional[MyAlbum]
+    contribute: Optional[MyContribute]
+    danmaku: Optional[MyDanmaku]
+    bananamall: Optional[BananaMall]
 
     def __init__(self, /, **kwargs):
         self.config = kwargs
-        self.client = httpx.Client(headers=kwargs.get("header", AcSource.header))
+        headers = kwargs.get("header", AcSource.header.copy())
+        self.client = httpx.Client(headers=headers)
+        self.did = None
+        self.data = {}
+        self.tokens = {}
+        self.is_logined = False
+        self.message = None
+        self.fansclub = None
+        self.moment = None
+        self.follow = None
+        self.favourite = None
+        self.album = None
+        self.contribute = None
+        self.danmaku = None
+        self.bananamall = None
         if "loading" in kwargs:
             self.loading(kwargs['loading'])
         elif "username" in kwargs and "password" in kwargs:
@@ -77,48 +97,129 @@ class Acer:
     def get(self, url_str: str, title=None):
         return self.acfun.get(url_str, title)
 
+    async def get_async(self, url_str: str, title=None):
+        return await self.acfun.get_async(url_str, title)
+
+    async def _get_personal_async(self):
+        async with self.async_client as client:
+            try:
+                live_page_req = await client.get(AcSource.routes['app'])
+                if live_page_req.status_code != 200:
+                    raise AcExploded(
+                        f"app 页请求失败 HTTP {live_page_req.status_code}: {AcSource.routes['app']!r}",
+                        url=AcSource.routes['app'], status_code=live_page_req.status_code
+                    )
+                self.did = live_page_req.cookies.get('_did')
+                if self.is_logined:
+                    api_req = await client.post(AcSource.apis['token'], data={"sid": "acfun.midground.api"})
+                    if api_req.status_code != 200:
+                        raise AcExploded(f"token API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['token'], status_code=api_req.status_code)
+                    api_data = api_req.json()
+                    if api_data.get("result") != 0:
+                        raise TingBuDong(f"midground token API result={api_data.get('result')!r}")
+                    self.tokens = {
+                        "ssecurity": api_data.get("ssecurity", ''),
+                        "api_st": api_data.get("acfun.midground.api_st", ''),
+                        "api_at": api_data.get("acfun.midground.api.at", ''),
+                    }
+                    info_req = await client.get(AcSource.apis['personalInfo'])
+                    if info_req.status_code != 200:
+                        raise AcExploded(f"personalInfo API请求失败 HTTP {info_req.status_code}", url=AcSource.apis['personalInfo'], status_code=info_req.status_code)
+                    info_data = info_req.json()
+                    if info_data.get("result") != 0:
+                        raise TingBuDong(f"personalInfo API result={info_data.get('result')!r}")
+                    self.data = info_data.get('info', {})
+                    self.message = MyMessage(self)
+                    self.fansclub = MyFansClub(self)
+                    self.moment = MyMoment(self)
+                    self.follow = MyFollow(self)
+                    self.favourite = MyFavourite(self)
+                    self.album = MyAlbum(self)
+                    self.contribute = MyContribute(self)
+                    self.danmaku = MyDanmaku(self)
+                    self.bananamall = BananaMall(self)
+                    await self.signin_async()  # 异步签到
+                else:
+                    api_req = await client.post(AcSource.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
+                    if api_req.status_code != 200:
+                        raise AcExploded(f"visitor token API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['token_visitor'], status_code=api_req.status_code)
+                    api_data = api_req.json()
+                    if api_data.get("result") != 0:
+                        raise TingBuDong(f"visitor token API result={api_data.get('result')!r}")
+                    self.tokens = {
+                        "userId": api_data.get("userId", ""),
+                        "ssecurity": api_data.get("acSecurity", ''),
+                        "visitor_st": api_data.get("acfun.api.visitor_st", ''),
+                    }
+            except httpx.TimeoutException as e:
+                logging.error(f"异步网络超时: {e}")
+                raise AcExploded("异步网络请求超时")
+            except httpx.ConnectError as e:
+                logging.error(f"异步连接错误: {e}")
+                raise AcExploded("异步网络连接失败")
+            except json.JSONDecodeError as e:
+                logging.error(f"异步JSON解析错误: {e}")
+                raise TingBuDong("异步API响应格式错误")
+
     def _get_personal(self):
-        live_page_req = self.client.get(AcSource.routes['app'])
-        if live_page_req.status_code // 100 != 2:
-            raise AcExploded(
-                f"app 页请求失败 HTTP {live_page_req.status_code}: {AcSource.routes['app']!r}"
-            )
-        self.did = live_page_req.cookies.get('_did')
-        if self.is_logined:
-            api_req = self.client.post(AcSource.apis['token'], data={"sid": "acfun.midground.api"})
-            api_data = api_req.json()
-            if api_data.get("result") != 0:
-                raise TingBuDong(f"midground token API result={api_data.get('result')!r}")
-            self.tokens = {
-                "ssecurity": api_data.get("ssecurity", ''),
-                "api_st": api_data.get("acfun.midground.api_st", ''),
-                "api_at": api_data.get("acfun.midground.api.at", ''),
-            }
-            info_req = self.client.get(AcSource.apis['personalInfo'])
-            info_data = info_req.json()
-            if info_data.get("result") != 0:
-                raise TingBuDong(f"personalInfo API result={info_data.get('result')!r}")
-            self.data = info_data.get('info', {})
-            self.message = MyMessage(self)
-            self.fansclub = MyFansClub(self)
-            self.moment = MyMoment(self)
-            self.follow = MyFollow(self)
-            self.favourite = MyFavourite(self)
-            self.album = MyAlbum(self)
-            self.contribute = MyContribute(self)
-            self.danmaku = MyDanmaku(self)
-            self.bananamall = BananaMall(self)
-            self.signin()  # 自动签到
-        else:
-            api_req = self.client.post(AcSource.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
-            api_data = api_req.json()
-            if api_data.get("result") != 0:
-                raise TingBuDong(f"visitor token API result={api_data.get('result')!r}")
-            self.tokens = {
-                "userId": api_data.get("userId", ""),
-                "ssecurity": api_data.get("acSecurity", ''),
-                "visitor_st": api_data.get("acfun.api.visitor_st", ''),
-            }
+        try:
+            live_page_req = self.client.get(AcSource.routes['app'])
+            if live_page_req.status_code != 200:
+                raise AcExploded(
+                    f"app 页请求失败 HTTP {live_page_req.status_code}: {AcSource.routes['app']!r}",
+                    url=AcSource.routes['app'], status_code=live_page_req.status_code
+                )
+            self.did = live_page_req.cookies.get('_did')
+            if self.is_logined:
+                api_req = self.client.post(AcSource.apis['token'], data={"sid": "acfun.midground.api"})
+                if api_req.status_code != 200:
+                    raise AcExploded(f"token API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['token'], status_code=api_req.status_code)
+                api_data = api_req.json()
+                if api_data.get("result") != 0:
+                    raise TingBuDong(f"midground token API result={api_data.get('result')!r}")
+                self.tokens = {
+                    "ssecurity": api_data.get("ssecurity", ''),
+                    "api_st": api_data.get("acfun.midground.api_st", ''),
+                    "api_at": api_data.get("acfun.midground.api.at", ''),
+                }
+                info_req = self.client.get(AcSource.apis['personalInfo'])
+                if info_req.status_code != 200:
+                    raise AcExploded(f"personalInfo API请求失败 HTTP {info_req.status_code}", url=AcSource.apis['personalInfo'], status_code=info_req.status_code)
+                info_data = info_req.json()
+                if info_data.get("result") != 0:
+                    raise TingBuDong(f"personalInfo API result={info_data.get('result')!r}")
+                self.data = info_data.get('info', {})
+                self.message = MyMessage(self)
+                self.fansclub = MyFansClub(self)
+                self.moment = MyMoment(self)
+                self.follow = MyFollow(self)
+                self.favourite = MyFavourite(self)
+                self.album = MyAlbum(self)
+                self.contribute = MyContribute(self)
+                self.danmaku = MyDanmaku(self)
+                self.bananamall = BananaMall(self)
+                self.signin()  # 自动签到
+            else:
+                api_req = self.client.post(AcSource.apis['token_visitor'], data={"sid": "acfun.api.visitor"})
+                if api_req.status_code != 200:
+                    raise AcExploded(f"visitor token API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['token_visitor'], status_code=api_req.status_code)
+                api_data = api_req.json()
+                if api_data.get("result") != 0:
+                    raise TingBuDong(f"visitor token API result={api_data.get('result')!r}")
+                self.tokens = {
+                    "userId": api_data.get("userId", ""),
+                    "ssecurity": api_data.get("acSecurity", ''),
+                    "visitor_st": api_data.get("acfun.api.visitor_st", ''),
+                }
+        except httpx.TimeoutException as e:
+            logging.error(f"网络超时: {e}")
+            raise AcExploded("网络请求超时")
+        except httpx.ConnectError as e:
+            logging.error(f"连接错误: {e}")
+            raise AcExploded("网络连接失败")
+        except json.JSONDecodeError as e:
+            logging.error(f"JSON解析错误: {e}")
+            raise TingBuDong("API响应格式错误")
 
     def update_token(self, data: dict) -> dict:
         if self.is_logined:

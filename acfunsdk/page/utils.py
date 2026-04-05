@@ -16,42 +16,11 @@ from bs4 import BeautifulSoup as Bs
 from bs4.element import Tag
 from ..source import AcSource
 from ..exceptions import need_login, not_404, TingBuDong
+from ..constants import resource_type_map, routes_type_map, type_routes_map, resource_type_str_map
 
 __author__ = 'dolacmeo'
 
-resource_type_map = {
-    "1": "AcBangumi",  # 番剧
-    "2": "AcVideo",  # 视频稿件
-    "3": "AcArticle",  # 文章稿件
-    "4": "AcAlbum",  # 合辑
-    "5": "AcUp",  # 用户
-    "6": "AcComment",  # 评论
-    # "8": "私信",
-    "10": "AcMoment",  # 动态
-}
 
-routes_type_map = {
-    "bangumi": "AcBangumi",  # 番剧
-    "video": "AcVideo",  # 视频稿件
-    "article": "AcArticle",  # 文章稿件
-    "album": "AcAlbum",  # 合辑
-    "up": "AcUp",  # 用户
-    "live": "AcLiveUp",  # 用户直播
-    "moment": "AcMoment",  # 用户动态
-    "doodle": "AcDoodle",  # 涂鸦页面
-}
-
-type_routes_map = {v: k for k, v in routes_type_map.items()}
-
-resource_type_str_map = {
-    "1": "番剧",  # AcBangumi
-    "2": "视频",  # AcVideo
-    "3": "文章",  # AcArticle
-    "4": "合辑",  # AcAlbum
-    "5": "用户",  # AcUp
-    "6": "评论",  # AcComment
-    "10": "动态",  # AcMoment
-}
 
 acpage_regex = {
     "AcBangumi": [
@@ -98,6 +67,8 @@ class VideoItem:
             "videoId": self.vid
         }
         api_req = self.acer.client.get(AcSource.apis['video_ksplay'], params=param)
+        if api_req.status_code != 200:
+            raise AcExploded(f"video_ksplay API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['video_ksplay'], status_code=api_req.status_code)
         api_data = api_req.json()
         if api_data.get("result") != 0:
             raise TingBuDong(f"video_ksplay result={api_data.get('result')!r}")
@@ -152,6 +123,8 @@ class VideoItem:
             "videoId": self.vid
         }
         api_req = self.acer.client.post(AcSource.apis['video_scenes'], data=form_data)
+        if api_req.status_code != 200:
+            raise AcExploded(f"video_scenes API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['video_scenes'], status_code=api_req.status_code)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -176,6 +149,8 @@ class VideoItem:
             "resourceType": self.parent.resource_type
         }
         api_req = self.acer.client.post(AcSource.apis['video_hotspot'], data=form_data)
+        if api_req.status_code != 200:
+            raise AcExploded(f"video_hotspot API请求失败 HTTP {api_req.status_code}", url=AcSource.apis['video_hotspot'], status_code=api_req.status_code)
         api_data = api_req.json()
         if api_data.get('result') != 0:
             return None
@@ -466,25 +441,35 @@ def emoji_cleanup(text) -> str:
 
 def image_uploader(client, image_data: bytes, ext: str = 'jpeg') -> str:
     token_req = client.post(AcSource.apis['image_upload_gettoken'], data=dict(fileName=uuid4().hex.upper() + f'.{ext}'))
+    if token_req.status_code != 200:
+        raise AcExploded(f"image_upload_gettoken API请求失败 HTTP {token_req.status_code}", url=AcSource.apis['image_upload_gettoken'], status_code=token_req.status_code)
     token_data = token_req.json()
     if token_data.get("result") != 0:
         raise TingBuDong(f"image_upload_gettoken result={token_data.get('result')!r}")
     resume_req = client.get(AcSource.apis['image_upload_resume'], params=dict(upload_token=token_data['info']['token']))
+    if resume_req.status_code != 200:
+        raise AcExploded(f"image_upload_resume API请求失败 HTTP {resume_req.status_code}", url=AcSource.apis['image_upload_resume'], status_code=resume_req.status_code)
     resume_data = resume_req.json()
     if resume_data.get("result") != 1:
         raise TingBuDong(f"image_upload_resume result={resume_data.get('result')!r}")
     fragment_req = client.post(AcSource.apis['image_upload_fragment'], data=image_data,
                                params=dict(upload_token=token_data['info']['token'], fragment_id=0),
                                headers={"Content-Type": "application/octet-stream"})
+    if fragment_req.status_code != 200:
+        raise AcExploded(f"image_upload_fragment API请求失败 HTTP {fragment_req.status_code}", url=AcSource.apis['image_upload_fragment'], status_code=fragment_req.status_code)
     fragment_data = fragment_req.json()
     if fragment_data.get("result") != 1:
         raise TingBuDong(f"image_upload_fragment result={fragment_data.get('result')!r}")
     complete_req = client.post(AcSource.apis['image_upload_complete'],
                                params=dict(upload_token=token_data['info']['token'], fragment_count=1))
+    if complete_req.status_code != 200:
+        raise AcExploded(f"image_upload_complete API请求失败 HTTP {complete_req.status_code}", url=AcSource.apis['image_upload_complete'], status_code=complete_req.status_code)
     complete_data = complete_req.json()
     if complete_data.get("result") != 1:
         raise TingBuDong(f"image_upload_complete result={complete_data.get('result')!r}")
     result_req = client.post(AcSource.apis['image_upload_geturl'], data=dict(token=token_data['info']['token']))
+    if result_req.status_code != 200:
+        raise AcExploded(f"image_upload_geturl API请求失败 HTTP {result_req.status_code}", url=AcSource.apis['image_upload_geturl'], status_code=result_req.status_code)
     result_data = result_req.json()
     if result_data.get("result") != 0:
         raise TingBuDong(f"image_upload_geturl result={result_data.get('result')!r}")

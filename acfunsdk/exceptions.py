@@ -38,14 +38,23 @@ def not_404(f):
 
 class AcExploded(ConnectionError):
     """阿禅爆炸 (今天A站挂了吗？)"""
+    def __init__(self, message: str, url: str = None, status_code: int = None):
+        super().__init__(message)
+        self.url = url
+        self.status_code = status_code
 
 
 class NotInCar(PermissionError):
     """没上车 (尚未登录)"""
+    def __init__(self, message: str = "先登录啊！"):
+        super().__init__(message)
 
 
 class ShuiNi(FileNotFoundError):
     """水逆 (404被删掉)"""
+    def __init__(self, message: str = "水逆 (你想要的并不存在)", resource_id: str = None):
+        super().__init__(message)
+        self.resource_id = resource_id
 
 
 class NiShuiA(PermissionError):
